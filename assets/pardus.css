@@ -1,0 +1,72 @@
+body {
+    background: #050505 url(bg.jpg);
+    font-family: Verdana, Arial, Sans-serif;
+    font-size: 12px;
+    color: #B0B0B0;
+}
+a:link, a:active, a:visited {
+    color: #B1B1B1;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 11px;
+}
+a:hover {
+    color: #FFFFFF;
+}
+a.biglink {
+    font-size: 16px;
+    color: #ffffff;
+}
+input {
+    background: #141414;
+    border: #5A5A5A 1px solid;
+    color: #ffffff;
+    font-size: 14px;
+}
+select {
+    background: #141414;
+    border: #5A5A5A 1px solid;
+    color: #ffffff;
+    font-size: 14px;
+}
+.savebutton {
+    background: #242424;
+    border: #bcc2bc 1px ridge;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: normal;
+    height: 22px;
+}
+table.std_table td {
+    background: #021222;
+}
+table.std_table th {
+    background: #0A121B;
+    font-size: 13px;
+}
+table.listing_table td, table.listing_table th {
+    padding: 15px 5px;
+}
+table.listing_table tr.cl0 td {
+    background: #0c1826;
+}
+table.listing_table tr.cl1 td {
+    background: #051729;
+}
+table.listing_table tr.clpremium td {
+    color: #FFCC11;
+    background: #0c1826;
+}
+table.listing_table tr.cl0:hover td, table.listing_table tr.cl1:hover td {
+    background: #1d2344;
+}
+table.listing_table tr.clpremium:hover td {
+    background: #5C4300;
+}
+.cfgheader {
+    font-weight: bold;
+    line-height: 1.7em;
+}
+.cfgdesc, .cfgdesc a {
+    font-size: 11px;
+}
