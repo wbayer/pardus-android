@@ -17,6 +17,7 @@
 
 package at.pardus.android.browser;
 
+import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.util.Log;
 import android.webkit.SslErrorHandler;
@@ -63,11 +64,15 @@ public class PardusWebViewClient extends WebViewClient {
 		if (!pardusView.isLoggedIn()
 				&& !url.startsWith("file:///android_asset/")
 				&& !url.startsWith("http://static.pardus.at/")
-				&& !url.equals(PardusConstants.loginUrl)
+				&& !url.startsWith(PardusConstants.loginUrl)
 				&& !url.startsWith(PardusConstants.loggedInUrl)
-				&& !url.equals(PardusConstants.loggedInUrlHttps)) {
-			// only allow local pages, login post action and login target page
-			// while not logged in
+				&& !url.startsWith(PardusConstants.loggedInUrlHttps)
+				&& !url.startsWith(PardusConstants.newCharUrl)
+				&& !url.startsWith(PardusConstants.newCharUrlHttps)
+				&& !url.startsWith(PardusConstants.signupUrl)
+				&& !url.startsWith(PardusConstants.signupUrlHttps)) {
+			// only allow local pages, login post action, login redirection,
+			// signup page, signup redirection while not logged in
 			if (PardusConstants.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Access to " + url
 						+ " denied while not logged in");
@@ -76,13 +81,36 @@ public class PardusWebViewClient extends WebViewClient {
 		} else {
 			view.loadUrl(url);
 			pardusView.setUniverse(url);
-			if (url.equals(PardusConstants.logoutUrl)
-					|| url.equals(PardusConstants.logoutUrlHttps)) {
-				// loading log out url
-				pardusView.setLoggedIn(false);
-			}
 		}
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.webkit.WebViewClient#onPageStarted(android.webkit.WebView,
+	 * java.lang.String, android.graphics.Bitmap)
+	 */
+	@Override
+	public void onPageStarted(WebView view, String url, Bitmap favicon) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Started loading " + url);
+		}
+		PardusWebView pardusView = (PardusWebView) view;
+		if (url.startsWith(PardusConstants.loggedInUrl)
+				|| url.startsWith(PardusConstants.loggedInUrlHttps)
+				|| url.startsWith(PardusConstants.newCharUrl)
+				|| url.startsWith(PardusConstants.newCharUrlHttps)) {
+			// loading page on login or signup success
+			pardusView.setLoggedIn(true);
+		} else if (url.startsWith(PardusConstants.logoutUrl)
+				|| url.startsWith(PardusConstants.logoutUrlHttps)) {
+			// loading log out url
+			pardusView.setLoggedIn(false);
+		} else if (url.contains("/sendmsg.php")) {
+			// loading send message screen
+			onSendMessageScreen = true;
+		}
 	}
 
 	/*
@@ -95,15 +123,6 @@ public class PardusWebViewClient extends WebViewClient {
 	public void onPageFinished(WebView view, String url) {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Finished loading " + url);
-		}
-		PardusWebView pardusView = (PardusWebView) view;
-		if (url.startsWith(PardusConstants.loggedInUrl)
-				|| url.equals(PardusConstants.loggedInUrlHttps)) {
-			// on login target page
-			pardusView.setLoggedIn(true);
-		} else if (url.contains("/sendmsg.php")) {
-			// first call of send message screen
-			onSendMessageScreen = true;
 		}
 		if (onSendMessageScreen) {
 			// new message popups are opened in the same window => redirect back

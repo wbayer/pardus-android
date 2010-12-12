@@ -14,6 +14,7 @@ function makeMD5(f)
     if (v != "" && v.length != 33 && v.charAt(0) != '_')
         document.getElementById(f).value = '_' + MD5(v);
 }
+loggingIn = false;
 checksMax = 5;
 checks = 0;
 function checkSubmitLogin()
@@ -21,11 +22,10 @@ function checkSubmitLogin()
     if (document.getElementById('acc').value.length > 3
         && document.getElementById('pw').value.length == 33) {
         clearInterval(checksInterval);
-        if (document.getElementById('loginform').disabled == true) {
+        if (loggingIn) {
             return;
         }
-        document.getElementById('loginform').disabled = true;
-        document.getElementById('loginform').value = 'Logging in ...';
+        loggingIn = true;
         document.getElementById('loginform').submit();
         return;
     }
@@ -54,9 +54,17 @@ function checkSubmitLogin()
 </table>
 <input type='hidden' value='0' name='usehttps' id='usehttps' />
 <input type='hidden' value='1' name='login' />
-<input type='submit' value='Login!' class='savebutton' onclick="this.disabled=true;makeMD5('pw');this.form.submit();" />
+<input type='submit' value='Login!' class='savebutton' onclick="loggingIn=true;makeMD5('pw');this.form.submit();" />
 </form>
 </td></tr>
+</table>
+<br/>
+<br/>
+<br/>
+<table align='center' cellpadding='4' class='listing_table'>
+<tr class='cl0' align='center'>
+<td><a href='http://www.pardus.at/index.php?section=signup' id='signupLink' style='color:#bbaa00;'>No Pardus account yet?<br />&#8594; Sign up for free! &#8592;</a></td>
+</tr>
 </table>
 </body>
 </html>
@@ -65,6 +73,7 @@ function checkSubmitLogin()
 if (location.search != '') {
     if (location.search.indexOf('https') != -1) {
         document.getElementById('usehttps').value = '1';
+        document.getElementById('signupLink').href = 'https://www.pardus.at/index.php?section=signup';
     }
     if (location.search.indexOf('auto') != -1) {
         checksInterval = setInterval("checkSubmitLogin()", 500);

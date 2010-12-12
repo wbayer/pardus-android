@@ -36,9 +36,17 @@ public abstract class PardusConstants {
 
 	public static final String loggedInUrlHttps = "https://www.pardus.at/index.php?section=account_play";
 
+	public static final String newCharUrl = "http://www.pardus.at/index.php?section=account_newchar";
+
+	public static final String newCharUrlHttps = "https://www.pardus.at/index.php?section=account_newchar";
+
 	public static final String logoutUrl = "http://www.pardus.at/index.php?section=account_logout";
 
 	public static final String logoutUrlHttps = "https://www.pardus.at/index.php?section=account_logout";
+
+	public static final String signupUrl = "http://www.pardus.at/index.php?section=signup";
+
+	public static final String signupUrlHttps = "https://www.pardus.at/index.php?section=signup";
 
 	public static final String navPage = "game.php";
 
