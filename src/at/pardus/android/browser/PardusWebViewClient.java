@@ -80,7 +80,6 @@ public class PardusWebViewClient extends WebViewClient {
 			pardusView.login(false);
 		} else {
 			view.loadUrl(url);
-			pardusView.setUniverse(url);
 		}
 		return true;
 	}
@@ -97,6 +96,7 @@ public class PardusWebViewClient extends WebViewClient {
 			Log.v(this.getClass().getSimpleName(), "Started loading " + url);
 		}
 		PardusWebView pardusView = (PardusWebView) view;
+		pardusView.setUniverse(url);
 		if (url.startsWith(PardusConstants.loggedInUrl)
 				|| url.startsWith(PardusConstants.loggedInUrlHttps)
 				|| url.startsWith(PardusConstants.newCharUrl)
