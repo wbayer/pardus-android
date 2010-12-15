@@ -30,7 +30,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.Window;
 import android.webkit.CookieSyncManager;
-import at.pardus.android.content.LocalContentProvider;
 
 /**
  * Main activity - application entry point.
@@ -78,16 +77,7 @@ public class Pardus extends Activity {
 		browser = (PardusWebView) findViewById(R.id.browser);
 		browser.initDownloadListener(storageDir, cacheDir);
 		browser.initChromeClient(this);
-		// get stored image path (if any)
-		String imagePath = PardusPreferences.getImagePath();
-		if (checkImagePath(imagePath)) {
-			// browse to login page
-			LocalContentProvider.FILEPATH = imagePath;
-			browser.login(true);
-		} else {
-			// browse to image pack selection page
-			browser.selectImagePack();
-		}
+		browser.login(true);
 	}
 
 	/*
@@ -99,15 +89,18 @@ public class Pardus extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.option_settings:
-			browser.selectImagePack();
+			browser.showSettings();
 			return true;
 		case R.id.option_about:
 			browser.showAbout();
 			return true;
+		case R.id.option_refresh:
+			browser.reload();
+			return true;
+		case R.id.option_login:
+			browser.login(true);
+			return true;
 		case R.id.option_logout:
-			if (browser.isLoggedIn()) {
-				browser.logout();
-			}
 			finish();
 			return true;
 		case R.id.option_nav:
@@ -181,6 +174,19 @@ public class Pardus extends Activity {
 			Log.v(this.getClass().getSimpleName(),
 					"Resuming (or starting) application");
 		}
+		// wake up the browser
+		try {
+			Class.forName("android.webkit.WebView")
+					.getMethod("onResume", (Class[]) null)
+					.invoke(browser, (Object[]) null);
+		} catch (Exception e) {
+			Log.w(this.getClass().getSimpleName(),
+					"Cannot wake up browser threads: "
+							+ Log.getStackTraceString(e));
+			PardusNotification
+					.showLong("Error waking up the browser - you may need to restart the app.");
+		}
+		browser.resumeTimers();
 		CookieSyncManager.getInstance().startSync();
 		super.onResume();
 	}
@@ -197,10 +203,21 @@ public class Pardus extends Activity {
 					"Pausing application (to be resumed or stopped or killed)");
 		}
 		browser.stopLoading();
-		if (PardusPreferences.logoutOnHide && browser.isLoggedIn()) {
+		if (isFinishing() || PardusPreferences.isLogoutOnHide()) {
 			browser.logout();
 		}
+		// keep the browser from working in the background
 		CookieSyncManager.getInstance().stopSync();
+		browser.pauseTimers();
+		try {
+			Class.forName("android.webkit.WebView")
+					.getMethod("onPause", (Class[]) null)
+					.invoke(browser, (Object[]) null);
+		} catch (Exception e) {
+			Log.w(this.getClass().getSimpleName(),
+					"Cannot pause browser threads: "
+							+ Log.getStackTraceString(e));
+		}
 		super.onPause();
 	}
 
@@ -277,24 +294,6 @@ public class Pardus extends Activity {
 			}
 		}
 		return dir;
-	}
-
-	/**
-	 * Checks if an image path exists and is readable.
-	 * 
-	 * @param imagePath
-	 *            path to check
-	 * @return true if valid, false else
-	 */
-	private boolean checkImagePath(String imagePath) {
-		boolean valid = false;
-		if (!imagePath.equals("")) {
-			File imagePathCheckFile = new File(imagePath + "/vip.png");
-			if (imagePathCheckFile.exists() && imagePathCheckFile.canRead()) {
-				valid = true;
-			}
-		}
-		return valid;
 	}
 
 }

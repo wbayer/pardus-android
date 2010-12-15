@@ -25,6 +25,7 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.content.LocalContentProvider;
 
 /**
@@ -74,6 +75,12 @@ public class PardusWebView extends WebView {
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"Setting up javascript interface");
+		}
+		addJavascriptInterface(new JavaScriptSettings(this), "App");
+		clearCache(true);
 	}
 
 	/**
@@ -121,7 +128,18 @@ public class PardusWebView extends WebView {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Showing login screen");
 		}
-		String https = (PardusPreferences.useHttps) ? "https;" : "";
+		String imagePath = PardusPreferences.getImagePath();
+		if (PardusPreferences.checkImagePath(imagePath)) {
+			LocalContentProvider.FILEPATH = imagePath;
+		} else {
+			if (PardusConstants.DEBUG) {
+				Log.d(this.getClass().getSimpleName(), "No image pack set yet");
+			}
+			selectImagePack();
+			clearHistory();
+			return;
+		}
+		String https = (PardusPreferences.isUseHttps()) ? "https;" : "";
 		String auto = (autoLogin) ? "auto;" : "";
 		stopLoading();
 		loadUrl(PardusConstants.loginScreen + "?" + https + auto);
@@ -134,15 +152,31 @@ public class PardusWebView extends WebView {
 	 * Logs out of Pardus.
 	 */
 	public void logout() {
+		if (!loggedIn) {
+			// simply forward to the login screen if already logged out
+			login(false);
+			return;
+		}
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Logging out");
 		}
-		String logoutUrl = (PardusPreferences.useHttps) ? PardusConstants.logoutUrlHttps
+		String logoutUrl = (PardusPreferences.isUseHttps()) ? PardusConstants.logoutUrlHttps
 				: PardusConstants.logoutUrl;
 		stopLoading();
 		loadUrl(logoutUrl);
 		setUniverse(null);
 		clearHistory();
+	}
+
+	/**
+	 * Displays the local settings screen.
+	 */
+	public void showSettings() {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Loading settings screen");
+		}
+		stopLoading();
+		loadUrl(PardusConstants.settingsScreen);
 	}
 
 	/**
@@ -182,7 +216,7 @@ public class PardusWebView extends WebView {
 			}
 			return;
 		}
-		String http = (PardusPreferences.useHttps) ? "https" : "http";
+		String http = (PardusPreferences.isUseHttps()) ? "https" : "http";
 		stopLoading();
 		loadUrl(http + "://" + universe + ".pardus.at/" + page);
 	}
@@ -221,25 +255,38 @@ public class PardusWebView extends WebView {
 	}
 
 	/**
+	 * Deletes website cache, cookies and attempts to clear form data.
+	 */
+	public void removeTraces() {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Clearing cache");
+		}
+		clearCache(true);
+		// TODO clearFormData() does not delete the stored account/password
+		clearFormData();
+		cookieManager.removeSessionCookie();
+		cookieManager.removeAllCookie();
+	}
+
+	/**
 	 * Sets Pardus cookies for custom settings (image path, etc.).
 	 */
-	private void setCookies() {
+	public void setCookies() {
 		String cookieInfo = "; path=/; domain=.pardus.at;";
 		String url = "";
-		if (PardusPreferences.useHttps) {
-			PardusNotification.show("Using HTTPS");
+		if (PardusPreferences.isUseHttps()) {
 			cookieInfo += " secure;";
 			url = PardusConstants.loggedInUrlHttps;
 			cookieManager.setCookie(url, "usehttps=1" + cookieInfo);
 		} else {
-			PardusNotification.show("Not using HTTPS");
 			url = PardusConstants.loggedInUrl;
 			cookieManager.setCookie(url, "usehttps=1; max-age=0" + cookieInfo);
 		}
 		cookieManager.setCookie(url, "image_path=" + LocalContentProvider.URI
 				+ cookieInfo);
 		cookieManager.setCookie(url, "resolution_tiles=64" + cookieInfo);
-		cookieManager.setCookie(url, "nav_size=5" + cookieInfo);
+		cookieManager.setCookie(url,
+				"nav_size=" + PardusPreferences.getNavSize() + cookieInfo);
 		cookieSyncManager.sync();
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Cookies set: "
@@ -260,6 +307,17 @@ public class PardusWebView extends WebView {
 				Log.d(this.getClass().getSimpleName(), "Logged in");
 			}
 			setCookies();
+			// output a settings summary
+			String settingsStr = "";
+			settingsStr += (PardusPreferences.isUseHttps()) ? "Using HTTPS"
+					: "Not using HTTPS";
+			settingsStr += ". ";
+			settingsStr += (PardusPreferences.isLogoutOnHide()) ? "Logging out on hide"
+					: "Staying logged in on hide";
+			settingsStr += ". ";
+			settingsStr += "Space chart size " + PardusPreferences.getNavSize();
+			settingsStr += ". ";
+			PardusNotification.showLong(settingsStr);
 		} else {
 			if (PardusConstants.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Logged out");

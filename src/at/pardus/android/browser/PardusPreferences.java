@@ -17,6 +17,8 @@
 
 package at.pardus.android.browser;
 
+import java.io.File;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import at.pardus.android.content.LocalContentProvider;
@@ -26,27 +28,112 @@ import at.pardus.android.content.LocalContentProvider;
  */
 public abstract class PardusPreferences {
 
-	public static boolean useHttps = true;
-
-	public static boolean logoutOnHide = false;
-
 	private static final String NAME = "PardusPreferences";
 
 	private static SharedPreferences preferences = null;
 
+	/**
+	 * Initializes required variables.
+	 * 
+	 * @param context
+	 *            context of the application
+	 */
 	public static void init(Context context) {
 		preferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE);
 	}
 
+	/**
+	 * Checks if an image path exists and is readable.
+	 * 
+	 * @return true if valid, false else
+	 */
+	public static boolean checkImagePath(String imagePath) {
+		boolean valid = false;
+		if (!imagePath.equals("")) {
+			File imagePathCheckFile = new File(imagePath + "/vip.png");
+			if (imagePathCheckFile.exists() && imagePathCheckFile.canRead()) {
+				valid = true;
+			}
+		}
+		return valid;
+	}
+
+	/**
+	 * @return the stored image path or an empty string
+	 */
 	public static String getImagePath() {
 		return preferences.getString("imagePath", "");
 	}
 
+	/**
+	 * Stores an image path and applies it to the local content provider.
+	 * 
+	 * @param imagePath
+	 *            the image path to set
+	 */
 	public static void setImagePath(String imagePath) {
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putString("imagePath", imagePath);
 		editor.commit();
 		LocalContentProvider.FILEPATH = imagePath;
+	}
+
+	/**
+	 * @return whether HTTPS should be used, true if not stored yet
+	 */
+	public static boolean isUseHttps() {
+		return preferences.getBoolean("useHttps", true);
+	}
+
+	/**
+	 * Stores whether to use HTTPS.
+	 * 
+	 * @param useHttps
+	 *            true to use HTTPS, false for HTTP
+	 */
+	public static void setUseHttps(boolean useHttps) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("useHttps", useHttps);
+		editor.commit();
+	}
+
+	/**
+	 * @return whether the account should be logged out when the app is sent to
+	 *         the background, false if not stored yet
+	 */
+	public static boolean isLogoutOnHide() {
+		return preferences.getBoolean("logoutOnHide", false);
+	}
+
+	/**
+	 * Stores whether to log out when the app is sent to the background.
+	 * 
+	 * @param logoutOnHide
+	 *            true to log out, false else
+	 */
+	public static void setLogoutOnHide(boolean logoutOnHide) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("logoutOnHide", logoutOnHide);
+		editor.commit();
+	}
+
+	/**
+	 * @return the size of the Nav space chart, 5 if not stored yet
+	 */
+	public static int getNavSize() {
+		return preferences.getInt("navSize", 5);
+	}
+
+	/**
+	 * Stores the requested size of the Nav screen's space chart.
+	 * 
+	 * @param navSize
+	 *            the size in number of tiles
+	 */
+	public static void setNavSize(int navSize) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putInt("navSize", navSize);
+		editor.commit();
 	}
 
 }

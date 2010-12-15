@@ -8,5 +8,7 @@
     <item android:id="@+id/option_chat" android:title="@string/option_chat"></item>
     <item android:id="@+id/option_settings" android:title="@string/option_settings"></item>
     <item android:id="@+id/option_about" android:title="@string/option_about"></item>
+    <item android:id="@+id/option_refresh" android:title="@string/option_refresh"></item>
+    <item android:id="@+id/option_login" android:title="@string/option_login"></item>
     <item android:id="@+id/option_logout" android:title="@string/option_logout"></item>
 </menu>

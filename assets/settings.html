@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Pardus - Settings</title>
+<link rel="stylesheet" href="pardus.css" type="text/css" />
+<script type="text/javascript">
+//<![CDATA[
+var usehttps;
+var logoutonhide;
+var navsize;
+function init()
+{
+    usehttps = document.getElementById('usehttps');
+    logoutonhide = document.getElementById('logoutonhide');
+    navsize = document.getElementById('navsize');
+    var settingsStr = new String(App.getSettings());
+    var settings = settingsStr.split(',');
+    usehttps.checked = (settings[0] == 'true');
+    logoutonhide.checked = (settings[1] == 'true');
+    for (var i = 0; i < navsize.options.length; i++) {
+        if (navsize.options[i].value == settings[2]) {
+            navsize.selectedIndex = i;
+            break;
+        }
+    }
+}
+function setUsehttps()
+{
+    App.setUseHttps(usehttps.checked);
+}
+function setLogoutonhide()
+{
+    App.setLogoutOnHide(logoutonhide.checked);
+}
+function setNavsize()
+{
+    App.setNavSize(navsize.options[navsize.selectedIndex].value);
+}
+function doClearcache()
+{
+    App.clearCache();
+}
+//]]>
+</script>
+</head>
+<body>
+<table align='center' cellpadding='4' class='std_table'>
+<tr><th>Settings</th></tr>
+<tr><td align='center'><br /><br/>
+<form id='settingsform' action='settings.html' method='post'>
+<table align='center' class='listing_table'>
+<tr class='cl0'>
+<td align='left'><span class='cfgheader'>Use HTTPS</span><br /><span class='cfgdesc'>Uncheck if you have login problems or do not need a secure connection.</span></td>
+<td align='right'><input type='checkbox' name='usehttps' id='usehttps' value='usehttps' onclick='setUsehttps();' /></td>
+</tr>
+<tr class='cl1'>
+<td align='left'><span class='cfgheader'>Log out on hide</span><br /><span class='cfgdesc'>Logs you out of Pardus whenever the app is in the background.</span></td>
+<td align='right'><input type='checkbox' name='logoutonhide' id='logoutonhide' value='logoutonhide' onclick='setLogoutonhide();' /></td>
+</tr>
+<tr class='cl0'>
+<td align='left'><span class='cfgheader'>Space chart display size</span><br /><span class='cfgdesc'>Sets the amount of tiles displayed in the space chart (no effect without Premium account).</span></td>
+<td align='right'><select name='navsize' id='navsize' onchange='setNavsize();'><option value='3'>3</option><option value='5'>5</option><option value='7'>7</option><option value='9'>9</option></select></td>
+</tr>
+<tr class='cl1'>
+<td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Deletes all cookies and cached websites.</span></td>
+<td align='right'><input type='submit' name='clearcache' id='clearcache' value='Clear' onclick='doClearcache();return false;' /></td>
+</tr>
+</table>
+</form>
+<br/>
+<br/>
+<div style='text-align:center;'><a href='img.html' class='biglink'>&#8594; Image pack selection</a></div>
+</td></tr>
+</table>
+</body>
+</html>
+<script type="text/javascript">
+//<![CDATA[
+init();
+//]]>
+</script>

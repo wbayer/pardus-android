@@ -46,6 +46,7 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
+		// TODO this method is not always called (i.e. from inside a frame)
 		if (!url.contains(".pardus.at")
 				&& !url.startsWith("file:///android_asset/")
 				&& !url.startsWith(LocalContentProvider.URI)
@@ -65,6 +66,7 @@ public class PardusWebViewClient extends WebViewClient {
 				&& !url.startsWith("file:///android_asset/")
 				&& !url.startsWith("http://static.pardus.at/")
 				&& !url.startsWith(PardusConstants.loginUrl)
+				&& !url.startsWith(PardusConstants.loginUrlHttps)
 				&& !url.startsWith(PardusConstants.loggedInUrl)
 				&& !url.startsWith(PardusConstants.loggedInUrlHttps)
 				&& !url.startsWith(PardusConstants.newCharUrl)
@@ -79,7 +81,18 @@ public class PardusWebViewClient extends WebViewClient {
 			}
 			pardusView.login(false);
 		} else {
-			view.loadUrl(url);
+			if (url.equals(PardusConstants.loginUrlOrig)
+					|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
+				// redirect from online login page to local one
+				if (PardusConstants.DEBUG) {
+					Log.d(this.getClass().getSimpleName(),
+							"Redirecting from online login page to local one");
+				}
+				pardusView.login(true);
+			} else {
+				// load the requested url
+				view.loadUrl(url);
+			}
 		}
 		return true;
 	}

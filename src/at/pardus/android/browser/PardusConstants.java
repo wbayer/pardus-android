@@ -26,11 +26,19 @@ public abstract class PardusConstants {
 
 	public static final String loginScreen = "file:///android_asset/login.html";
 
+	public static final String settingsScreen = "file:///android_asset/settings.html";
+
 	public static final String imageSelectionScreen = "file:///android_asset/img.html";
 
 	public static final String aboutScreen = "file:///android_asset/about.html";
 
-	public static final String loginUrl = "https://www.pardus.at/index.php?section=login";
+	public static final String loginUrlOrig = "http://www.pardus.at/index.php?section=login";
+
+	public static final String loginUrlHttpsOrig = "https://www.pardus.at/index.php?section=login";
+
+	public static final String loginUrl = loginUrlOrig + "&mobile";
+
+	public static final String loginUrlHttps = loginUrlHttpsOrig + "&mobile";
 
 	public static final String loggedInUrl = "http://www.pardus.at/index.php?section=account_play";
 
