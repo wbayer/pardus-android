@@ -44,6 +44,12 @@ public class JavaScriptSettings {
 		settings += Boolean.toString(PardusPreferences.isLogoutOnHide());
 		settings += ",";
 		settings += Integer.toString(PardusPreferences.getNavSize());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences.isPartialRefresh());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences.isShipAnimation());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences.isShipRotation());
 		return settings;
 	}
 
@@ -89,6 +95,67 @@ public class JavaScriptSettings {
 			browser.setCookies();
 		}
 		PardusNotification.show("Set Nav size to " + navSize);
+	}
+
+	/**
+	 * Changes the partialRefresh setting.
+	 * 
+	 * @param partialRefresh
+	 */
+	public void setPartialRefresh(boolean partialRefresh) {
+		PardusPreferences.setPartialRefresh(partialRefresh);
+		String message = "";
+		if (browser.isLoggedIn()) {
+			browser.setCookies();
+			message = " (must reload Nav screen!)";
+		}
+		if (partialRefresh) {
+			PardusNotification
+					.show("Enabled partial page refreshing" + message);
+		} else {
+			PardusNotification.show("Disabled partial page refreshing"
+					+ message);
+		}
+	}
+
+	/**
+	 * Changes the shipAnimation setting.
+	 * 
+	 * @param shipAnimation
+	 */
+	public void setShipAnimation(boolean shipAnimation) {
+		PardusPreferences.setShipAnimation(shipAnimation);
+		String message = "";
+		if (browser.isLoggedIn()) {
+			browser.setCookies();
+			message = " (must reload Nav screen!)";
+		}
+		if (shipAnimation) {
+			PardusNotification
+					.show("Enabled ship movement animation" + message);
+		} else {
+			PardusNotification.show("Disabled ship movement animation"
+					+ message);
+		}
+	}
+
+	/**
+	 * Changes the shipRotation setting.
+	 * 
+	 * @param shipRotation
+	 */
+	public void setShipRotation(boolean shipRotation) {
+		PardusPreferences.setShipRotation(shipRotation);
+		String message = "";
+		if (browser.isLoggedIn()) {
+			browser.setCookies();
+			message = " (must reload Nav screen!)";
+		}
+		if (shipRotation) {
+			PardusNotification.show("Enabled ship rotation" + message);
+		} else {
+			PardusNotification.show("Disabled ship rotation" + message);
+		}
 	}
 
 	/**

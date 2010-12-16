@@ -136,4 +136,63 @@ public abstract class PardusPreferences {
 		editor.commit();
 	}
 
+	/**
+	 * @return whether AJAX should be used for the Nav screen, true if not
+	 *         stored yet
+	 */
+	public static boolean isPartialRefresh() {
+		return preferences.getBoolean("partialRefresh", true);
+	}
+
+	/**
+	 * Stores whether to use AJAX on the Nav screen.
+	 * 
+	 * @param partialRefresh
+	 *            true to use AJAX, false else
+	 */
+	public static void setPartialRefresh(boolean partialRefresh) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("partialRefresh", partialRefresh);
+		editor.commit();
+	}
+
+	/**
+	 * @return whether ship movement should be animated, false if not stored yet
+	 */
+	public static boolean isShipAnimation() {
+		return preferences.getBoolean("shipAnimation", false);
+	}
+
+	/**
+	 * Stores whether ship animation is to be done.
+	 * 
+	 * @param shipAnimation
+	 *            true to animate, false else
+	 */
+	public static void setShipAnimation(boolean shipAnimation) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("shipAnimation", shipAnimation);
+		editor.commit();
+	}
+
+	/**
+	 * @return whether ships should face the direction they are heading, true if
+	 *         not stored yet
+	 */
+	public static boolean isShipRotation() {
+		return preferences.getBoolean("shipRotation", true);
+	}
+
+	/**
+	 * Stores whether ships should face the direction they are heading.
+	 * 
+	 * @param shipRotation
+	 *            true to rotate, false else
+	 */
+	public static void setShipRotation(boolean shipRotation) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("shipRotation", shipRotation);
+		editor.commit();
+	}
+
 }

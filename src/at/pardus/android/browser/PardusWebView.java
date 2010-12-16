@@ -287,6 +287,18 @@ public class PardusWebView extends WebView {
 		cookieManager.setCookie(url, "resolution_tiles=64" + cookieInfo);
 		cookieManager.setCookie(url,
 				"nav_size=" + PardusPreferences.getNavSize() + cookieInfo);
+		cookieManager.setCookie(url,
+				"partial_refresh="
+						+ ((PardusPreferences.isPartialRefresh()) ? "1" : "0")
+						+ cookieInfo);
+		cookieManager.setCookie(url,
+				"ship_animation="
+						+ ((PardusPreferences.isShipAnimation()) ? "1" : "0")
+						+ cookieInfo);
+		cookieManager.setCookie(url,
+				"ship_rotation="
+						+ ((PardusPreferences.isShipRotation()) ? "1" : "0")
+						+ cookieInfo);
 		cookieSyncManager.sync();
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Cookies set: "

@@ -10,11 +10,17 @@
 var usehttps;
 var logoutonhide;
 var navsize;
+var partialrefresh;
+var shipanimation;
+var shiprotation;
 function init()
 {
     usehttps = document.getElementById('usehttps');
     logoutonhide = document.getElementById('logoutonhide');
     navsize = document.getElementById('navsize');
+    partialrefresh = document.getElementById('partialrefresh');
+    shipanimation = document.getElementById('shipanimation');
+    shiprotation = document.getElementById('shiprotation');
     var settingsStr = new String(App.getSettings());
     var settings = settingsStr.split(',');
     usehttps.checked = (settings[0] == 'true');
@@ -25,6 +31,9 @@ function init()
             break;
         }
     }
+    partialrefresh.checked = (settings[3] == 'true');
+    shipanimation.checked = (settings[4] == 'true');
+    shiprotation.checked = (settings[5] == 'true');
 }
 function setUsehttps()
 {
@@ -37,6 +46,18 @@ function setLogoutonhide()
 function setNavsize()
 {
     App.setNavSize(navsize.options[navsize.selectedIndex].value);
+}
+function setPartialrefresh()
+{
+    App.setPartialRefresh(partialrefresh.checked);
+}
+function setShipanimation()
+{
+    App.setShipAnimation(shipanimation.checked);
+}
+function setShiprotation()
+{
+    App.setShipRotation(shiprotation.checked);
 }
 function doClearcache()
 {
@@ -64,6 +85,19 @@ function doClearcache()
 <td align='right'><select name='navsize' id='navsize' onchange='setNavsize();'><option value='3'>3</option><option value='5'>5</option><option value='7'>7</option><option value='9'>9</option></select></td>
 </tr>
 <tr class='cl1'>
+<td align='left'><span class='cfgheader'>Partial page refreshes</span><br /><span class='cfgdesc'>Only refreshes sections of the Nav screen that have changed. Prerequisite for ship animation.</span></td>
+<td align='right'><input type='checkbox' name='partialrefresh' id='partialrefresh' value='partialrefresh' onclick='setPartialrefresh();' /></td>
+</tr>
+<tr class='cl0'>
+<td align='left'><span class='cfgheader'>Ship animation</span><br /><span class='cfgdesc'>Shows your ship's movement when changing location. &quot;Partial page refreshes&quot; required.</span></td>
+<td align='right'><input type='checkbox' name='shipanimation' id='shipanimation' value='shipanimation' onclick='setShipanimation();' /></td>
+</tr>
+</tr>
+<tr class='cl1'>
+<td align='left'><span class='cfgheader'>Ship rotation</span><br /><span class='cfgdesc'>Makes ships in the navigation screen face the direction they are heading.</span></td>
+<td align='right'><input type='checkbox' name='shiprotation' id='shiprotation' value='shiprotation' onclick='setShiprotation();' /></td>
+</tr>
+<tr class='cl0'>
 <td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Deletes all cookies and cached websites.</span></td>
 <td align='right'><input type='submit' name='clearcache' id='clearcache' value='Clear' onclick='doClearcache();return false;' /></td>
 </tr>
