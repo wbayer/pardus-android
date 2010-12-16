@@ -17,7 +17,6 @@
 
 package at.pardus.android.browser;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -25,6 +24,7 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.content.LocalContentProvider;
 
@@ -67,11 +67,6 @@ public class PardusWebView extends WebView {
 		settings.setLoadsImagesAutomatically(true);
 		settings.setSaveFormData(true);
 		settings.setSavePassword(true);
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
-		}
-		viewClient = new PardusWebViewClient();
-		setWebViewClient(viewClient);
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
@@ -81,6 +76,27 @@ public class PardusWebView extends WebView {
 		}
 		addJavascriptInterface(new JavaScriptSettings(this), "App");
 		clearCache(true);
+	}
+
+	/**
+	 * Sets up and adds a web view client for browser events and a web chrome
+	 * client for window handling.
+	 * 
+	 * @param progress
+	 *            the loading progress bar of the browser
+	 */
+	public void initClients(ProgressBar progress) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
+		}
+		viewClient = new PardusWebViewClient(progress);
+		setWebViewClient(viewClient);
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"Setting up web chrome client");
+		}
+		chromeClient = new PardusWebChromeClient(progress);
+		setWebChromeClient(chromeClient);
 	}
 
 	/**
@@ -101,21 +117,6 @@ public class PardusWebView extends WebView {
 		downloadListener = new PardusDownloadListener(this, getContext(),
 				storageDir, cacheDir);
 		setDownloadListener(downloadListener);
-	}
-
-	/**
-	 * Sets up and adds a web chrome client for window handling.
-	 * 
-	 * @param activity
-	 *            activity hosting web view
-	 */
-	public void initChromeClient(Activity activity) {
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(),
-					"Setting up web chrome client");
-		}
-		chromeClient = new PardusWebChromeClient(activity);
-		setWebChromeClient(chromeClient);
 	}
 
 	/**
@@ -323,12 +324,23 @@ public class PardusWebView extends WebView {
 			String settingsStr = "";
 			settingsStr += (PardusPreferences.isUseHttps()) ? "Using HTTPS"
 					: "Not using HTTPS";
-			settingsStr += ". ";
+			settingsStr += "\n";
 			settingsStr += (PardusPreferences.isLogoutOnHide()) ? "Logging out on hide"
 					: "Staying logged in on hide";
-			settingsStr += ". ";
+			settingsStr += "\n";
 			settingsStr += "Space chart size " + PardusPreferences.getNavSize();
-			settingsStr += ". ";
+			settingsStr += "\n";
+			settingsStr += "Partial refreshing "
+					+ ((PardusPreferences.isPartialRefresh() ? "enabled"
+							: "disabled"));
+			settingsStr += "\n";
+			settingsStr += "Ship animation "
+					+ ((PardusPreferences.isShipAnimation() ? "enabled"
+							: "disabled"));
+			settingsStr += "\n";
+			settingsStr += "Ship rotation "
+					+ ((PardusPreferences.isShipRotation() ? "enabled"
+							: "disabled"));
 			PardusNotification.showLong(settingsStr);
 		} else {
 			if (PardusConstants.DEBUG) {

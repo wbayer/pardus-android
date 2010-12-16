@@ -17,25 +17,25 @@
 
 package at.pardus.android.browser;
 
-import android.app.Activity;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
 
 /**
  * Class handling window and javascript events.
  */
 public class PardusWebChromeClient extends WebChromeClient {
 
-	private Activity activity;
+	private ProgressBar progress;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param activity
-	 *            the web view's host
+	 * @param progress
+	 *            the loading progress bar of the browser
 	 */
-	public PardusWebChromeClient(Activity activity) {
-		this.activity = activity;
+	public PardusWebChromeClient(ProgressBar progress) {
+		this.progress = progress;
 	}
 
 	/*
@@ -47,7 +47,7 @@ public class PardusWebChromeClient extends WebChromeClient {
 	 */
 	@Override
 	public void onProgressChanged(WebView view, int newProgress) {
-		activity.setProgress(newProgress * 100);
+		progress.setProgress(newProgress);
 	}
 
 }

@@ -20,9 +20,11 @@ package at.pardus.android.browser;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.util.Log;
+import android.view.View;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import at.pardus.android.content.LocalContentProvider;
 
 /**
@@ -30,12 +32,24 @@ import at.pardus.android.content.LocalContentProvider;
  */
 public class PardusWebViewClient extends WebViewClient {
 
+	private ProgressBar progress;
+
 	private boolean onSendMessageScreen = false;
 
 	private static final String jsSkipSendMessageDeath = "if "
 			+ "(document.getElementsByTagName('html')[0].innerHTML.indexOf('"
 			+ "self.close()" + "') != -1) { " + "top.location.replace('"
 			+ PardusConstants.msgPage + "'); }";
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param progress
+	 *            the loading progress bar of the browser
+	 */
+	public PardusWebViewClient(ProgressBar progress) {
+		this.progress = progress;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -46,7 +60,8 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
-		// TODO this method is not always called (i.e. from inside a frame)
+		// FIXME this method is not called if not a user action (click)
+		// FIXME this method is not called if the target is a frame
 		if (!url.contains(".pardus.at")
 				&& !url.startsWith("file:///android_asset/")
 				&& !url.startsWith(LocalContentProvider.URI)
@@ -105,9 +120,12 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public void onPageStarted(WebView view, String url, Bitmap favicon) {
+		// FIXME this method is not called if the target is a frame
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Started loading " + url);
 		}
+		progress.setProgress(0);
+		progress.setVisibility(View.VISIBLE);
 		PardusWebView pardusView = (PardusWebView) view;
 		pardusView.setUniverse(url);
 		if (url.startsWith(PardusConstants.loggedInUrl)
@@ -134,9 +152,11 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public void onPageFinished(WebView view, String url) {
+		// FIXME this method is not called if the target is a frame
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Finished loading " + url);
 		}
+		progress.setVisibility(View.GONE);
 		if (onSendMessageScreen) {
 			// new message popups are opened in the same window => redirect back
 			// to the game after sending
