@@ -38,6 +38,14 @@ import android.widget.ProgressBar;
  */
 public class Pardus extends Activity {
 
+	private static final int MENU_GROUP_UNIS = 1;
+
+	private static final int MENU_ORION = 1;
+
+	private static final int MENU_ARTEMIS = 2;
+
+	private static final int MENU_PEGASUS = 3;
+
 	private PardusWebView browser;
 
 	private ProgressBar progress;
@@ -94,6 +102,21 @@ public class Pardus extends Activity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getGroupId() == MENU_GROUP_UNIS) {
+			switch (item.getItemId()) {
+			case MENU_ARTEMIS:
+				browser.switchUniverse("Artemis");
+				return true;
+			case MENU_ORION:
+				browser.switchUniverse("Orion");
+				return true;
+			case MENU_PEGASUS:
+				browser.switchUniverse("Pegasus");
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+			}
+		}
 		switch (item.getItemId()) {
 		case R.id.option_settings:
 			browser.showSettings();
@@ -105,7 +128,7 @@ public class Pardus extends Activity {
 			browser.reload();
 			return true;
 		case R.id.option_login:
-			browser.login(true);
+			browser.login(false);
 			return true;
 		case R.id.option_logout:
 			finish();
@@ -139,6 +162,32 @@ public class Pardus extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.options_menu, menu);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onPrepareOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.removeGroup(MENU_GROUP_UNIS);
+		String universe = browser.getUniverse();
+		if (universe != null) {
+			String switchStr = getString(R.string.option_switch);
+			if (!universe.equals("artemis")) {
+				menu.add(MENU_GROUP_UNIS, MENU_ARTEMIS, 1, switchStr
+						+ " Artemis");
+			}
+			if (!universe.equals("orion")) {
+				menu.add(MENU_GROUP_UNIS, MENU_ORION, 2, switchStr + " Orion");
+			}
+			if (!universe.equals("pegasus")) {
+				menu.add(MENU_GROUP_UNIS, MENU_PEGASUS, 3, switchStr
+						+ " Pegasus");
+			}
+		}
 		return true;
 	}
 

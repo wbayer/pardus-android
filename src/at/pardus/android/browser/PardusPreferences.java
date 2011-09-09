@@ -18,9 +18,11 @@
 package at.pardus.android.browser;
 
 import java.io.File;
+import java.io.IOException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import at.pardus.android.content.LocalContentProvider;
 
 /**
@@ -45,14 +47,33 @@ public abstract class PardusPreferences {
 	/**
 	 * Checks if an image path exists and is readable.
 	 * 
+	 * Creates a .nomedia file to hide from Android's gallery app.
+	 * 
 	 * @return true if valid, false else
 	 */
 	public static boolean checkImagePath(String imagePath) {
 		boolean valid = false;
 		if (!imagePath.equals("")) {
-			File imagePathCheckFile = new File(imagePath + "/vip.png");
-			if (imagePathCheckFile.exists() && imagePathCheckFile.canRead()) {
+			File galleryHideFile = new File(imagePath + "/.nomedia");
+			if (galleryHideFile.exists() && galleryHideFile.canRead()) {
+				// .nomedia file exists - expect image pack to be there
 				valid = true;
+			} else {
+				// .nomedia file does not exist
+				File imagePathCheckFile = new File(imagePath + "/vip.png");
+				if (imagePathCheckFile.exists() && imagePathCheckFile.canRead()) {
+					valid = true;
+					// image pack exists -> create .nomedia file
+					try {
+						galleryHideFile.createNewFile();
+					} catch (IOException e) {
+						if (PardusConstants.DEBUG) {
+							Log.w("PardusPreferences",
+									"Error creating new file "
+											+ galleryHideFile.getAbsolutePath());
+						}
+					}
+				}
 			}
 		}
 		return valid;
@@ -192,6 +213,25 @@ public abstract class PardusPreferences {
 	public static void setShipRotation(boolean shipRotation) {
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putBoolean("shipRotation", shipRotation);
+		editor.commit();
+	}
+
+	/**
+	 * @return whether the amount of loaded chat lines should be reduced
+	 */
+	public static boolean isMobileChat() {
+		return preferences.getBoolean("mobileChat", true);
+	}
+
+	/**
+	 * Stores whether the amount of loaded chat lines should be reduced.
+	 * 
+	 * @param mobileChat
+	 *            true to reduce, false else
+	 */
+	public static void setMobileChat(boolean mobileChat) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("mobileChat", mobileChat);
 		editor.commit();
 	}
 

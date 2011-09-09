@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:id="@+id/option_nav" android:title="@string/option_nav"></item>
-	<item android:id="@+id/option_msg" android:title="@string/option_msg"></item>
-	<item android:id="@+id/option_sendmsg" android:title="@string/option_sendmsg"></item>
-	<item android:id="@+id/option_forum" android:title="@string/option_forum"></item>
-	<item android:id="@+id/option_chat" android:title="@string/option_chat"></item>
-	<item android:id="@+id/option_settings" android:title="@string/option_settings"></item>
-	<item android:id="@+id/option_about" android:title="@string/option_about"></item>
-	<item android:id="@+id/option_refresh" android:title="@string/option_refresh"></item>
-	<item android:id="@+id/option_login" android:title="@string/option_login"></item>
-	<item android:id="@+id/option_logout" android:title="@string/option_logout"></item>
+	<item android:id="@+id/option_nav" android:title="@string/option_nav" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_msg" android:title="@string/option_msg" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_sendmsg" android:title="@string/option_sendmsg" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_forum" android:title="@string/option_forum" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_chat" android:title="@string/option_chat" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_settings" android:title="@string/option_settings" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_about" android:title="@string/option_about" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_refresh" android:title="@string/option_refresh" android:orderInCategory="0"></item>
+	<item android:id="@+id/option_login" android:title="@string/option_login" android:orderInCategory="10"></item>
+	<item android:id="@+id/option_logout" android:title="@string/option_logout" android:orderInCategory="10"></item>
 </menu>

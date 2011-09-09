@@ -50,6 +50,8 @@ public class JavaScriptSettings {
 		settings += Boolean.toString(PardusPreferences.isShipAnimation());
 		settings += ",";
 		settings += Boolean.toString(PardusPreferences.isShipRotation());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences.isMobileChat());
 		return settings;
 	}
 
@@ -155,6 +157,25 @@ public class JavaScriptSettings {
 			PardusNotification.show("Enabled ship rotation" + message);
 		} else {
 			PardusNotification.show("Disabled ship rotation" + message);
+		}
+	}
+
+	/**
+	 * Changes the mobileChat setting.
+	 * 
+	 * @param mobileChat
+	 */
+	public void setMobileChat(boolean mobileChat) {
+		PardusPreferences.setMobileChat(mobileChat);
+		String message = "";
+		if (browser.isLoggedIn()) {
+			browser.setCookies();
+			message = " (must reload Chat screen!)";
+		}
+		if (mobileChat) {
+			PardusNotification.show("Enabled chat lines limit" + message);
+		} else {
+			PardusNotification.show("Disabled chat lines limit" + message);
 		}
 	}
 

@@ -146,6 +146,7 @@ public class PardusWebView extends WebView {
 		loadUrl(PardusConstants.loginScreen + "?" + https + auto);
 		cookieManager.removeSessionCookie();
 		cookieSyncManager.sync();
+		setUniverse(null);
 		clearHistory();
 	}
 
@@ -220,6 +221,26 @@ public class PardusWebView extends WebView {
 		String http = (PardusPreferences.isUseHttps()) ? "https" : "http";
 		stopLoading();
 		loadUrl(http + "://" + universe + ".pardus.at/" + page);
+	}
+
+	/**
+	 * Enters a given universe.
+	 * 
+	 * @param newUni
+	 *            universe to enter
+	 */
+	public void switchUniverse(String newUni) {
+		if (!loggedIn) {
+			if (PardusConstants.DEBUG) {
+				Log.d(this.getClass().getSimpleName(),
+						"Cannot enter universe (not logged in)");
+			}
+			return;
+		}
+		String loggedInUrl = (PardusPreferences.isUseHttps()) ? PardusConstants.loggedInUrlHttps
+				: PardusConstants.loggedInUrl;
+		stopLoading();
+		loadUrl(loggedInUrl + "&universe=" + newUni);
 	}
 
 	/**
@@ -300,6 +321,10 @@ public class PardusWebView extends WebView {
 				"ship_rotation="
 						+ ((PardusPreferences.isShipRotation()) ? "1" : "0")
 						+ cookieInfo);
+		cookieManager.setCookie(url,
+				"mobile_chat="
+						+ ((PardusPreferences.isMobileChat()) ? "1" : "0")
+						+ cookieInfo);
 		cookieSyncManager.sync();
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Cookies set: "
@@ -340,6 +365,10 @@ public class PardusWebView extends WebView {
 			settingsStr += "\n";
 			settingsStr += "Ship rotation "
 					+ ((PardusPreferences.isShipRotation() ? "enabled"
+							: "disabled"));
+			settingsStr += "\n";
+			settingsStr += "Chat lines limit "
+					+ ((PardusPreferences.isMobileChat() ? "enabled"
 							: "disabled"));
 			PardusNotification.showLong(settingsStr);
 		} else {

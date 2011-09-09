@@ -34,6 +34,7 @@ function init()
     partialrefresh.checked = (settings[3] == 'true');
     shipanimation.checked = (settings[4] == 'true');
     shiprotation.checked = (settings[5] == 'true');
+    mobilechat.checked = (settings[6] == 'true');
 }
 function setUsehttps()
 {
@@ -58,6 +59,10 @@ function setShipanimation()
 function setShiprotation()
 {
     App.setShipRotation(shiprotation.checked);
+}
+function setMobilechat()
+{
+    App.setMobileChat(mobilechat.checked);
 }
 function doClearcache()
 {
@@ -98,6 +103,10 @@ function doClearcache()
 <td align='right'><input type='checkbox' name='shiprotation' id='shiprotation' value='shiprotation' onclick='setShiprotation();' /></td>
 </tr>
 <tr class='cl0'>
+<td align='left'><span class='cfgheader'>Chat lines limit</span><br /><span class='cfgdesc'>Limits the amount of loaded chat lines to 10.</span></td>
+<td align='right'><input type='checkbox' name='mobilechat' id='mobilechat' value='mobilechat' onclick='setMobilechat();' /></td>
+</tr>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Deletes all cookies and cached websites.</span></td>
 <td align='right'><input type='submit' name='clearcache' id='clearcache' value='Clear' onclick='doClearcache();return false;' /></td>
 </tr>

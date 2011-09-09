@@ -172,6 +172,19 @@ public class PardusWebViewClient extends WebViewClient {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see android.webkit.WebViewClient#onLoadResource(android.webkit.WebView,
+	 * java.lang.String)
+	 */
+	@Override
+	public void onLoadResource(WebView view, String url) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Loading resource " + url);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see
 	 * android.webkit.WebViewClient#onReceivedSslError(android.webkit.WebView,
 	 * android.webkit.SslErrorHandler, android.net.http.SslError)
