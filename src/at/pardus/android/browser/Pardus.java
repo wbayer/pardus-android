@@ -21,7 +21,6 @@ import java.io.File;
 
 import android.app.Activity;
 import android.content.res.Configuration;
-import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -231,16 +230,14 @@ public class Pardus extends Activity {
 					"Resuming (or starting) application");
 		}
 		// wake up the browser
-		if (VERSION.SDK_INT >= 7) {
-			try {
-				Class.forName("android.webkit.WebView")
-						.getMethod("onResume", (Class[]) null)
-						.invoke(browser, (Object[]) null);
-			} catch (Exception e) {
-				Log.w(this.getClass().getSimpleName(),
-						"Cannot wake up browser threads: "
-								+ Log.getStackTraceString(e));
-			}
+		try {
+			Class.forName("android.webkit.WebView")
+					.getMethod("onResume", (Class[]) null)
+					.invoke(browser, (Object[]) null);
+		} catch (Exception e) {
+			Log.w(this.getClass().getSimpleName(),
+					"Cannot wake up browser threads: "
+							+ Log.getStackTraceString(e));
 		}
 		browser.resumeTimers();
 		CookieSyncManager.getInstance().startSync();
@@ -266,16 +263,14 @@ public class Pardus extends Activity {
 		// keep the browser from working in the background
 		CookieSyncManager.getInstance().stopSync();
 		browser.pauseTimers();
-		if (VERSION.SDK_INT >= 7) {
-			try {
-				Class.forName("android.webkit.WebView")
-						.getMethod("onPause", (Class[]) null)
-						.invoke(browser, (Object[]) null);
-			} catch (Exception e) {
-				Log.w(this.getClass().getSimpleName(),
-						"Cannot pause browser threads: "
-								+ Log.getStackTraceString(e));
-			}
+		try {
+			Class.forName("android.webkit.WebView")
+					.getMethod("onPause", (Class[]) null)
+					.invoke(browser, (Object[]) null);
+		} catch (Exception e) {
+			Log.w(this.getClass().getSimpleName(),
+					"Cannot pause browser threads: "
+							+ Log.getStackTraceString(e));
 		}
 		super.onPause();
 	}

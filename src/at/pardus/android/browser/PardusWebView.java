@@ -288,6 +288,7 @@ public class PardusWebView extends WebView {
 		clearFormData();
 		cookieManager.removeSessionCookie();
 		cookieManager.removeAllCookie();
+		setUniverse(null);
 	}
 
 	/**

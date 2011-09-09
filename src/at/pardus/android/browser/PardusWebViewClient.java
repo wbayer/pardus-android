@@ -18,10 +18,8 @@
 package at.pardus.android.browser;
 
 import android.graphics.Bitmap;
-import android.net.http.SslError;
 import android.util.Log;
 import android.view.View;
-import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
@@ -180,24 +178,6 @@ public class PardusWebViewClient extends WebViewClient {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Loading resource " + url);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * android.webkit.WebViewClient#onReceivedSslError(android.webkit.WebView,
-	 * android.webkit.SslErrorHandler, android.net.http.SslError)
-	 */
-	@Override
-	public void onReceivedSslError(WebView view, SslErrorHandler handler,
-			SslError error) {
-		// android version < 2.2 does not recognize the ca
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "SSL certificate error "
-					+ error.getPrimaryError());
-		}
-		handler.proceed();
 	}
 
 	/*
