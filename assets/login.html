@@ -34,6 +34,16 @@ function checkSubmitLogin()
         clearInterval(checksInterval);
     }
 }
+function applyParameters(https, auto) {
+    if (https) {
+        document.getElementById('usehttps').value = '1';
+        document.getElementById('loginform').action = 'https://www.pardus.at/index.php?section=login&amp;mobile';
+        document.getElementById('signuplink').href = 'https://www.pardus.at/index.php?section=signup';
+    }
+    if (auto) {
+        checksInterval = setInterval("checkSubmitLogin()", 500);
+    }
+}
 //]]>
 </script>
 </head>
@@ -68,17 +78,3 @@ function checkSubmitLogin()
 </table>
 </body>
 </html>
-<script type="text/javascript">
-//<![CDATA[
-if (location.search != '') {
-    if (location.search.indexOf('https') != -1) {
-        document.getElementById('usehttps').value = '1';
-        document.getElementById('loginform').action = 'https://www.pardus.at/index.php?section=login&amp;mobile';
-        document.getElementById('signuplink').href = 'https://www.pardus.at/index.php?section=signup';
-    }
-    if (location.search.indexOf('auto') != -1) {
-        checksInterval = setInterval("checkSubmitLogin()", 500);
-    }
-}
-//]]>
-</script>

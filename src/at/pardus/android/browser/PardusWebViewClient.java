@@ -32,6 +32,8 @@ public class PardusWebViewClient extends WebViewClient {
 
 	private ProgressBar progress;
 
+	private boolean onLoginScreen = false;
+
 	private boolean onSendMessageScreen = false;
 
 	private static final String jsSkipSendMessageDeath = "if "
@@ -126,7 +128,11 @@ public class PardusWebViewClient extends WebViewClient {
 		progress.setVisibility(View.VISIBLE);
 		PardusWebView pardusView = (PardusWebView) view;
 		pardusView.setUniverse(url);
-		if (url.startsWith(PardusConstants.loggedInUrl)
+		onLoginScreen = false;
+		if (url.equals(PardusConstants.loginScreen)) {
+			// loading login screen
+			onLoginScreen = true;
+		} else if (url.startsWith(PardusConstants.loggedInUrl)
 				|| url.startsWith(PardusConstants.loggedInUrlHttps)
 				|| url.startsWith(PardusConstants.newCharUrl)
 				|| url.startsWith(PardusConstants.newCharUrlHttps)) {
@@ -155,7 +161,18 @@ public class PardusWebViewClient extends WebViewClient {
 			Log.v(this.getClass().getSimpleName(), "Finished loading " + url);
 		}
 		progress.setVisibility(View.GONE);
-		if (onSendMessageScreen) {
+		if (onLoginScreen) {
+			// apply query parameters via javascript (due to bug in android3+)
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Applying query parameters for login screen");
+			}
+			view.loadUrl("javascript:applyParameters("
+					+ (PardusPreferences.isUseHttps() ? "true" : "false")
+					+ ", "
+					+ (((PardusWebView) view).isAutoLogin() ? "true" : "false")
+					+ ");");
+		} else if (onSendMessageScreen) {
 			// new message popups are opened in the same window => redirect back
 			// to the game after sending
 			if (PardusConstants.DEBUG) {

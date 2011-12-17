@@ -30,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieSyncManager;
+import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
 
 /**
@@ -91,6 +92,7 @@ public class Pardus extends Activity {
 		browser = (PardusWebView) findViewById(R.id.browser);
 		browser.initClients(progress);
 		browser.initDownloadListener(storageDir, cacheDir);
+		browser.setDatabase(WebViewDatabase.getInstance(this));
 		browser.login(true);
 	}
 

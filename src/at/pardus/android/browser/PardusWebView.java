@@ -24,6 +24,7 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.content.LocalContentProvider;
@@ -45,9 +46,13 @@ public class PardusWebView extends WebView {
 
 	private CookieManager cookieManager;
 
+	private WebViewDatabase database;
+
 	private boolean loggedIn = false;
 
 	private String universe = null;
+
+	private boolean autoLogin;
 
 	/**
 	 * Initializes the Pardus browser's behavior.
@@ -67,6 +72,7 @@ public class PardusWebView extends WebView {
 		settings.setLoadsImagesAutomatically(true);
 		settings.setSaveFormData(true);
 		settings.setSavePassword(true);
+		settings.setDatabaseEnabled(true);
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
@@ -129,6 +135,7 @@ public class PardusWebView extends WebView {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Showing login screen");
 		}
+		this.autoLogin = autoLogin;
 		String imagePath = PardusPreferences.getImagePath();
 		if (PardusPreferences.checkImagePath(imagePath)) {
 			LocalContentProvider.FILEPATH = imagePath;
@@ -140,10 +147,8 @@ public class PardusWebView extends WebView {
 			clearHistory();
 			return;
 		}
-		String https = (PardusPreferences.isUseHttps()) ? "https;" : "";
-		String auto = (autoLogin) ? "auto;" : "";
 		stopLoading();
-		loadUrl(PardusConstants.loginScreen + "?" + https + auto);
+		loadUrl(PardusConstants.loginScreen);
 		cookieManager.removeSessionCookie();
 		cookieSyncManager.sync();
 		setUniverse(null);
@@ -277,15 +282,18 @@ public class PardusWebView extends WebView {
 	}
 
 	/**
-	 * Deletes website cache, cookies and attempts to clear form data.
+	 * Deletes website cache, cookies and any stored form data.
 	 */
 	public void removeTraces() {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Clearing cache");
 		}
-		clearCache(true);
-		// TODO clearFormData() does not delete the stored account/password
+		if (database != null) {
+			database.clearUsernamePassword();
+			database.clearFormData();
+		}
 		clearFormData();
+		clearCache(true);
 		cookieManager.removeSessionCookie();
 		cookieManager.removeAllCookie();
 		setUniverse(null);
@@ -409,6 +417,21 @@ public class PardusWebView extends WebView {
 	 */
 	public String getUniverse() {
 		return universe;
+	}
+
+	/**
+	 * @return whether to automatically log in
+	 */
+	public boolean isAutoLogin() {
+		return autoLogin;
+	}
+
+	/**
+	 * @param database
+	 *            the database to set
+	 */
+	public void setDatabase(WebViewDatabase database) {
+		this.database = database;
 	}
 
 }
