@@ -17,6 +17,9 @@
 
 package at.pardus.android.browser;
 
+import android.util.Log;
+import android.webkit.ConsoleMessage;
+import android.webkit.ConsoleMessage.MessageLevel;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
@@ -28,14 +31,45 @@ public class PardusWebChromeClient extends WebChromeClient {
 
 	private ProgressBar progress;
 
+	private PardusMessageChecker messageChecker;
+
 	/**
 	 * Constructor.
 	 * 
 	 * @param progress
 	 *            the loading progress bar of the browser
+	 * @param messageChecker
+	 *            the message checker used to display info from the msgframe
 	 */
-	public PardusWebChromeClient(ProgressBar progress) {
+	public PardusWebChromeClient(ProgressBar progress,
+			PardusMessageChecker messageChecker) {
 		this.progress = progress;
+		this.messageChecker = messageChecker;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.webkit.WebChromeClient#onConsoleMessage(android.webkit.ConsoleMessage
+	 * )
+	 */
+	@Override
+	public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+		MessageLevel messageLevel = consoleMessage.messageLevel();
+		String message = consoleMessage.message();
+		if (PardusConstants.DEBUG) {
+			Log.d(this.getClass().getSimpleName(), messageLevel.name() + ": "
+					+ message + " at " + consoleMessage.sourceId() + ":"
+					+ consoleMessage.lineNumber());
+		}
+		if (messageLevel == MessageLevel.ERROR
+				&& (message.contains("msgframe") || message
+						.contains("location"))) {
+			// refresh message checker to display status message from msgframe
+			messageChecker.restart();
+		}
+		return true;
 	}
 
 	/*

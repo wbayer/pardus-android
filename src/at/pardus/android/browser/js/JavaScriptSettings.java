@@ -28,6 +28,12 @@ public class JavaScriptSettings {
 
 	private PardusWebView browser;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param browser
+	 *            the Pardus browser component
+	 */
 	public JavaScriptSettings(PardusWebView browser) {
 		this.browser = browser;
 	}
@@ -68,6 +74,7 @@ public class JavaScriptSettings {
 		} else {
 			PardusNotification.show("Disabled HTTPS use" + message);
 		}
+		browser.destroySession();
 	}
 
 	/**

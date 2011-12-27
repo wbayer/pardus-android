@@ -13,6 +13,7 @@ var navsize;
 var partialrefresh;
 var shipanimation;
 var shiprotation;
+var mobilechat;
 function init()
 {
     usehttps = document.getElementById('usehttps');
@@ -21,7 +22,8 @@ function init()
     partialrefresh = document.getElementById('partialrefresh');
     shipanimation = document.getElementById('shipanimation');
     shiprotation = document.getElementById('shiprotation');
-    var settingsStr = new String(App.getSettings());
+    mobilechat = document.getElementById('mobilechat');
+    var settingsStr = new String(JavaSettings.getSettings());
     var settings = settingsStr.split(',');
     usehttps.checked = (settings[0] == 'true');
     logoutonhide.checked = (settings[1] == 'true');
@@ -38,35 +40,35 @@ function init()
 }
 function setUsehttps()
 {
-    App.setUseHttps(usehttps.checked);
+    JavaSettings.setUseHttps(usehttps.checked);
 }
 function setLogoutonhide()
 {
-    App.setLogoutOnHide(logoutonhide.checked);
+    JavaSettings.setLogoutOnHide(logoutonhide.checked);
 }
 function setNavsize()
 {
-    App.setNavSize(navsize.options[navsize.selectedIndex].value);
+    JavaSettings.setNavSize(navsize.options[navsize.selectedIndex].value);
 }
 function setPartialrefresh()
 {
-    App.setPartialRefresh(partialrefresh.checked);
+    JavaSettings.setPartialRefresh(partialrefresh.checked);
 }
 function setShipanimation()
 {
-    App.setShipAnimation(shipanimation.checked);
+    JavaSettings.setShipAnimation(shipanimation.checked);
 }
 function setShiprotation()
 {
-    App.setShipRotation(shiprotation.checked);
+    JavaSettings.setShipRotation(shiprotation.checked);
 }
 function setMobilechat()
 {
-    App.setMobileChat(mobilechat.checked);
+    JavaSettings.setMobileChat(mobilechat.checked);
 }
 function doClearcache()
 {
-    App.clearCache();
+    JavaSettings.clearCache();
 }
 //]]>
 </script>
@@ -107,7 +109,7 @@ function doClearcache()
 <td align='right'><input type='checkbox' name='mobilechat' id='mobilechat' value='mobilechat' onclick='setMobilechat();' /></td>
 </tr>
 <tr class='cl1'>
-<td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Empties the cache and clears user/password.</span></td>
+<td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Empties the cache and clears any stored user/password.</span></td>
 <td align='right'><input type='submit' name='clearcache' id='clearcache' value='Clear' onclick='doClearcache();return false;' /></td>
 </tr>
 </table>

@@ -24,13 +24,19 @@ public abstract class PardusConstants {
 
 	public static final boolean DEBUG = false;
 
+	/* Local pages (absolute URLs) */
+
 	public static final String loginScreen = "file:///android_asset/login.html";
 
 	public static final String settingsScreen = "file:///android_asset/settings.html";
 
 	public static final String imageSelectionScreen = "file:///android_asset/img.html";
 
+	public static final String linksConfigScreen = "file:///android_asset/links.html";
+
 	public static final String aboutScreen = "file:///android_asset/about.html";
+
+	/* Remote pages (absolute URLs) */
 
 	public static final String loginUrlOrig = "http://www.pardus.at/index.php?section=login";
 
@@ -56,14 +62,48 @@ public abstract class PardusConstants {
 
 	public static final String signupUrlHttps = "https://www.pardus.at/index.php?section=signup";
 
-	public static final String navPage = "game.php";
+	/* Universe-specific pages, default menu links (absolute URLs) */
 
-	public static final String msgPage = "game.php?messages=1";
+	public static final String chatUrlHttps = "https://chat.pardus.at/chat.php";
+
+	public static final String forumUrlHttps = "https://forum.pardus.at/index.php";
+
+	/* Universe-specific pages, default menu links (relative URLs) */
+
+	public static final String gameFrame = "game.php";
+
+	public static final String msgFrame = "msgframe.php";
+
+	public static final String navPage = "main.php";
+
+	public static final String overviewPage = "overview.php";
+
+	public static final String msgPage = "messages.php";
 
 	public static final String sendMsgPage = "sendmsg.php";
 
-	public static final String forumPage = "game.php?forum=1";
+	public static final String newsPage = "news.php";
 
-	public static final String chatPage = "game.php?chat=1";
+	public static final String diploPage = "diplo_page.php";
+
+	public static final String statsPage = "statistics.php";
+
+	public static final String optionsPage = "options.php";
+
+	/* Other universe-specific pages (relative URLs) */
+
+	public static final String msgPagePrivate = "messages_private.php";
+
+	public static final String msgPageAlliance = "messages_alliance.php";
+
+	public static final String tradeLogsPage = "overview_tl_res.php";
+
+	public static final String tradeLogsEqPage = "overview_tl_eq.php";
+
+	public static final String missionsLogPage = "overview_missions_log.php";
+
+	public static final String combatLogPage = "overview_combat_log.php";
+
+	public static final String paymentLogPage = "overview_payment_log.php";
 
 }

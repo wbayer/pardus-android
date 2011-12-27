@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Pardus - Links configuration</title>
+<link rel="stylesheet" href="pardus.css" type="text/css" />
+<script type="text/javascript">
+//<![CDATA[
+var numLinks = 0;
+function init()
+{
+	var linkstable = document.getElementById('linkstable');
+	var links = JavaLinks.getLinks();
+	links += "| | ";
+	var linksArr = links.split("|");
+	var linksHtml = "<tr><td style='width:5%'><div style='width:1em;'></div></td><td style='width:90%;'></td><td style='width:5%;'></td></tr>";
+	for (var i = 0; i < linksArr.length; i++) {
+		var title = linksArr[i];
+		i++;
+		var url = linksArr[i];
+		var cssClass = numLinks % 2;
+		linksHtml += "<tr class='cl" + cssClass + "'>";
+		if (i < linksArr.length - 2) {
+			numLinks++;
+			linksHtml += "<td style='width:5%'><input type='text' id='order" + numLinks + "' value='" + numLinks + "' style='width:100%;' onblur='save();' onkeydown='if (enterPressed(event)) this.blur();' /></td>";
+			linksHtml += "<td style='width:90%;'><input type='text' id='title" + numLinks + "' value='" + title + "' style='width:100%;' onblur='save();' onkeydown='if (enterPressed(event)) this.blur();' />";
+			linksHtml += "<br /><input type='text' id='link" + numLinks + "' value='" + url + "' style='width:100%;' onblur='save();' onkeydown='if (enterPressed(event)) this.blur();' /></td>";
+			linksHtml += "<td style='width:5%;'><input type='submit' id='delete" + numLinks + "' value='DEL' style='width:100%;' onclick='del(" + numLinks + ");' /></td></tr>";
+		} else {
+			var newId = (numLinks == 0) ? 1 : numLinks + 1;
+			linksHtml += "<td style='width:5%'><input type='text' id='order" + newId + "' value='' style='width:100%;' onblur='save();' onkeydown='if (enterPressed(event)) this.blur();' /></td>";
+			linksHtml += "<td style='width:90%;'><input type='text' id='title" + newId + "' value='' style='width:100%;' onblur='save();' onkeydown='if (enterPressed(event)) this.blur();' />";
+			linksHtml += "<br /><input type='text' id='link" + newId + "' value='' style='width:100%;' onblur='save();' onkeydown='if (enterPressed(event)) this.blur();' /></td>";
+			linksHtml += "<td style='width:5%;'><i>new</i></td></tr>";
+			break;
+		}
+	}
+	linkstable.innerHTML = linksHtml;
+}
+function save()
+{
+	var links = '';
+	var id = 1;
+	var cnt = 0;
+	while (true) {
+		if (!document.getElementById('order' + id)) {
+			break;
+		}
+		var order = document.getElementById('order' + id).value.replace('|', '');
+		var title = document.getElementById('title' + id).value.replace('|', '');
+		var url = document.getElementById('link' + id).value.replace('|', '');
+		id++;
+		if (order == '') order = 99;
+		if (title == '' || title == ' ') continue;
+		if (url == '' || url == ' ') continue;
+		cnt++;
+		links += '|' + order + '|' + title + '|' + url;
+	}
+	if (links == '') {
+		JavaLinks.saveLinks('');
+	} else {
+		JavaLinks.saveLinks(links.substring(1));
+	}
+	if (cnt != numLinks) {
+		setTimeout("location.reload()", 500);
+	}
+}
+function enterPressed(event)
+{
+	return (event.which == 13);
+}
+function del(id)
+{
+	document.getElementById('order' + id).value = '';
+	document.getElementById('title' + id).value = '';
+	document.getElementById('link' + id).value = '';
+	save();
+}
+//]]>
+</script>
+</head>
+<body>
+<table align='center' class='std_table' style='width:100%;'>
+<tr><th>Links</th></tr>
+<tr><td align='center'>
+<form id='linksform' action='links.html' method='post'>
+<table align='center' id='linkstable' class='listing_table' style='width:100%;'>
+<tr><td></td><td></td><td></td></tr>
+</table>
+</form>
+</td></tr>
+</table>
+</body>
+</html>
+<script type="text/javascript">
+//<![CDATA[
+init();
+//]]>
+</script>

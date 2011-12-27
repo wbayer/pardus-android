@@ -37,8 +37,7 @@ function checkSubmitLogin()
 function applyParameters(https, auto) {
     if (https) {
         document.getElementById('usehttps').value = '1';
-        document.getElementById('loginform').action = 'https://www.pardus.at/index.php?section=login&amp;mobile';
-        document.getElementById('signuplink').href = 'https://www.pardus.at/index.php?section=signup';
+        document.getElementById('loginform').action = 'https://www.pardus.at/index.php?section=login&mobile';
     }
     if (auto) {
         checksInterval = setInterval("checkSubmitLogin()", 500);
@@ -55,26 +54,25 @@ function applyParameters(https, auto) {
 <table align='center' class='listing_table'>
 <tr class='cl0'>
 <td align='left'><span class='cfgheader'>Account</span></td>
-<td align='right'><input type='text' name='acc' id='acc' value='' style='width:150px;' /></td>
+<td align='right'><input type='text' name='acc' id='acc' value='' style='width:10em;' /></td>
 </tr>
 <tr class='cl1'>
 <td align='left'><span class='cfgheader'>Password</span></td>
-<td align='right'><input type='password' name='pw' id='pw' value='' style='width:150px;' /></td>
+<td align='right'><input type='password' name='pw' id='pw' value='' style='width:10em;' /></td>
 </tr>
 </table>
+<br />
 <input type='hidden' value='0' name='usehttps' id='usehttps' />
 <input type='hidden' value='1' name='login' />
-<input type='submit' value='Login!' class='savebutton' onclick="loggingIn=true;makeMD5('pw');this.form.submit();" />
+<input type='submit' value='Login!' class='savebutton' style='width:10em;' onclick="loggingIn=true;makeMD5('pw');this.form.submit();" />
 </form>
 </td></tr>
 </table>
 <br/>
 <br/>
 <br/>
-<table align='center' cellpadding='4' class='listing_table'>
-<tr class='cl0' align='center'>
-<td><a href='http://www.pardus.at/index.php?section=signup' id='signuplink' style='color:#bbaa00;'>No Pardus account yet?<br />&#8594; Sign up for free! &#8592;</a></td>
-</tr>
-</table>
+<div style='text-align:center;'>
+<a href='http://www.pardus.at/welcome.php'><img src='whatispardus.jpg' alt='What is Pardus?' title='What is Pardus?' style='width:24em;height:8.3em;' /></a>
+</div>
 </body>
 </html>

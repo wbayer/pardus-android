@@ -30,6 +30,8 @@ import at.pardus.android.content.LocalContentProvider;
  */
 public abstract class PardusPreferences {
 
+	public static final String GLUE = "|";
+
 	private static final String NAME = "PardusPreferences";
 
 	private static SharedPreferences preferences = null;
@@ -232,6 +234,64 @@ public abstract class PardusPreferences {
 	public static void setMobileChat(boolean mobileChat) {
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putBoolean("mobileChat", mobileChat);
+		editor.commit();
+	}
+
+	/**
+	 * @return which universe switches to offer in the menu (universes delimited
+	 *         by GLUE)
+	 */
+	public static String getPlayedUniverses() {
+		return preferences.getString("universes", "");
+	}
+
+	/**
+	 * Stores which universe switches to offer in the menu.
+	 * 
+	 * @param universes
+	 *            contains lower-case universes delimited by GLUE
+	 */
+	public static void setPlayedUniverses(String universes) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putString("universes", universes);
+		editor.commit();
+	}
+
+	/**
+	 * @return the stored Pardus links in serialized form
+	 */
+	public static String getLinks() {
+		return preferences.getString("links", null);
+	}
+
+	/**
+	 * Stores the serialized form of Pardus links.
+	 * 
+	 * @param links
+	 *            serialized links string
+	 */
+	public static void setLinks(String links) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putString("links", links);
+		editor.commit();
+	}
+
+	/**
+	 * @return the stored version code
+	 */
+	public static int getVersionCode() {
+		return preferences.getInt("versionCode", -1);
+	}
+
+	/**
+	 * Stores the app's version code.
+	 * 
+	 * @param versionCode
+	 *            the app's version code
+	 */
+	public static void setVersionCode(int versionCode) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putInt("versionCode", versionCode);
 		editor.commit();
 	}
 

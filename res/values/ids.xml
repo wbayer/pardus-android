@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="menu_group_unis" type="id"/>
+    <item name="menu_orion" type="id"/>
+    <item name="menu_artemis" type="id"/>
+    <item name="menu_pegasus" type="id"/>
+    <item name="menu_account" type="id"/>
+
+</resources>

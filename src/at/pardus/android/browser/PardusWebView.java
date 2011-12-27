@@ -18,15 +18,23 @@
 package at.pardus.android.browser;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
+import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptSettings;
+import at.pardus.android.browser.js.JavaScriptUtils;
 import at.pardus.android.content.LocalContentProvider;
 
 /**
@@ -40,13 +48,21 @@ public class PardusWebView extends WebView {
 
 	private PardusWebChromeClient chromeClient;
 
+	private PardusMessageChecker messageChecker;
+
 	private PardusDownloadListener downloadListener;
+
+	private WebViewDatabase database;
 
 	private CookieSyncManager cookieSyncManager;
 
 	private CookieManager cookieManager;
 
-	private WebViewDatabase database;
+	private GestureDetector gestureDetector;
+
+	private PardusLinks links;
+
+	private boolean scrolling = false;
 
 	private boolean loggedIn = false;
 
@@ -62,8 +78,12 @@ public class PardusWebView extends WebView {
 			Log.v(this.getClass().getSimpleName(),
 					"Initializing browser component");
 		}
+		// the following style is ignored when only defined in the xml file
+		setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 		settings = getSettings();
 		settings.setSupportMultipleWindows(false);
+		settings.setPluginsEnabled(false);
+		settings.setGeolocationEnabled(false);
 		settings.setJavaScriptEnabled(true);
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
 		settings.setAllowFileAccess(true);
@@ -73,14 +93,16 @@ public class PardusWebView extends WebView {
 		settings.setSaveFormData(true);
 		settings.setSavePassword(true);
 		settings.setDatabaseEnabled(true);
+		database = WebViewDatabase.getInstance(this.getContext());
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
-					"Setting up javascript interface");
+					"Setting up javascript interfaces");
 		}
-		addJavascriptInterface(new JavaScriptSettings(this), "App");
+		addJavascriptInterface(new JavaScriptSettings(this), "JavaSettings");
+		addJavascriptInterface(new JavaScriptUtils(), "JavaUtils");
 		clearCache(true);
 	}
 
@@ -90,18 +112,22 @@ public class PardusWebView extends WebView {
 	 * 
 	 * @param progress
 	 *            the loading progress bar of the browser
+	 * @param messageChecker
+	 *            the message checker to share cookies with
 	 */
-	public void initClients(ProgressBar progress) {
+	public void initClients(ProgressBar progress,
+			PardusMessageChecker messageChecker) {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
 		}
+		this.messageChecker = messageChecker;
 		viewClient = new PardusWebViewClient(progress);
 		setWebViewClient(viewClient);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up web chrome client");
 		}
-		chromeClient = new PardusWebChromeClient(progress);
+		chromeClient = new PardusWebChromeClient(progress, messageChecker);
 		setWebChromeClient(chromeClient);
 	}
 
@@ -123,6 +149,119 @@ public class PardusWebView extends WebView {
 		downloadListener = new PardusDownloadListener(this, getContext(),
 				storageDir, cacheDir);
 		setDownloadListener(downloadListener);
+	}
+
+	/**
+	 * Sets up the javascript interface to edit the Pardus links and initializes
+	 * a gesture detector to display them whenever the view is scrolled to a
+	 * border on the y-axis.
+	 * 
+	 * @param l
+	 *            PardusLinks object to show
+	 */
+	public void initLinks(PardusLinks l) {
+		links = l;
+		addJavascriptInterface(new JavaScriptLinks(l), "JavaLinks");
+		gestureDetector = new GestureDetector(new SimpleOnGestureListener() {
+
+			@Override
+			public boolean onScroll(MotionEvent e1, MotionEvent e2,
+					float distanceX, float distanceY) {
+				scrolling = true;
+				if (PardusConstants.DEBUG) {
+					Log.v(this.getClass().getSimpleName(),
+							"onScroll: " + e1.getX() + "/" + e1.getY() + " -> "
+									+ e2.getX() + "/" + e2.getY()
+									+ ", distance " + distanceX + "/"
+									+ distanceY);
+				}
+				float newPosY = getScrollY() + distanceY;
+				if (distanceY != 0
+						&& (newPosY <= -16 || newPosY >= computeVerticalScrollRange()
+								- getHeight() + 16)) {
+					links.show();
+				}
+				return false;
+			}
+
+			@Override
+			public void onLongPress(MotionEvent e) {
+				if (PardusConstants.DEBUG) {
+					Log.v(this.getClass().getSimpleName(),
+							"onLongPress: " + e.getX() + "/" + e.getY());
+				}
+				if (Build.VERSION.SDK_INT < 11) {
+					// v2.3- webviews need help going into selection mode
+					fakeEmulateShiftHeld();
+				}
+				return;
+			}
+
+			@Override
+			public boolean onFling(MotionEvent e1, MotionEvent e2,
+					float velocityX, float velocityY) {
+				if (PardusConstants.DEBUG) {
+					Log.v(this.getClass().getSimpleName(),
+							"onFling: " + e1.getX() + "/" + e1.getY() + " -> "
+									+ e2.getX() + "/" + e2.getY()
+									+ ", velocity " + velocityX + "/"
+									+ velocityY);
+				}
+				return false;
+			}
+
+			@Override
+			public boolean onDown(MotionEvent e) {
+				if (PardusConstants.DEBUG) {
+					Log.v(this.getClass().getSimpleName(),
+							"onDown: " + e.getX() + "/" + e.getY());
+				}
+				return true;
+			}
+
+		});
+		gestureDetector.setIsLongpressEnabled(true);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.webkit.WebView#onTouchEvent(android.view.MotionEvent)
+	 */
+	@Override
+	public boolean onTouchEvent(MotionEvent ev) {
+		gestureDetector.onTouchEvent(ev);
+		if (ev.getAction() == MotionEvent.ACTION_UP) {
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(), "onUp: " + ev.getX()
+						+ "/" + ev.getY());
+			}
+			if (scrolling) {
+				scrolling = false;
+				if (PardusConstants.DEBUG) {
+					Log.v(this.getClass().getSimpleName(), "Scrolling ended");
+				}
+				if (links != null) {
+					links.startHideTimer(PardusLinks.HIDE_AFTER_SHOW_MILLIS);
+				}
+			}
+		}
+		return super.onTouchEvent(ev);
+	}
+
+	/**
+	 * Switches into text selection mode.
+	 */
+	public void fakeEmulateShiftHeld() {
+		try {
+			KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
+					KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
+			shiftPressEvent
+					.dispatch(this, new KeyEvent.DispatcherState(), null);
+		} catch (Exception e) {
+			Log.e(this.getClass().getSimpleName(),
+					"Exception faking emulateShiftHeld() method", e);
+		}
 	}
 
 	/**
@@ -199,17 +338,6 @@ public class PardusWebView extends WebView {
 	}
 
 	/**
-	 * Displays the local about screen.
-	 */
-	public void showAbout() {
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "Loading about screen");
-		}
-		stopLoading();
-		loadUrl(PardusConstants.aboutScreen);
-	}
-
-	/**
 	 * Loads a universe-specific page if logged in.
 	 * 
 	 * @param page
@@ -279,24 +407,6 @@ public class PardusWebView extends WebView {
 	public PardusWebView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
-	}
-
-	/**
-	 * Deletes website cache, cookies and any stored form data.
-	 */
-	public void removeTraces() {
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "Clearing cache");
-		}
-		if (database != null) {
-			database.clearUsernamePassword();
-			database.clearFormData();
-		}
-		clearFormData();
-		clearCache(true);
-		cookieManager.removeSessionCookie();
-		cookieManager.removeAllCookie();
-		setUniverse(null);
 	}
 
 	/**
@@ -384,7 +494,59 @@ public class PardusWebView extends WebView {
 			if (PardusConstants.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Logged out");
 			}
+			destroySession();
 		}
+	}
+
+	/**
+	 * Destroys the session locally.
+	 * 
+	 * This means deleting all cookies used for authorization in the browser and
+	 * message checker.
+	 */
+	public void destroySession() {
+		String cookieInfo = "; path=/; domain=.pardus.at;";
+		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
+				"accountid=0; max-age=0" + cookieInfo);
+		cookieManager.setCookie(PardusConstants.loggedInUrl,
+				"accountid=0; max-age=0" + cookieInfo);
+		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
+				"sessionid=0; max-age=0" + cookieInfo);
+		cookieManager.setCookie(PardusConstants.loggedInUrl,
+				"sessionid=0; max-age=0" + cookieInfo);
+		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
+				"pardus_cookie=0; max-age=0" + cookieInfo);
+		cookieManager.setCookie(PardusConstants.loggedInUrl,
+				"pardus_cookie=0; max-age=0" + cookieInfo);
+		cookieManager.removeExpiredCookie();
+		cookieManager.removeSessionCookie();
+		messageChecker.setUniverse(null, null);
+	}
+
+	/**
+	 * Deletes website cache, cookies and any stored form data.
+	 */
+	public void removeTraces() {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Clearing cache");
+		}
+		if (database != null) {
+			database.clearUsernamePassword();
+			database.clearFormData();
+		}
+		clearFormData();
+		clearCache(true);
+		cookieManager.removeSessionCookie();
+		cookieManager.removeAllCookie();
+		setUniverse(null);
+	}
+
+	/**
+	 * Restarts the message checking background task to have it update the new
+	 * messages/logs display immediately.
+	 */
+	public void refreshNotification() {
+		messageChecker.restart();
 	}
 
 	/**
@@ -401,15 +563,20 @@ public class PardusWebView extends WebView {
 	public void setUniverse(String url) {
 		if (url == null) {
 			universe = null;
+			messageChecker.setUniverse(null, null);
 			return;
 		}
-		if (url.contains("://artemis.pardus.at/")) {
+		if (url.startsWith("http://artemis.pardus.at/")
+				|| url.startsWith("https://artemis.pardus.at/")) {
 			universe = "artemis";
-		} else if (url.contains("://orion.pardus.at/")) {
+		} else if (url.startsWith("http://orion.pardus.at/")
+				|| url.startsWith("https://orion.pardus.at/")) {
 			universe = "orion";
-		} else if (url.contains("://pegasus.pardus.at/")) {
+		} else if (url.startsWith("http://pegasus.pardus.at/")
+				|| url.startsWith("https://pegasus.pardus.at/")) {
 			universe = "pegasus";
 		}
+		messageChecker.setUniverse(universe, cookieManager.getCookie(url));
 	}
 
 	/**
@@ -424,14 +591,6 @@ public class PardusWebView extends WebView {
 	 */
 	public boolean isAutoLogin() {
 		return autoLogin;
-	}
-
-	/**
-	 * @param database
-	 *            the database to set
-	 */
-	public void setDatabase(WebViewDatabase database) {
-		this.database = database;
 	}
 
 }

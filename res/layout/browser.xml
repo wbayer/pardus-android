@@ -1,31 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/browserLayout"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:padding="0px"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
     android:scrollbars="none" >
 
     <at.pardus.android.browser.PardusWebView
         android:id="@+id/browser"
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
         android:background="#ff000000"
-        android:padding="0px"
+        android:padding="0dp"
         android:scrollbarAlwaysDrawHorizontalTrack="false"
         android:scrollbarAlwaysDrawVerticalTrack="false"
-        android:scrollbarStyle="outsideOverlay" />
+        android:scrollbarStyle="insideOverlay" />
+
+    <TextView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/notify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="#00000000"
+        android:clickable="false"
+        android:gravity="right"
+        android:padding="10dp"
+        android:scrollbars="none"
+        android:shadowColor="#aaaaef"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:textColor="#eaeaee"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:typeface="monospace" />
+
+    <GridView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/links"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:background="#00000000"
+        android:columnWidth="80dp"
+        android:drawSelectorOnTop="true"
+        android:gravity="center"
+        android:horizontalSpacing="0dp"
+        android:listSelector="@android:color/transparent"
+        android:numColumns="auto_fit"
+        android:padding="0dp"
+        android:scrollbarAlwaysDrawHorizontalTrack="false"
+        android:scrollbarAlwaysDrawVerticalTrack="false"
+        android:scrollbarStyle="insideOverlay"
+        android:scrollbars="vertical"
+        android:stretchMode="none"
+        android:verticalSpacing="1dp"
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/progress"
         style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="4dp"
-        android:background="#ff000000"
-        android:padding="0px"
+        android:layout_alignParentBottom="true"
+        android:background="#00000000"
+        android:padding="0dp"
         android:scrollbars="none"
         android:visibility="gone" />
 
-</LinearLayout>
+</RelativeLayout>

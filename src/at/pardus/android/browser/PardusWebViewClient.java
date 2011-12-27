@@ -30,16 +30,18 @@ import at.pardus.android.content.LocalContentProvider;
  */
 public class PardusWebViewClient extends WebViewClient {
 
-	private ProgressBar progress;
-
-	private boolean onLoginScreen = false;
-
-	private boolean onSendMessageScreen = false;
-
 	private static final String jsSkipSendMessageDeath = "if "
 			+ "(document.getElementsByTagName('html')[0].innerHTML.indexOf('"
 			+ "self.close()" + "') != -1) { " + "top.location.replace('"
 			+ PardusConstants.msgPage + "'); }";
+
+	private static final String jsFoundUniverse = "var htmlSource = "
+			+ "document.getElementsByTagName('html')[0].innerHTML; "
+			+ "JavaUtils.foundUniverse((htmlSource.indexOf('universe=Artemis') != -1), "
+			+ "(htmlSource.indexOf('universe=Orion') != -1), "
+			+ "(htmlSource.indexOf('universe=Pegasus') != -1));";
+
+	private ProgressBar progress;
 
 	/**
 	 * Constructor.
@@ -60,56 +62,22 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
-		// FIXME this method is not called if not a user action (click)
-		// FIXME this method is not called if the target is a frame
-		if (!url.contains(".pardus.at")
-				&& !url.startsWith("file:///android_asset/")
-				&& !url.startsWith(LocalContentProvider.URI)
-				&& !url.startsWith("javascript:")) {
-			// let our app only handle pardus or local addresses
-			if (PardusConstants.DEBUG) {
-				Log.d(this.getClass().getSimpleName(), "Not handling " + url);
-			}
-			return false;
-		}
+		// non-frame target user actions and redirects might trigger this
 		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "Following link");
+			Log.v(this.getClass().getSimpleName(), "Attempting to load " + url);
 		}
-		onSendMessageScreen = false;
-		PardusWebView pardusView = (PardusWebView) view;
-		if (!pardusView.isLoggedIn()
-				&& !url.startsWith("file:///android_asset/")
-				&& !url.startsWith("http://static.pardus.at/")
-				&& !url.startsWith(PardusConstants.loginUrl)
-				&& !url.startsWith(PardusConstants.loginUrlHttps)
-				&& !url.startsWith(PardusConstants.loggedInUrl)
-				&& !url.startsWith(PardusConstants.loggedInUrlHttps)
-				&& !url.startsWith(PardusConstants.newCharUrl)
-				&& !url.startsWith(PardusConstants.newCharUrlHttps)
-				&& !url.startsWith(PardusConstants.signupUrl)
-				&& !url.startsWith(PardusConstants.signupUrlHttps)) {
-			// only allow local pages, login post action, login redirection,
-			// signup page, signup redirection while not logged in
+		if (!isAllowedUrl(url)) {
 			if (PardusConstants.DEBUG) {
-				Log.d(this.getClass().getSimpleName(), "Access to " + url
-						+ " denied while not logged in");
+				Log.d(this.getClass().getSimpleName(), "Not loading " + url);
 			}
-			pardusView.login(false);
-		} else {
-			if (url.equals(PardusConstants.loginUrlOrig)
-					|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
-				// redirect from online login page to local one
-				if (PardusConstants.DEBUG) {
-					Log.d(this.getClass().getSimpleName(),
-							"Redirecting from online login page to local one");
-				}
-				pardusView.login(true);
-			} else {
-				// load the requested url
-				view.loadUrl(url);
-			}
+			PardusNotification
+					.showLong("The following URL is not permitted to be opened in the Pardus App: "
+							+ url);
+			// abort
+			return true;
 		}
-		return true;
+		// continue
+		return false;
 	}
 
 	/*
@@ -120,32 +88,81 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public void onPageStarted(WebView view, String url, Bitmap favicon) {
-		// FIXME this method is not called if the target is a frame
+		// triggered by anything changing the URL (non-frame target)
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Started loading " + url);
+			Log.v(this.getClass().getSimpleName(),
+					"Webview Original URL is set to " + view.getOriginalUrl());
+			Log.v(this.getClass().getSimpleName(), "Webview URL is set to "
+					+ view.getUrl());
 		}
-		progress.setProgress(0);
-		progress.setVisibility(View.VISIBLE);
 		PardusWebView pardusView = (PardusWebView) view;
+		// URL checks again due to shouldOverrideUrlLoading being unreliable
+		// redirecting to local login page if access to the URL is disallowed
+		if (!pardusView.isLoggedIn()) {
+			if (!isAllowedUrlLoggedOut(url)) {
+				if (PardusConstants.DEBUG) {
+					Log.d(this.getClass().getSimpleName(),
+							"Access to "
+									+ url
+									+ " denied while not logged in, redirecting to local login page");
+				}
+				pardusView.login(false);
+				return;
+			}
+		} else {
+			if (!isAllowedUrl(url)) {
+				if (PardusConstants.DEBUG) {
+					Log.d(this.getClass().getSimpleName(), "Access to " + url
+							+ " denied, redirecting to local login page");
+				}
+				pardusView.login(false);
+				return;
+			}
+		}
+		// URL checks OK
 		pardusView.setUniverse(url);
-		onLoginScreen = false;
-		if (url.equals(PardusConstants.loginScreen)) {
-			// loading login screen
-			onLoginScreen = true;
-		} else if (url.startsWith(PardusConstants.loggedInUrl)
+		if (url.startsWith(PardusConstants.loggedInUrl)
 				|| url.startsWith(PardusConstants.loggedInUrlHttps)
 				|| url.startsWith(PardusConstants.newCharUrl)
 				|| url.startsWith(PardusConstants.newCharUrlHttps)) {
-			// loading page on login or signup success
+			// account play or new char page: set loggedIn true and continue
 			pardusView.setLoggedIn(true);
-		} else if (url.startsWith(PardusConstants.logoutUrl)
-				|| url.startsWith(PardusConstants.logoutUrlHttps)) {
-			// loading log out url
-			pardusView.setLoggedIn(false);
-		} else if (url.contains("/sendmsg.php")) {
-			// loading send message screen
-			onSendMessageScreen = true;
+			return;
 		}
+		if (url.equals(PardusConstants.logoutUrl)
+				|| url.equals(PardusConstants.logoutUrlHttps)) {
+			// logout page: set loggedIn false and continue
+			pardusView.setLoggedIn(false);
+			return;
+		}
+		if (url.endsWith(".pardus.at/" + PardusConstants.gameFrame)) {
+			// game frame (without params): redirect to previous page or nav
+			view.stopLoading();
+			String previousUrl = view.getOriginalUrl();
+			if (previousUrl.contains(".pardus.at/" + PardusConstants.gameFrame)
+					|| (!previousUrl.contains("://artemis.pardus.at/")
+							&& !previousUrl.contains("://orion.pardus.at/") && !previousUrl
+								.contains("://pegasus.pardus.at/"))
+					|| !previousUrl.contains(pardusView.getUniverse())) {
+				// prev page is the game frame or
+				// not uni-specific or another uni: redirect to nav
+				if (PardusConstants.DEBUG) {
+					Log.v(this.getClass().getSimpleName(),
+							"Redirecting from game frame to Nav page");
+				}
+				pardusView.loadUniversePage(PardusConstants.navPage);
+				return;
+			}
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Redirecting from game frame back to " + previousUrl);
+			}
+			view.loadUrl(previousUrl);
+			return;
+		}
+		progress.setProgress(0);
+		progress.setVisibility(View.VISIBLE);
 	}
 
 	/*
@@ -156,31 +173,58 @@ public class PardusWebViewClient extends WebViewClient {
 	 */
 	@Override
 	public void onPageFinished(WebView view, String url) {
-		// FIXME this method is not called if the target is a frame
+		// triggered when a URL has completed loading and is being displayed
+		// if a page sends a redirect header only the next page triggers this
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Finished loading " + url);
+			Log.v(this.getClass().getSimpleName(),
+					"Webview Original URL is set to " + view.getOriginalUrl());
+			Log.v(this.getClass().getSimpleName(), "Webview URL is set to "
+					+ view.getUrl());
 		}
+		PardusWebView pardusView = (PardusWebView) view;
 		progress.setVisibility(View.GONE);
-		if (onLoginScreen) {
-			// apply query parameters via javascript (due to bug in android3+)
+		if (url.equals(PardusConstants.loginScreen)) {
+			// local login page: apply query parameters via javascript
 			if (PardusConstants.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Applying query parameters for login screen");
 			}
 			view.loadUrl("javascript:applyParameters("
 					+ (PardusPreferences.isUseHttps() ? "true" : "false")
-					+ ", "
-					+ (((PardusWebView) view).isAutoLogin() ? "true" : "false")
+					+ ", " + (pardusView.isAutoLogin() ? "true" : "false")
 					+ ");");
-		} else if (onSendMessageScreen) {
-			// new message popups are opened in the same window => redirect back
-			// to the game after sending
+		} else if (url.equals(PardusConstants.loginUrlHttps)
+				|| url.equals(PardusConstants.loginUrl)) {
+			// login POST target: only finishes loading if login was invalid
+			PardusNotification.showLong("Login failed!");
+			pardusView.login(false);
+		} else if (url.contains(PardusConstants.sendMsgPage)) {
+			// sendmsg page: redirect back to messages page after sending
 			if (PardusConstants.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Checking send message page for self.close()");
 			}
 			view.loadUrl("javascript:(function() { " + jsSkipSendMessageDeath
 					+ " })()");
+		} else if (url.equals(PardusConstants.loggedInUrl)
+				|| url.equals(PardusConstants.loggedInUrlHttps)) {
+			// account play page: save the available characters/universes
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Parsing account play page for available universes");
+			}
+			view.loadUrl("javascript:(function() { " + jsFoundUniverse
+					+ " })()");
+		} else if (url.contains(PardusConstants.msgPagePrivate)
+				|| url.contains(PardusConstants.msgPageAlliance)
+				|| url.contains(PardusConstants.tradeLogsPage)
+				|| url.contains(PardusConstants.tradeLogsEqPage)
+				|| url.contains(PardusConstants.missionsLogPage)
+				|| url.contains(PardusConstants.combatLogPage)
+				|| url.contains(PardusConstants.paymentLogPage)) {
+			// messages/logs page: refresh new messages/logs display
+			pardusView.refreshNotification();
 		}
 	}
 
@@ -211,4 +255,72 @@ public class PardusWebViewClient extends WebViewClient {
 		PardusNotification.show(description);
 	}
 
+	/**
+	 * @param url
+	 *            URL to check
+	 * @return true for any Pardus URL, false else
+	 */
+	private boolean isPardusUrl(String url) {
+		return (url.startsWith("http://www.pardus.at/")
+				|| url.startsWith("https://www.pardus.at/")
+				|| url.startsWith("http://pardus.at/")
+				|| url.startsWith("https://pardus.at/")
+				|| url.startsWith("http://artemis.pardus.at/")
+				|| url.startsWith("https://artemis.pardus.at/")
+				|| url.startsWith("http://orion.pardus.at/")
+				|| url.startsWith("https://orion.pardus.at/")
+				|| url.startsWith("http://pegasus.pardus.at/")
+				|| url.startsWith("https://pegasus.pardus.at/")
+				|| url.startsWith("http://chat.pardus.at/")
+				|| url.startsWith("https://chat.pardus.at/")
+				|| url.startsWith("http://forum.pardus.at/")
+				|| url.startsWith("https://forum.pardus.at/")
+				|| url.startsWith("http://static.pardus.at/") || url
+					.startsWith("https://static.pardus.at/"));
+	}
+
+	/**
+	 * @param url
+	 *            URL to check
+	 * @return true for any local content or javascript, false else
+	 */
+	private boolean isLocalUrl(String url) {
+		return (url.startsWith("file:///android_asset/")
+				|| url.startsWith(LocalContentProvider.URI) || url
+					.startsWith("javascript:"));
+	}
+
+	/**
+	 * Decides whether a URL is allowed to be loaded in the Pardus app.
+	 * 
+	 * @param url
+	 *            URL to check
+	 * @return true for any Pardus URL but the online login and for any local
+	 *         content, false for anything else
+	 */
+	private boolean isAllowedUrl(String url) {
+		if (url.equals(PardusConstants.loginUrlOrig)
+				|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
+			return false;
+		}
+		return (isPardusUrl(url) || isLocalUrl(url));
+	}
+
+	/**
+	 * @param url
+	 *            URL to check
+	 * @return true for any local content or javascript, Pardus URLs except
+	 *         account pages; false else
+	 */
+	private boolean isAllowedUrlLoggedOut(String url) {
+		return (isLocalUrl(url) || url.startsWith("https://static.pardus.at/")
+				|| url.startsWith("http://static.pardus.at/")
+				|| url.startsWith(PardusConstants.loggedInUrlHttps)
+				|| url.startsWith(PardusConstants.loggedInUrl)
+				|| url.startsWith(PardusConstants.newCharUrl)
+				|| url.startsWith(PardusConstants.newCharUrlHttps) || (!url
+				.contains("/index.php?section=account_") && (url
+				.startsWith("https://www.pardus.at/") || url
+				.startsWith("http://www.pardus.at/"))));
+	}
 }

@@ -20,35 +20,55 @@ package at.pardus.android.browser;
 import java.io.File;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieSyncManager;
-import android.webkit.WebViewDatabase;
+import android.widget.GridView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 /**
  * Main activity - application entry point.
  */
 public class Pardus extends Activity {
 
-	private static final int MENU_GROUP_UNIS = 1;
+	private static final int DIALOG_APP_UPDATE_ID = 0;
 
-	private static final int MENU_ORION = 1;
+	public static int displayWidthDp;
 
-	private static final int MENU_ARTEMIS = 2;
+	public static int displayHeightDp;
 
-	private static final int MENU_PEGASUS = 3;
+	public static int displayWidthPx;
+
+	public static int displayHeightPx;
+
+	public static float displayDensityScale;
+
+	private final Handler handler = new Handler();
 
 	private PardusWebView browser;
 
 	private ProgressBar progress;
+
+	private PardusLinks links;
+
+	private PardusMessageChecker messageChecker;
 
 	/*
 	 * (non-Javadoc)
@@ -58,8 +78,15 @@ public class Pardus extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		parseDisplayMetrics();
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Creating application");
+			Log.v(this.getClass().getSimpleName(), "SDK Version "
+					+ Build.VERSION.SDK_INT);
+			Log.v(this.getClass().getSimpleName(), "Width/Height (dp): "
+					+ displayWidthDp + "/" + displayHeightDp
+					+ ", Width/Height (px): " + displayWidthPx + "/"
+					+ displayHeightPx + ", Scale: " + displayDensityScale);
 		}
 		PardusPreferences.init(this);
 		PardusNotification.init(this);
@@ -88,12 +115,25 @@ public class Pardus extends Activity {
 		progress = (ProgressBar) findViewById(R.id.progress);
 		progress.setMax(100);
 		progress.setIndeterminate(false);
-		// initialize browser
+		// initialize message checker
+		messageChecker = new PardusMessageChecker(handler,
+				(TextView) findViewById(R.id.notify), 60000);
+		// initialize browser and links
 		browser = (PardusWebView) findViewById(R.id.browser);
-		browser.initClients(progress);
+		browser.initClients(progress, messageChecker);
 		browser.initDownloadListener(storageDir, cacheDir);
-		browser.setDatabase(WebViewDatabase.getInstance(this));
-		browser.login(true);
+		GridView linksGridView = (GridView) findViewById(R.id.links);
+		links = new PardusLinks(this, handler, getLayoutInflater(), browser,
+				linksGridView);
+		browser.initLinks(links);
+		registerForContextMenu(browser);
+		// check if a new version was installed
+		int versionLastStart = PardusPreferences.getVersionCode();
+		int currentVersion = getVersionCode();
+		if (/* versionLastStart != -1 && */versionLastStart < currentVersion) {
+			showDialog(DIALOG_APP_UPDATE_ID);
+			PardusPreferences.setVersionCode(currentVersion);
+		}
 	}
 
 	/*
@@ -103,51 +143,46 @@ public class Pardus extends Activity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getGroupId() == MENU_GROUP_UNIS) {
+		boolean linksVisible = links.isVisible();
+		if (linksVisible) {
+			links.hide();
+		}
+		if (item.getGroupId() == R.id.menu_group_unis) {
 			switch (item.getItemId()) {
-			case MENU_ARTEMIS:
+			case R.id.menu_artemis:
 				browser.switchUniverse("Artemis");
 				return true;
-			case MENU_ORION:
+			case R.id.menu_orion:
 				browser.switchUniverse("Orion");
 				return true;
-			case MENU_PEGASUS:
+			case R.id.menu_pegasus:
 				browser.switchUniverse("Pegasus");
+				return true;
+			case R.id.menu_account:
+				browser.loadUrl((PardusPreferences.isUseHttps()) ? PardusConstants.loggedInUrlHttps
+						: PardusConstants.loggedInUrl);
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 			}
 		}
 		switch (item.getItemId()) {
-		case R.id.option_settings:
-			browser.showSettings();
-			return true;
-		case R.id.option_about:
-			browser.showAbout();
+		case R.id.option_showlinks:
+			if (!linksVisible) {
+				links.show();
+			}
 			return true;
 		case R.id.option_refresh:
 			browser.reload();
+			return true;
+		case R.id.option_settings:
+			browser.showSettings();
 			return true;
 		case R.id.option_login:
 			browser.login(false);
 			return true;
 		case R.id.option_logout:
 			finish();
-			return true;
-		case R.id.option_nav:
-			browser.loadUniversePage(PardusConstants.navPage);
-			return true;
-		case R.id.option_msg:
-			browser.loadUniversePage(PardusConstants.msgPage);
-			return true;
-		case R.id.option_sendmsg:
-			browser.loadUniversePage(PardusConstants.sendMsgPage);
-			return true;
-		case R.id.option_forum:
-			browser.loadUniversePage(PardusConstants.forumPage);
-			return true;
-		case R.id.option_chat:
-			browser.loadUniversePage(PardusConstants.chatPage);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -163,7 +198,7 @@ public class Pardus extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.options_menu, menu);
-		return true;
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	/*
@@ -173,23 +208,74 @@ public class Pardus extends Activity {
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.removeGroup(MENU_GROUP_UNIS);
+		menu.removeGroup(R.id.menu_group_unis);
 		String universe = browser.getUniverse();
-		if (universe != null) {
+		String playedUniverses = PardusPreferences.getPlayedUniverses();
+		if (universe != null && !playedUniverses.equals("")) {
 			String switchStr = getString(R.string.option_switch);
-			if (!universe.equals("artemis")) {
-				menu.add(MENU_GROUP_UNIS, MENU_ARTEMIS, 1, switchStr
+			if (!universe.equals("artemis")
+					&& playedUniverses.contains("artemis")) {
+				menu.add(R.id.menu_group_unis, R.id.menu_artemis, 1, switchStr
 						+ " Artemis");
 			}
-			if (!universe.equals("orion")) {
-				menu.add(MENU_GROUP_UNIS, MENU_ORION, 2, switchStr + " Orion");
+			if (!universe.equals("orion") && playedUniverses.contains("orion")) {
+				menu.add(R.id.menu_group_unis, R.id.menu_orion, 2, switchStr
+						+ " Orion");
 			}
-			if (!universe.equals("pegasus")) {
-				menu.add(MENU_GROUP_UNIS, MENU_PEGASUS, 3, switchStr
+			if (!universe.equals("pegasus")
+					&& playedUniverses.contains("pegasus")) {
+				menu.add(R.id.menu_group_unis, R.id.menu_pegasus, 3, switchStr
 						+ " Pegasus");
 			}
 		}
-		return true;
+		if (browser.isLoggedIn()) {
+			menu.add(R.id.menu_group_unis, R.id.menu_account, 4,
+					getString(R.string.option_account));
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+		switch (id) {
+		case DIALOG_APP_UPDATE_ID:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.app_update_title)
+					.setMessage(R.string.app_update_msg)
+					.setNeutralButton(R.string.app_update_button,
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									dialog.dismiss();
+								}
+
+							}).setCancelable(true);
+			dialog = builder.create();
+			break;
+		default:
+			dialog = null;
+		}
+		return dialog;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
+	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
 	}
 
 	/*
@@ -243,6 +329,11 @@ public class Pardus extends Activity {
 		}
 		browser.resumeTimers();
 		CookieSyncManager.getInstance().startSync();
+		if (!browser.isLoggedIn()) {
+			// open the login page if not logged in
+			browser.login(true);
+		}
+		messageChecker.resume();
 		super.onResume();
 	}
 
@@ -274,6 +365,7 @@ public class Pardus extends Activity {
 					"Cannot pause browser threads: "
 							+ Log.getStackTraceString(e));
 		}
+		messageChecker.pause();
 		super.onPause();
 	}
 
@@ -300,7 +392,25 @@ public class Pardus extends Activity {
 	 */
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
+		Log.v(this.getClass().getSimpleName(), "Configuration change");
 		super.onConfigurationChanged(newConfig);
+		parseDisplayMetrics();
+		links.calcAndApplyDimensions();
+	}
+
+	/**
+	 * Updates static variables regarding display configuration.
+	 */
+	private void parseDisplayMetrics() {
+		DisplayMetrics displayMetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+		displayWidthPx = displayMetrics.widthPixels;
+		displayHeightPx = displayMetrics.heightPixels;
+		displayWidthDp = (int) Math.ceil(displayMetrics.widthPixels
+				/ displayMetrics.density);
+		displayHeightDp = (int) Math.ceil(displayMetrics.heightPixels
+				/ displayMetrics.density);
+		displayDensityScale = displayMetrics.density;
 	}
 
 	/**
@@ -350,6 +460,17 @@ public class Pardus extends Activity {
 			}
 		}
 		return dir;
+	}
+
+	/**
+	 * @return the app's version code
+	 */
+	private int getVersionCode() {
+		try {
+			return getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+		} catch (NameNotFoundException e) {
+			return -1;
+		}
 	}
 
 }
