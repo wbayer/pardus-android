@@ -10,6 +10,15 @@
 var numLinks = 0;
 function init()
 {
+	var sensitivitySelect = document.getElementById('showmenu');
+	var sensitivityOptions = sensitivitySelect.options;
+	var menuSensitivity = JavaLinks.getMenuSensitivity();
+	for (var i = 0; i < sensitivityOptions.length; i++) {
+		if (sensitivityOptions[i].value == menuSensitivity) {
+			sensitivitySelect.selectedIndex = i;
+			break;
+		}
+	}
 	var linkstable = document.getElementById('linkstable');
 	var links = JavaLinks.getLinks();
 	links += "| | ";
@@ -85,6 +94,16 @@ function del(id)
 <tr><th>Links</th></tr>
 <tr><td align='center'>
 <form id='linksform' action='links.html' method='post'>
+Fade in links menu bar when:
+<select name='showmenu' id='showmenu' style='font-size:1.2em;' onchange='JavaLinks.setMenuSensitivity(this.value);'>
+<option value='-1'>Never by scrolling</option>
+<option value='0'>Scrolling against the border</option>
+<option value='1'>Over-scrolling by 0.1 inch (2.54 mm)</option>
+<option value='2'>Over-scrolling by 0.2 inch (5.08 mm)</option>
+<option value='3'>Over-scrolling by 0.3 inch (7.62 mm)</option>
+<option value='4'>Over-scrolling by 0.4 inch (1.02 cm)</option>
+<option value='5'>Over-scrolling by 0.5 inch (1.27 cm)</option>
+</select>
 <table align='center' id='linkstable' class='listing_table' style='width:100%;'>
 <tr><td></td><td></td><td></td></tr>
 </table>

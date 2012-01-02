@@ -62,6 +62,8 @@ public class PardusWebView extends WebView {
 
 	private PardusLinks links;
 
+	private int menuSensitivity;
+
 	private boolean scrolling = false;
 
 	private boolean loggedIn = false;
@@ -101,6 +103,7 @@ public class PardusWebView extends WebView {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up javascript interfaces");
 		}
+		setMenuSensitivity(PardusPreferences.getMenuSensitivity());
 		addJavascriptInterface(new JavaScriptSettings(this), "JavaSettings");
 		addJavascriptInterface(new JavaScriptUtils(), "JavaUtils");
 		clearCache(true);
@@ -161,7 +164,7 @@ public class PardusWebView extends WebView {
 	 */
 	public void initLinks(PardusLinks l) {
 		links = l;
-		addJavascriptInterface(new JavaScriptLinks(l), "JavaLinks");
+		addJavascriptInterface(new JavaScriptLinks(this, l), "JavaLinks");
 		gestureDetector = new GestureDetector(new SimpleOnGestureListener() {
 
 			@Override
@@ -177,8 +180,9 @@ public class PardusWebView extends WebView {
 				}
 				float newPosY = getScrollY() + distanceY;
 				if (distanceY != 0
-						&& (newPosY <= -16 || newPosY >= computeVerticalScrollRange()
-								- getHeight() + 16)) {
+						&& menuSensitivity >= 0
+						&& (newPosY <= menuSensitivity * (-1) || newPosY >= computeVerticalScrollRange()
+								- getHeight() + menuSensitivity)) {
 					links.show();
 				}
 				return false;
@@ -547,6 +551,17 @@ public class PardusWebView extends WebView {
 	 */
 	public void refreshNotification() {
 		messageChecker.restart();
+	}
+
+	/**
+	 * Sets the menu sensitivity in px.
+	 * 
+	 * @param menuSensitivity
+	 *            the menuSensitivity in inches * 10
+	 */
+	public void setMenuSensitivity(int menuSensitivity) {
+		this.menuSensitivity = Math.round(menuSensitivity * 16
+				* Pardus.displayDensityScale);
 	}
 
 	/**

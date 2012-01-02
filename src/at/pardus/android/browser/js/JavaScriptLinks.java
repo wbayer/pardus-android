@@ -25,6 +25,9 @@ import android.util.Log;
 import at.pardus.android.browser.PardusConstants;
 import at.pardus.android.browser.PardusLinks;
 import at.pardus.android.browser.PardusLinks.PardusLink;
+import at.pardus.android.browser.PardusNotification;
+import at.pardus.android.browser.PardusPreferences;
+import at.pardus.android.browser.PardusWebView;
 
 /**
  * Contains methods to be called by JavaScript from the Links configuration
@@ -32,16 +35,46 @@ import at.pardus.android.browser.PardusLinks.PardusLink;
  */
 public class JavaScriptLinks {
 
+	private PardusWebView view;
+
 	private PardusLinks links;
 
 	/**
 	 * Constructor.
 	 * 
+	 * @param view
+	 *            browser component to notify of menu bar sensitivity changes
 	 * @param links
 	 *            a PardusLinks object to work on
 	 */
-	public JavaScriptLinks(PardusLinks links) {
+	public JavaScriptLinks(PardusWebView view, PardusLinks links) {
+		this.view = view;
 		this.links = links;
+	}
+
+	/**
+	 * @return the links menu bar's fade-in sensitivity
+	 */
+	public String getMenuSensitivity() {
+		return Integer.toString(PardusPreferences.getMenuSensitivity());
+	}
+
+	/**
+	 * Saves the links menu bar's fade-in sensitivity as received from
+	 * javascript.
+	 * 
+	 * @param sensitivity
+	 *            amount of inches * 10 scrolled over the border after which to
+	 *            fade in the links menu bar (-1 for never)
+	 */
+	public void setMenuSensitivity(String sensitivityStr) {
+		int sensitivity = Integer.parseInt(sensitivityStr);
+		view.setMenuSensitivity(sensitivity);
+		PardusPreferences.setMenuSensitivity(sensitivity);
+		String sensitivityText = (sensitivity >= 0) ? sensitivity / 10.0f
+				+ " inch" : "never";
+		PardusNotification.show("Changed menu sensitivity to "
+				+ sensitivityText);
 	}
 
 	/**

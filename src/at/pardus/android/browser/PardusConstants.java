@@ -70,10 +70,6 @@ public abstract class PardusConstants {
 
 	/* Universe-specific pages, default menu links (relative URLs) */
 
-	public static final String gameFrame = "game.php";
-
-	public static final String msgFrame = "msgframe.php";
-
 	public static final String navPage = "main.php";
 
 	public static final String overviewPage = "overview.php";
@@ -92,6 +88,12 @@ public abstract class PardusConstants {
 
 	/* Other universe-specific pages (relative URLs) */
 
+	public static final String gameFrame = "game.php";
+
+	public static final String msgFrame = "msgframe.php";
+
+	public static final String bbAcceptFrame = "bulletin_board_accept.php";
+
 	public static final String msgPagePrivate = "messages_private.php";
 
 	public static final String msgPageAlliance = "messages_alliance.php";
@@ -105,5 +107,7 @@ public abstract class PardusConstants {
 	public static final String combatLogPage = "overview_combat_log.php";
 
 	public static final String paymentLogPage = "overview_payment_log.php";
+
+	public static final String bulletinBoardPage = "bulletin_board.php";
 
 }

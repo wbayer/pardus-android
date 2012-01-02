@@ -258,6 +258,27 @@ public abstract class PardusPreferences {
 	}
 
 	/**
+	 * @return amount of inches * 10 scrolled over the border after which to
+	 *         fade in the links menu bar (-1 for never)
+	 */
+	public static int getMenuSensitivity() {
+		return preferences.getInt("menuSensitivity", 2);
+	}
+
+	/**
+	 * Stores the menu sensitivity.
+	 * 
+	 * @param menuSensitivity
+	 *            amount of inches * 10 scrolled over the border after which to
+	 *            fade in the links menu bar (-1 for never)
+	 */
+	public static void setMenuSensitivity(int menuSensitivity) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putInt("menuSensitivity", menuSensitivity);
+		editor.commit();
+	}
+
+	/**
 	 * @return the stored Pardus links in serialized form
 	 */
 	public static String getLinks() {

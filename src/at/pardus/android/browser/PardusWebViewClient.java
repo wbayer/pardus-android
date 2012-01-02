@@ -129,36 +129,20 @@ public class PardusWebViewClient extends WebViewClient {
 			// account play or new char page: set loggedIn true and continue
 			pardusView.setLoggedIn(true);
 			return;
-		}
-		if (url.equals(PardusConstants.logoutUrl)
+		} else if (url.equals(PardusConstants.logoutUrl)
 				|| url.equals(PardusConstants.logoutUrlHttps)) {
 			// logout page: set loggedIn false and continue
 			pardusView.setLoggedIn(false);
 			return;
-		}
-		if (url.endsWith(".pardus.at/" + PardusConstants.gameFrame)) {
+		} else if (url.endsWith(".pardus.at/" + PardusConstants.gameFrame)) {
 			// game frame (without params): redirect to previous page or nav
-			view.stopLoading();
-			String previousUrl = view.getOriginalUrl();
-			if (previousUrl.contains(".pardus.at/" + PardusConstants.gameFrame)
-					|| (!previousUrl.contains("://artemis.pardus.at/")
-							&& !previousUrl.contains("://orion.pardus.at/") && !previousUrl
-								.contains("://pegasus.pardus.at/"))
-					|| !previousUrl.contains(pardusView.getUniverse())) {
-				// prev page is the game frame or
-				// not uni-specific or another uni: redirect to nav
-				if (PardusConstants.DEBUG) {
-					Log.v(this.getClass().getSimpleName(),
-							"Redirecting from game frame to Nav page");
-				}
-				pardusView.loadUniversePage(PardusConstants.navPage);
-				return;
-			}
-			if (PardusConstants.DEBUG) {
-				Log.v(this.getClass().getSimpleName(),
-						"Redirecting from game frame back to " + previousUrl);
-			}
-			view.loadUrl(previousUrl);
+			redirectBack(pardusView, PardusConstants.gameFrame,
+					PardusConstants.navPage);
+			return;
+		} else if (url.endsWith(".pardus.at/" + PardusConstants.msgFrame)) {
+			// msg frame (without params): redirect to previous page or bb
+			redirectBack(pardusView, PardusConstants.msgFrame,
+					PardusConstants.bulletinBoardPage);
 			return;
 		}
 		progress.setProgress(0);
@@ -225,6 +209,9 @@ public class PardusWebViewClient extends WebViewClient {
 				|| url.contains(PardusConstants.paymentLogPage)) {
 			// messages/logs page: refresh new messages/logs display
 			pardusView.refreshNotification();
+		} else if (url.contains(PardusConstants.bbAcceptFrame)) {
+			// bulletin board accept frame: redirect to bulletin board
+			pardusView.loadUniversePage(PardusConstants.bulletinBoardPage);
 		}
 	}
 
@@ -322,5 +309,43 @@ public class PardusWebViewClient extends WebViewClient {
 				.contains("/index.php?section=account_") && (url
 				.startsWith("https://www.pardus.at/") || url
 				.startsWith("http://www.pardus.at/"))));
+	}
+
+	/**
+	 * Redirects the browser from a specified (universe) page back to the
+	 * previous location or, if it is the same as the current one or not
+	 * belonging to the same universe, redirects it to a specified fallback
+	 * (universe) page.
+	 * 
+	 * @param view
+	 *            Pardus browser
+	 * @param fromPage
+	 *            page to redirect from
+	 * @param fallbackPage
+	 *            page to use as fallback
+	 */
+	private void redirectBack(PardusWebView view, String fromPage,
+			String fallbackPage) {
+		view.stopLoading();
+		String previousUrl = view.getOriginalUrl();
+		if (previousUrl.contains(".pardus.at/" + fromPage)
+				|| (!previousUrl.contains("://artemis.pardus.at/")
+						&& !previousUrl.contains("://orion.pardus.at/") && !previousUrl
+							.contains("://pegasus.pardus.at/"))
+				|| !previousUrl.contains(view.getUniverse())) {
+			// prev page is the page to redirect from or
+			// not uni-specific or another uni: redirect to fallback page
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(), "Redirecting from "
+						+ fromPage + " to fallback " + fallbackPage);
+			}
+			view.loadUniversePage(fallbackPage);
+			return;
+		}
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Redirecting from "
+					+ fromPage + " back to " + previousUrl);
+		}
+		view.loadUrl(previousUrl);
 	}
 }
