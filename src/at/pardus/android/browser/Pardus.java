@@ -18,37 +18,43 @@
 package at.pardus.android.browser;
 
 import java.io.File;
+import java.util.EmptyStackException;
+import java.util.Stack;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieSyncManager;
+import android.webkit.WebView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import at.pardus.android.webview.gm.model.ScriptId;
+import at.pardus.android.webview.gm.run.WebViewGm;
+import at.pardus.android.webview.gm.store.ScriptStoreSQLite;
+import at.pardus.android.webview.gm.store.ui.ScriptBrowser;
+import at.pardus.android.webview.gm.store.ui.ScriptBrowser.ScriptBrowserWebViewClientGm;
+import at.pardus.android.webview.gm.store.ui.ScriptEditor;
+import at.pardus.android.webview.gm.store.ui.ScriptList;
+import at.pardus.android.webview.gm.store.ui.ScriptManagerActivity;
 
 /**
  * Main activity - application entry point.
  */
-public class Pardus extends Activity {
-
-	private static final int DIALOG_APP_UPDATE_ID = 0;
+public class Pardus extends ScriptManagerActivity {
 
 	public static int displayWidthDp;
 
@@ -62,6 +68,8 @@ public class Pardus extends Activity {
 
 	private final Handler handler = new Handler();
 
+	private View browserContainer;
+
 	private PardusWebView browser;
 
 	private ProgressBar progress;
@@ -69,6 +77,104 @@ public class Pardus extends Activity {
 	private PardusLinks links;
 
 	private PardusMessageChecker messageChecker;
+
+	private Stack<Integer> placeHistory = new Stack<Integer>();
+
+	/**
+	 * Sets the Pardus browser layout as the app's content.
+	 */
+	public void openPardusBrowser() {
+		if (browserContainer == null) {
+			browserContainer = getLayoutInflater().inflate(R.layout.browser,
+					null);
+		}
+		setContentView(browserContainer);
+		placeHistory.push(R.id.place_pardus);
+	}
+
+	/**
+	 * Sets the Script list layout as the app's content.
+	 */
+	@Override
+	public void openScriptList() {
+		if (scriptList == null) {
+			scriptList = new ScriptList(this, scriptStore);
+		}
+		setContentView(scriptList.getScriptList());
+		placeHistory.push(R.id.place_scriptlist);
+	}
+
+	/**
+	 * Sets the Script editor layout as the app's content.
+	 * 
+	 * @param scriptId
+	 *            the ID of the script to load
+	 */
+	@Override
+	public void openScriptEditor(ScriptId scriptId) {
+		if (scriptEditor == null) {
+			scriptEditor = new ScriptEditor(this, scriptStore);
+		}
+		setContentView(scriptEditor.getEditForm(scriptId));
+		placeHistory.push(R.id.place_scripteditor);
+	}
+
+	/**
+	 * Sets the Script browser layout as the app's content.
+	 */
+	@Override
+	public void openScriptBrowser() {
+		if (scriptBrowser == null) {
+			scriptBrowser = new ScriptBrowser(this, scriptStore,
+					PardusConstants.scriptsUrl);
+			WebViewGm scriptBrowserWebView = scriptBrowser.getWebView();
+			scriptBrowserWebView
+					.setWebViewClient(new ScriptBrowserWebViewClientGm(
+							scriptStore,
+							scriptBrowserWebView.getWebViewClient()
+									.getJsBridgeName(),
+							scriptBrowserWebView.getWebViewClient().getSecret(),
+							scriptBrowser) {
+						@Override
+						public boolean shouldOverrideUrlLoading(WebView view,
+								final String url) {
+							String urlLower = url.toLowerCase();
+							if (PardusWebViewClient.isPardusUrl(urlLower)
+									&& !urlLower
+											.equals(PardusConstants.scriptsUrl)
+									&& !urlLower
+											.equals(PardusConstants.scriptsUrlHttps)
+									&& !urlLower
+											.startsWith("http://static.pardus.at/downloads/")) {
+								openPardusBrowser();
+								return true;
+							}
+							return super.shouldOverrideUrlLoading(view, url);
+						}
+
+						@Override
+						public void onPageStarted(WebView view, String url,
+								Bitmap favicon) {
+							String urlLower = url.toLowerCase();
+							if (PardusWebViewClient.isPardusUrl(urlLower)
+									&& !urlLower
+											.equals(PardusConstants.scriptsUrl)
+									&& !urlLower
+											.equals(PardusConstants.scriptsUrlHttps)
+									&& !urlLower
+											.startsWith("http://static.pardus.at/downloads/")) {
+								view.stopLoading();
+								openPardusBrowser();
+								return;
+							}
+							super.onPageStarted(view, url, favicon);
+						}
+					});
+
+		}
+		setContentView(scriptBrowser.getBrowser());
+		placeHistory.push(R.id.place_scriptbrowser);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -109,8 +215,11 @@ public class Pardus extends Activity {
 					+ storageDir);
 		}
 		String cacheDir = getCacheDir().getAbsolutePath();
+		// load the script store
+		scriptStore = new ScriptStoreSQLite(this);
+		scriptStore.open();
 		// attach layout to screen
-		setContentView(R.layout.browser);
+		openPardusBrowser();
 		// initialize progress bar
 		progress = (ProgressBar) findViewById(R.id.progress);
 		progress.setMax(100);
@@ -120,6 +229,7 @@ public class Pardus extends Activity {
 				(TextView) findViewById(R.id.notify), 60000);
 		// initialize browser and links
 		browser = (PardusWebView) findViewById(R.id.browser);
+		browser.setScriptStore(scriptStore);
 		browser.initClients(progress, messageChecker);
 		browser.initDownloadListener(storageDir, cacheDir);
 		GridView linksGridView = (GridView) findViewById(R.id.links);
@@ -130,8 +240,10 @@ public class Pardus extends Activity {
 		// check if a new version was installed
 		int versionLastStart = PardusPreferences.getVersionCode();
 		int currentVersion = getVersionCode();
-		if (/* versionLastStart != -1 && */versionLastStart < currentVersion) {
-			showDialog(DIALOG_APP_UPDATE_ID);
+		if (versionLastStart == -1) {
+			PardusPreferences.setVersionCode(currentVersion);
+		} else if (versionLastStart < currentVersion) {
+			showDialog(R.id.dialog_app_update);
 			PardusPreferences.setVersionCode(currentVersion);
 		}
 	}
@@ -147,26 +259,15 @@ public class Pardus extends Activity {
 		if (linksVisible) {
 			links.hide();
 		}
-		if (item.getGroupId() == R.id.menu_group_unis) {
-			switch (item.getItemId()) {
-			case R.id.menu_artemis:
-				browser.switchUniverse("Artemis");
-				return true;
-			case R.id.menu_orion:
-				browser.switchUniverse("Orion");
-				return true;
-			case R.id.menu_pegasus:
-				browser.switchUniverse("Pegasus");
-				return true;
-			case R.id.menu_account:
-				browser.loadUrl((PardusPreferences.isUseHttps()) ? PardusConstants.loggedInUrlHttps
-						: PardusConstants.loggedInUrl);
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
-			}
+		int itemId = item.getItemId();
+		if (currentPlace() != R.id.place_pardus
+				&& itemId != R.id.option_scripts_get
+				&& itemId != R.id.option_scripts_manage
+				&& itemId != R.id.option_scripts_submenu
+				&& itemId != R.id.option_userscripts) {
+			openPardusBrowser();
 		}
-		switch (item.getItemId()) {
+		switch (itemId) {
 		case R.id.option_showlinks:
 			if (!linksVisible) {
 				links.show();
@@ -174,6 +275,16 @@ public class Pardus extends Activity {
 			return true;
 		case R.id.option_refresh:
 			browser.reload();
+			return true;
+		case R.id.option_userscripts:
+			openScriptBrowser();
+			scriptBrowser.loadUrl(PardusConstants.userscriptUrl);
+			return true;
+		case R.id.option_scripts_get:
+			openScriptBrowser();
+			return true;
+		case R.id.option_scripts_manage:
+			openScriptList();
 			return true;
 		case R.id.option_settings:
 			browser.showSettings();
@@ -183,6 +294,19 @@ public class Pardus extends Activity {
 			return true;
 		case R.id.option_logout:
 			finish();
+			return true;
+		case R.id.option_artemis:
+			browser.switchUniverse("Artemis");
+			return true;
+		case R.id.option_orion:
+			browser.switchUniverse("Orion");
+			return true;
+		case R.id.option_pegasus:
+			browser.switchUniverse("Pegasus");
+			return true;
+		case R.id.option_account:
+			browser.loadUrl((PardusPreferences.isUseHttps()) ? PardusConstants.loggedInUrlHttps
+					: PardusConstants.loggedInUrl);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -208,29 +332,51 @@ public class Pardus extends Activity {
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.removeGroup(R.id.menu_group_unis);
-		String universe = browser.getUniverse();
-		String playedUniverses = PardusPreferences.getPlayedUniverses();
-		if (universe != null && !playedUniverses.equals("")) {
-			String switchStr = getString(R.string.option_switch);
-			if (!universe.equals("artemis")
-					&& playedUniverses.contains("artemis")) {
-				menu.add(R.id.menu_group_unis, R.id.menu_artemis, 1, switchStr
-						+ " Artemis");
+		menu.removeGroup(R.id.option_group_scripts);
+		menu.removeGroup(R.id.option_group_pardus);
+		// removing the groups leaves items that are in the submenu
+		menu.removeItem(R.id.option_showlinks);
+		menu.removeItem(R.id.option_refresh);
+		menu.removeItem(R.id.option_artemis);
+		menu.removeItem(R.id.option_orion);
+		menu.removeItem(R.id.option_pegasus);
+		menu.removeItem(R.id.option_account);
+		menu.removeItem(R.id.option_userscripts);
+		menu.removeItem(R.id.option_pardus);
+		if (currentPlace() == R.id.place_pardus) {
+			menu.add(R.id.option_group_pardus, R.id.option_showlinks, 0,
+					R.string.option_showlinks);
+			menu.add(R.id.option_group_pardus, R.id.option_refresh, 0,
+					R.string.option_refresh);
+			String universe = browser.getUniverse();
+			String playedUniverses = PardusPreferences.getPlayedUniverses();
+			if (universe != null && !playedUniverses.equals("")) {
+				String switchStr = getString(R.string.option_switch);
+				if (!universe.equals("artemis")
+						&& playedUniverses.contains("artemis")) {
+					menu.add(R.id.option_group_pardus, R.id.option_artemis, 2,
+							switchStr + " Artemis");
+				}
+				if (!universe.equals("orion")
+						&& playedUniverses.contains("orion")) {
+					menu.add(R.id.option_group_pardus, R.id.option_orion, 2,
+							switchStr + " Orion");
+				}
+				if (!universe.equals("pegasus")
+						&& playedUniverses.contains("pegasus")) {
+					menu.add(R.id.option_group_pardus, R.id.option_pegasus, 2,
+							switchStr + " Pegasus");
+				}
 			}
-			if (!universe.equals("orion") && playedUniverses.contains("orion")) {
-				menu.add(R.id.menu_group_unis, R.id.menu_orion, 2, switchStr
-						+ " Orion");
+			if (browser.isLoggedIn()) {
+				menu.add(R.id.option_group_pardus, R.id.option_account, 2,
+						R.string.option_account);
 			}
-			if (!universe.equals("pegasus")
-					&& playedUniverses.contains("pegasus")) {
-				menu.add(R.id.menu_group_unis, R.id.menu_pegasus, 3, switchStr
-						+ " Pegasus");
-			}
-		}
-		if (browser.isLoggedIn()) {
-			menu.add(R.id.menu_group_unis, R.id.menu_account, 4,
-					getString(R.string.option_account));
+		} else {
+			menu.add(R.id.option_group_scripts, R.id.option_userscripts, 0,
+					R.string.option_userscripts);
+			menu.add(R.id.option_group_scripts, R.id.option_pardus, 0,
+					R.string.option_pardus);
 		}
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -244,7 +390,7 @@ public class Pardus extends Activity {
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog;
 		switch (id) {
-		case DIALOG_APP_UPDATE_ID:
+		case R.id.dialog_app_update:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.app_update_title)
 					.setMessage(R.string.app_update_msg)
@@ -269,27 +415,52 @@ public class Pardus extends Activity {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
-	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 * @see android.app.Activity#onBackPressed()
 	 */
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
+	public void onBackPressed() {
+		try {
+			Integer thisPlace = placeHistory.pop();
+			if (R.id.place_pardus == thisPlace && browser.back()) {
+				placeHistory.push(thisPlace);
+			} else if (R.id.place_scriptbrowser == thisPlace
+					&& scriptBrowser.back()) {
+				placeHistory.push(thisPlace);
+			} else {
+				while (true) {
+					Integer prevPlace = placeHistory.pop();
+					if (R.id.place_scripteditor == prevPlace
+							|| thisPlace == prevPlace) {
+						continue;
+					}
+					if (R.id.place_pardus == prevPlace) {
+						openPardusBrowser();
+						return;
+					}
+					if (R.id.place_scriptlist == prevPlace) {
+						openScriptList();
+						return;
+					}
+					if (R.id.place_scriptbrowser == prevPlace) {
+						openScriptBrowser();
+						return;
+					}
+				}
+			}
+		} catch (EmptyStackException e) {
+			super.onBackPressed();
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
+	/**
+	 * @return the currently displayed place
 	 */
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK && browser.canGoBack()) {
-			browser.goBack();
-			return true;
+	private int currentPlace() {
+		try {
+			return placeHistory.peek();
+		} catch (EmptyStackException e) {
+			return -1;
 		}
-		return super.onKeyDown(keyCode, event);
 	}
 
 	/*
@@ -316,6 +487,9 @@ public class Pardus extends Activity {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Resuming (or starting) application");
+		}
+		if (scriptStore != null) {
+			scriptStore.open();
 		}
 		// wake up the browser
 		try {
@@ -366,6 +540,13 @@ public class Pardus extends Activity {
 							+ Log.getStackTraceString(e));
 		}
 		messageChecker.pause();
+		if (scriptEditor != null
+				&& placeHistory.peek() != R.id.place_scripteditor) {
+			scriptEditor = null;
+		}
+		if (scriptStore != null) {
+			scriptStore.close();
+		}
 		super.onPause();
 	}
 

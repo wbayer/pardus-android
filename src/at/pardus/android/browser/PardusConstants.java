@@ -62,6 +62,12 @@ public abstract class PardusConstants {
 
 	public static final String signupUrlHttps = "https://www.pardus.at/index.php?section=signup";
 
+	public static final String scriptsUrl = "http://www.pardus.at/index.php?section=downloads";
+
+	public static final String scriptsUrlHttps = "https://www.pardus.at/index.php?section=downloads";
+
+	public static final String userscriptUrl = "http://userscripts.org/scripts/search?q=pardus&submit=Search";
+
 	/* Universe-specific pages, default menu links (absolute URLs) */
 
 	public static final String chatUrlHttps = "https://chat.pardus.at/chat.php";

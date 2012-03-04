@@ -24,6 +24,10 @@ An image pack is downloaded at the application's first start. Subsequently image
 are loaded only from the local image pack, saving expensive mobile network traffic
 and improving performance.
 
+- Extensibility:
+The support of Greasemonkey-compatible user scripts lets you customize Pardus
+in every way.
+
 - Secure access:
 By default all data from and to the Pardus servers is securely sent through HTTPS.
 Links unrelated to Pardus are opened in a new browser application without access
@@ -32,14 +36,21 @@ whenever it loses focus.
 
 - Fast access:
 If you choose to save your account credentials, you are automatically logged in
-at the app's startup. Links in your options menu let you browse through pages
-more quickly.
+at the app's startup. A floating menu bar instead of two frames saves space, and
+the customizable links let you browse through pages more quickly.
 
 - Free and open-source:
 Pardus for Android is free and may be improved/extended/forked by anybody as long
 as it keeps its current open-source license. The program's and any ensuing work's
 open source also enables you to verify it is not malicious - but behaving exactly
 as advertised.
+
+
+INCLUDES
+========
+WebView-GM
+Copyright 2012 Werner Bayer
+Licensed under the Apache License 2.0.
 
 
 ABOUT PARDUS

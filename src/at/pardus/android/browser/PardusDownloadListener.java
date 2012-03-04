@@ -176,7 +176,8 @@ public class PardusDownloadListener implements DownloadListener {
 	@Override
 	public void onDownloadStart(String url, String userAgent,
 			String contentDisposition, String mimetype, long contentLength) {
-		if (url.startsWith("http://static.pardus.at/") && startWorking()) {
+		if (url.startsWith("http://static.pardus.at/downloads/")
+				&& url.endsWith(".zip") && startWorking()) {
 			new GetImagePackThread(url, contentLength).start();
 		}
 	}

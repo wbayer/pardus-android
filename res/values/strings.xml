@@ -3,11 +3,16 @@
 
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
-    <string name="app_update_msg">Important: To save screen space the Pardus menu and message frames have been removed. You can access the Pardus menu by scrolling against the top or bottom of a page or by using the App\'s menu. The items in the Pardus menu can be configured, new links can be added.\nNotifications about new status messages and logs now appear in the bottom right corner of the screen.\nMore info about the changes can be found in the market.</string>
+    <string name="app_update_msg">Support of Greasemonkey-compatible user scripts has been implemented (experimental)!</string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
+    <string name="option_userscripts">Userscripts.org</string>
+    <string name="option_pardus">Back to Pardus</string>
     <string name="option_showlinks">Show links</string>
     <string name="option_refresh">Refresh</string>
+    <string name="option_scripts">Scripts</string>
+    <string name="option_scripts_get">Get</string>
+    <string name="option_scripts_manage">Manage</string>
     <string name="option_settings">Settings</string>
     <string name="option_login">Log in</string>
     <string name="option_logout">Log out</string>

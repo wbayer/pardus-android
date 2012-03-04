@@ -29,18 +29,18 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
-import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
 import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
 import at.pardus.android.content.LocalContentProvider;
+import at.pardus.android.webview.gm.run.WebViewGm;
 
 /**
  * Pardus-modded browser component.
  */
-public class PardusWebView extends WebView {
+public class PardusWebView extends WebViewGm {
 
 	private WebSettings settings;
 
@@ -124,7 +124,9 @@ public class PardusWebView extends WebView {
 			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
 		}
 		this.messageChecker = messageChecker;
-		viewClient = new PardusWebViewClient(progress);
+		viewClient = new PardusWebViewClient(getScriptStore(),
+				getWebViewClient().getJsBridgeName(), getWebViewClient()
+						.getSecret(), progress);
 		setWebViewClient(viewClient);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -420,9 +422,9 @@ public class PardusWebView extends WebView {
 		String cookieInfo = "; path=/; domain=.pardus.at;";
 		String url = "";
 		if (PardusPreferences.isUseHttps()) {
-			cookieInfo += " secure;";
 			url = PardusConstants.loggedInUrlHttps;
 			cookieManager.setCookie(url, "usehttps=1" + cookieInfo);
+			cookieInfo += " secure;";
 		} else {
 			url = PardusConstants.loggedInUrl;
 			cookieManager.setCookie(url, "usehttps=1; max-age=0" + cookieInfo);
@@ -606,6 +608,19 @@ public class PardusWebView extends WebView {
 	 */
 	public boolean isAutoLogin() {
 		return autoLogin;
+	}
+
+	/**
+	 * Goes back to the previous location.
+	 * 
+	 * @return false if the browser history is empty
+	 */
+	public boolean back() {
+		if (canGoBack()) {
+			goBack();
+			return true;
+		}
+		return false;
 	}
 
 }
