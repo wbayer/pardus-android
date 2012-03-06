@@ -25,6 +25,8 @@ import at.pardus.android.browser.PardusPreferences;
  */
 public class JavaScriptUtils {
 
+	public static final String DEFAULT_JS_NAME = "JavaUtils";
+
 	/**
 	 * Sets the available universes to switch to through the menu.
 	 * 

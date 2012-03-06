@@ -22,6 +22,9 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
+import at.pardus.android.browser.js.JavaScriptLinks;
+import at.pardus.android.browser.js.JavaScriptSettings;
+import at.pardus.android.browser.js.JavaScriptUtils;
 import at.pardus.android.content.LocalContentProvider;
 import at.pardus.android.webview.gm.run.WebViewClientGm;
 import at.pardus.android.webview.gm.store.ScriptStore;
@@ -41,6 +44,12 @@ public class PardusWebViewClient extends WebViewClientGm {
 			+ "JavaUtils.foundUniverse((htmlSource.indexOf('universe=Artemis') != -1), "
 			+ "(htmlSource.indexOf('universe=Orion') != -1), "
 			+ "(htmlSource.indexOf('universe=Pegasus') != -1));";
+
+	private static final String jsHidePrivateInterfaces = JavaScriptLinks.DEFAULT_JS_NAME
+			+ " = null; "
+			+ JavaScriptSettings.DEFAULT_JS_NAME
+			+ " = null; "
+			+ JavaScriptUtils.DEFAULT_JS_NAME + " = null;";
 
 	private ProgressBar progress;
 
@@ -164,7 +173,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		progress.setVisibility(View.VISIBLE);
 		// user scripts
 		if (!isLocalUrl(url)) {
-			runMatchingScripts(view, url, false);
+			runMatchingScripts(view, url, false, jsHidePrivateInterfaces, null);
 		}
 	}
 
@@ -236,7 +245,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		}
 		// user scripts
 		if (!isLocalUrl(url)) {
-			runMatchingScripts(view, url, true);
+			runMatchingScripts(view, url, true, jsHidePrivateInterfaces, null);
 		}
 	}
 

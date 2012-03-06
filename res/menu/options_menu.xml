@@ -19,11 +19,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/option_settings"
-        android:orderInCategory="1"
-        android:title="@string/option_settings">
-    </item>
-    <item
         android:id="@+id/option_login"
         android:orderInCategory="1"
         android:title="@string/option_login">
@@ -32,6 +27,11 @@
         android:id="@+id/option_logout"
         android:orderInCategory="1"
         android:title="@string/option_logout">
+    </item>
+    <item
+        android:id="@+id/option_settings"
+        android:orderInCategory="1"
+        android:title="@string/option_settings">
     </item>
 
 </menu>

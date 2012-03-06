@@ -242,7 +242,8 @@ public class Pardus extends ScriptManagerActivity {
 		int currentVersion = getVersionCode();
 		if (versionLastStart == -1) {
 			PardusPreferences.setVersionCode(currentVersion);
-		} else if (versionLastStart < currentVersion) {
+		} else if (versionLastStart < currentVersion
+				&& getString(R.string.app_update_msg).length() > 0) {
 			showDialog(R.id.dialog_app_update);
 			PardusPreferences.setVersionCode(currentVersion);
 		}
@@ -430,7 +431,7 @@ public class Pardus extends ScriptManagerActivity {
 				while (true) {
 					Integer prevPlace = placeHistory.pop();
 					if (R.id.place_scripteditor == prevPlace
-							|| thisPlace == prevPlace) {
+							|| thisPlace.equals(prevPlace)) {
 						continue;
 					}
 					if (R.id.place_pardus == prevPlace) {

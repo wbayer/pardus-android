@@ -3,7 +3,7 @@
 
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
-    <string name="app_update_msg">Support of Greasemonkey-compatible user scripts has been implemented (experimental)!</string>
+    <string name="app_update_msg"></string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
     <string name="option_userscripts">Userscripts.org</string>

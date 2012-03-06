@@ -27,7 +27,7 @@
         android:background="#00000000"
         android:clickable="false"
         android:gravity="left"
-        android:padding="10dp"
+        android:padding="12dp"
         android:scrollbars="none"
         android:shadowColor="#aaaaef"
         android:shadowDx="1"

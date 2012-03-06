@@ -35,6 +35,8 @@ import at.pardus.android.browser.PardusWebView;
  */
 public class JavaScriptLinks {
 
+	public static final String DEFAULT_JS_NAME = "JavaLinks";
+
 	private PardusWebView view;
 
 	private PardusLinks links;

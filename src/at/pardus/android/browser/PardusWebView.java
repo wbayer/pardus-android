@@ -104,8 +104,10 @@ public class PardusWebView extends WebViewGm {
 					"Setting up javascript interfaces");
 		}
 		setMenuSensitivity(PardusPreferences.getMenuSensitivity());
-		addJavascriptInterface(new JavaScriptSettings(this), "JavaSettings");
-		addJavascriptInterface(new JavaScriptUtils(), "JavaUtils");
+		addJavascriptInterface(new JavaScriptSettings(this),
+				JavaScriptSettings.DEFAULT_JS_NAME);
+		addJavascriptInterface(new JavaScriptUtils(),
+				JavaScriptUtils.DEFAULT_JS_NAME);
 		clearCache(true);
 	}
 
@@ -166,7 +168,8 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void initLinks(PardusLinks l) {
 		links = l;
-		addJavascriptInterface(new JavaScriptLinks(this, l), "JavaLinks");
+		addJavascriptInterface(new JavaScriptLinks(this, l),
+				JavaScriptLinks.DEFAULT_JS_NAME);
 		gestureDetector = new GestureDetector(new SimpleOnGestureListener() {
 
 			@Override

@@ -26,6 +26,8 @@ import at.pardus.android.browser.PardusWebView;
  */
 public class JavaScriptSettings {
 
+	public static final String DEFAULT_JS_NAME = "JavaSettings";
+
 	private PardusWebView browser;
 
 	/**
@@ -98,8 +100,8 @@ public class JavaScriptSettings {
 	 * 
 	 * @param navSize
 	 */
-	public void setNavSize(int navSize) {
-		PardusPreferences.setNavSize(navSize);
+	public void setNavSize(String navSize) {
+		PardusPreferences.setNavSize(Integer.parseInt(navSize));
 		if (browser.isLoggedIn()) {
 			browser.setCookies();
 		}
