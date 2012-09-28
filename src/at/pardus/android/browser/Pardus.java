@@ -18,6 +18,7 @@
 package at.pardus.android.browser;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
@@ -32,11 +33,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.widget.GridView;
@@ -65,6 +69,10 @@ public class Pardus extends ScriptManagerActivity {
 	public static int displayHeightPx;
 
 	public static float displayDensityScale;
+
+	public static int displayDpi;
+
+	public static boolean isTablet;
 
 	private final Handler handler = new Handler();
 
@@ -184,6 +192,16 @@ public class Pardus extends ScriptManagerActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		isTablet = getResources().getBoolean(R.bool.isTablet);
+		if (!isTablet) {
+			// on tablets the action bar (menu) is in the title bar
+			requestWindowFeature(Window.FEATURE_NO_TITLE);
+		}
+		PardusPreferences.init(this);
+		PardusNotification.init(this);
+		if (PardusPreferences.isFullScreen()) {
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		}
 		parseDisplayMetrics();
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Creating application");
@@ -192,10 +210,9 @@ public class Pardus extends ScriptManagerActivity {
 			Log.v(this.getClass().getSimpleName(), "Width/Height (dp): "
 					+ displayWidthDp + "/" + displayHeightDp
 					+ ", Width/Height (px): " + displayWidthPx + "/"
-					+ displayHeightPx + ", Scale: " + displayDensityScale);
+					+ displayHeightPx + ", Scale: " + displayDensityScale
+					+ ", Density (dpi): " + displayDpi);
 		}
-		PardusPreferences.init(this);
-		PardusNotification.init(this);
 		CookieSyncManager.createInstance(this);
 		// determine available storage directories (prefer external device)
 		String storageDir = getExternalPardusDir();
@@ -231,6 +248,7 @@ public class Pardus extends ScriptManagerActivity {
 		browser = (PardusWebView) findViewById(R.id.browser);
 		browser.setScriptStore(scriptStore);
 		browser.initClients(progress, messageChecker);
+		browser.initJavascriptBridges(this);
 		browser.initDownloadListener(storageDir, cacheDir);
 		GridView linksGridView = (GridView) findViewById(R.id.links);
 		links = new PardusLinks(this, handler, getLayoutInflater(), browser,
@@ -378,6 +396,25 @@ public class Pardus extends ScriptManagerActivity {
 					R.string.option_userscripts);
 			menu.add(R.id.option_group_scripts, R.id.option_pardus, 0,
 					R.string.option_pardus);
+		}
+		if (isTablet) {
+			// declare action bar items on tablets
+			try {
+				Method showAsAction = Class
+						.forName("android.view.MenuItem")
+						.getMethod("setShowAsAction", new Class[] { int.class });
+				int[] actionItemIds = { R.id.option_showlinks,
+						R.id.option_logout };
+				for (int itemId : actionItemIds) {
+					MenuItem item = menu.findItem(itemId);
+					if (item != null) {
+						showAsAction.invoke(item, new Object[] { 1 });
+					}
+				}
+			} catch (Exception e) {
+				Log.i(this.getClass().getSimpleName(),
+						"Running a tablet without action bar support. " + e);
+			}
 		}
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -562,6 +599,9 @@ public class Pardus extends ScriptManagerActivity {
 			Log.v(this.getClass().getSimpleName(),
 					"Stopping application (to be destroyed or restarted)");
 		}
+		// this method may not be reached pre-honeycomb
+		// used for time-consuming low-priority tasks
+		browser.getPageProperties().persist();
 		super.onStop();
 	}
 
@@ -588,11 +628,12 @@ public class Pardus extends ScriptManagerActivity {
 		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 		displayWidthPx = displayMetrics.widthPixels;
 		displayHeightPx = displayMetrics.heightPixels;
-		displayWidthDp = (int) Math.ceil(displayMetrics.widthPixels
+		displayWidthDp = (int) FloatMath.ceil(displayMetrics.widthPixels
 				/ displayMetrics.density);
-		displayHeightDp = (int) Math.ceil(displayMetrics.heightPixels
+		displayHeightDp = (int) FloatMath.ceil(displayMetrics.heightPixels
 				/ displayMetrics.density);
 		displayDensityScale = displayMetrics.density;
+		displayDpi = displayMetrics.densityDpi;
 	}
 
 	/**

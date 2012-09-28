@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import android.webkit.DownloadListener;
 /**
  * Class handling image pack downloads.
  */
+@SuppressLint("HandlerLeak")
 public class PardusDownloadListener implements DownloadListener {
 
 	private PardusWebView browser;

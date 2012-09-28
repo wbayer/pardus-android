@@ -18,7 +18,9 @@
 package at.pardus.android.browser.js;
 
 import android.util.Log;
+import at.pardus.android.browser.PardusConstants;
 import at.pardus.android.browser.PardusPreferences;
+import at.pardus.android.browser.PardusWebView;
 
 /**
  * Contains utility methods to be called by JavaScript from various pages.
@@ -26,6 +28,18 @@ import at.pardus.android.browser.PardusPreferences;
 public class JavaScriptUtils {
 
 	public static final String DEFAULT_JS_NAME = "JavaUtils";
+
+	private PardusWebView pardusView;
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param pardusView
+	 *            browser component
+	 */
+	public JavaScriptUtils(PardusWebView pardusView) {
+		this.pardusView = pardusView;
+	}
 
 	/**
 	 * Sets the available universes to switch to through the menu.
@@ -40,20 +54,38 @@ public class JavaScriptUtils {
 	public void foundUniverse(boolean artemis, boolean orion, boolean pegasus) {
 		String universes = "";
 		if (artemis) {
-			Log.v(this.getClass().getSimpleName(),
-					"Character exists in Artemis");
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Character exists in Artemis");
+			}
 			universes += "artemis" + PardusPreferences.GLUE;
 		}
 		if (orion) {
-			Log.v(this.getClass().getSimpleName(), "Character exists in Orion");
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Character exists in Orion");
+			}
 			universes += "orion" + PardusPreferences.GLUE;
 		}
 		if (pegasus) {
-			Log.v(this.getClass().getSimpleName(),
-					"Character exists in Pegasus");
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Character exists in Pegasus");
+			}
 			universes += "pegasus" + PardusPreferences.GLUE;
 		}
 		PardusPreferences.setPlayedUniverses(universes);
 	}
 
+	/**
+	 * Refreshes the notification display due to the assumption of an arrived
+	 * system message or log.
+	 */
+	public void refreshNotification() {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"Looking for a new system message or log (initiated by JS)");
+		}
+		pardusView.refreshNotification();
+	}
 }

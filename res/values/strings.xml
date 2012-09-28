@@ -3,7 +3,7 @@
 
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
-    <string name="app_update_msg"></string>
+    <string name="app_update_msg">New features:\nPages keep their zoom level and scroll position for later visits.\nZoom buttons are not displayed anymore if your phone supports multi-touch.\nBoth changes can be disabled in the Settings.\nFor a list of all changes please visit our Google Play page.</string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
     <string name="option_userscripts">Userscripts.org</string>

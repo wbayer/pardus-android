@@ -160,6 +160,71 @@ public abstract class PardusPreferences {
 	}
 
 	/**
+	 * @return whether the app should be displayed in full screen mode, true if
+	 *         not stored yet
+	 */
+	public static boolean isFullScreen() {
+		return preferences.getBoolean("fullScreen", true);
+	}
+
+	/**
+	 * Stores whether the phone's status bar should be visible.
+	 * 
+	 * @param fullScreen
+	 *            true to hide status bar, false to show
+	 */
+	public static void setFullScreen(boolean fullScreen) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("fullScreen", fullScreen);
+		editor.commit();
+	}
+
+	/**
+	 * @return whether the app should make zoom in/out buttons visible, false if
+	 *         not stored yet
+	 */
+	public static boolean isShowZoomControls() {
+		return preferences.getBoolean("showZoomControls", false);
+	}
+
+	/**
+	 * Stores whether to show the native zoom control buttons.
+	 * 
+	 * A boolean value of false only has an effect if the phone supports multi
+	 * touch.
+	 * 
+	 * @param showZoomControls
+	 *            true to show the zoom controls, false to hide
+	 */
+	public static void setShowZoomControls(boolean showZoomControls) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("showZoomControls", showZoomControls);
+		editor.commit();
+	}
+
+	/**
+	 * @return whether the app should remember the zoom level and scroll
+	 *         position of each visited page, true if not stored yet
+	 */
+	public static boolean isRememberPageProperties() {
+		return preferences.getBoolean("rememberPageProperties", true);
+	}
+
+	/**
+	 * Stores whether the zoom level and scoll position of each page should be
+	 * saved and restored in subsequent visits.
+	 * 
+	 * @param rememberPageProperties
+	 *            true to remember properties of each visited page, false to use
+	 *            default zoom level and top left position on each page load
+	 */
+	public static void setRememberPageProperties(boolean rememberPageProperties) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putBoolean("rememberPageProperties", rememberPageProperties);
+		editor.commit();
+	}
+
+	/**
 	 * @return whether AJAX should be used for the Nav screen, true if not
 	 *         stored yet
 	 */

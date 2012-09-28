@@ -202,7 +202,15 @@ public class PardusMessageChecker {
 					"Pausing Pardus Message Checker");
 		}
 		task.cancel();
-		httpClient.getConnectionManager().shutdown();
+		final DefaultHttpClient curHttpClient = httpClient;
+		new Thread() {
+
+			@Override
+			public void run() {
+				curHttpClient.getConnectionManager().shutdown();
+			}
+
+		}.start();
 	}
 
 	/**

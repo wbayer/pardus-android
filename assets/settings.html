@@ -14,6 +14,9 @@ var partialrefresh;
 var shipanimation;
 var shiprotation;
 var mobilechat;
+var fullscreen;
+var showzoomcontrols;
+var rememberpageproperties;
 function init()
 {
     usehttps = document.getElementById('usehttps');
@@ -23,6 +26,9 @@ function init()
     shipanimation = document.getElementById('shipanimation');
     shiprotation = document.getElementById('shiprotation');
     mobilechat = document.getElementById('mobilechat');
+    fullscreen = document.getElementById('fullscreen');
+    showzoomcontrols = document.getElementById('showzoomcontrols');
+    rememberpageproperties = document.getElementById('rememberpageproperties');
     var settingsStr = new String(JavaSettings.getSettings());
     var settings = settingsStr.split(',');
     usehttps.checked = (settings[0] == 'true');
@@ -37,6 +43,9 @@ function init()
     shipanimation.checked = (settings[4] == 'true');
     shiprotation.checked = (settings[5] == 'true');
     mobilechat.checked = (settings[6] == 'true');
+    fullscreen.checked = (settings[7] == 'true');
+    showzoomcontrols.checked = (settings[8] == 'true');
+    rememberpageproperties.checked = (settings[9] == 'true');
 }
 function setUsehttps()
 {
@@ -66,6 +75,18 @@ function setMobilechat()
 {
     JavaSettings.setMobileChat(mobilechat.checked);
 }
+function setFullscreen()
+{
+    JavaSettings.setFullScreen(fullscreen.checked);
+}
+function setShowzoomcontrols()
+{
+    JavaSettings.setShowZoomControls(showzoomcontrols.checked);
+}
+function setRememberpageproperties()
+{
+    JavaSettings.setRememberPageProperties(rememberpageproperties.checked);
+}
 function doClearcache()
 {
     JavaSettings.clearCache();
@@ -88,28 +109,40 @@ function doClearcache()
 <td align='right'><input type='checkbox' name='logoutonhide' id='logoutonhide' value='logoutonhide' onclick='setLogoutonhide();' /></td>
 </tr>
 <tr class='cl0'>
+<td align='left'><span class='cfgheader'>Full-screen mode</span><br /><span class='cfgdesc'>In full-screen mode the phone's status bar is hidden. No effect on tablets.</span></td>
+<td align='right'><input type='checkbox' name='fullscreen' id='fullscreen' value='fullscreen' onclick='setFullscreen();' /></td>
+</tr>
+<tr class='cl1'>
+<td align='left'><span class='cfgheader'>Show zoom controls</span><br /><span class='cfgdesc'>Shows zoom control buttons while scrolling. Always shown if your phone does not support multi-touch.</span></td>
+<td align='right'><input type='checkbox' name='showzoomcontrols' id='showzoomcontrols' value='showzoomcontrols' onclick='setShowzoomcontrols();' /></td>
+</tr>
+<tr class='cl0'>
+<td align='left'><span class='cfgheader'>Remember page properties</span><br /><span class='cfgdesc'>Remembers the zoom level and scroll position of each visited page.</span></td>
+<td align='right'><input type='checkbox' name='rememberpageproperties' id='rememberpageproperties' value='rememberpageproperties' onclick='setRememberpageproperties();' /></td>
+</tr>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Space chart display size</span><br /><span class='cfgdesc'>Sets the amount of tiles displayed in the space chart (no effect without Premium account).</span></td>
 <td align='right'><select name='navsize' id='navsize' onchange='setNavsize();'><option value='3'>3</option><option value='5'>5</option><option value='7'>7</option><option value='9'>9</option></select></td>
 </tr>
-<tr class='cl1'>
+<tr class='cl0'>
 <td align='left'><span class='cfgheader'>Partial page refreshes</span><br /><span class='cfgdesc'>Only refreshes sections of the Nav screen that have changed. Prerequisite for ship animation.</span></td>
 <td align='right'><input type='checkbox' name='partialrefresh' id='partialrefresh' value='partialrefresh' onclick='setPartialrefresh();' /></td>
 </tr>
-<tr class='cl0'>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Ship animation</span><br /><span class='cfgdesc'>Shows your ship's movement when changing location. &quot;Partial page refreshes&quot; required.</span></td>
 <td align='right'><input type='checkbox' name='shipanimation' id='shipanimation' value='shipanimation' onclick='setShipanimation();' /></td>
 </tr>
 </tr>
-<tr class='cl1'>
+<tr class='cl0'>
 <td align='left'><span class='cfgheader'>Ship rotation</span><br /><span class='cfgdesc'>Makes ships face the direction they are heading.</span></td>
 <td align='right'><input type='checkbox' name='shiprotation' id='shiprotation' value='shiprotation' onclick='setShiprotation();' /></td>
 </tr>
-<tr class='cl0'>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Chat lines limit</span><br /><span class='cfgdesc'>Limits the amount of loaded chat lines to 10.</span></td>
 <td align='right'><input type='checkbox' name='mobilechat' id='mobilechat' value='mobilechat' onclick='setMobilechat();' /></td>
 </tr>
-<tr class='cl1'>
-<td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Empties the cache and clears any stored user/password.</span></td>
+<tr class='cl0'>
+<td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Empties the cache including page-specific zoom levels/scroll positions and clears any stored user/password.</span></td>
 <td align='right'><input type='submit' name='clearcache' id='clearcache' value='Clear' onclick='doClearcache();return false;' /></td>
 </tr>
 </table>

@@ -17,6 +17,8 @@
 
 package at.pardus.android.browser.js;
 
+import android.app.Activity;
+import android.view.WindowManager;
 import at.pardus.android.browser.PardusNotification;
 import at.pardus.android.browser.PardusPreferences;
 import at.pardus.android.browser.PardusWebView;
@@ -30,14 +32,19 @@ public class JavaScriptSettings {
 
 	private PardusWebView browser;
 
+	private Activity activity;
+
 	/**
 	 * Constructor.
 	 * 
 	 * @param browser
 	 *            the Pardus browser component
+	 * @param activity
+	 *            the activity the browser component runs in
 	 */
-	public JavaScriptSettings(PardusWebView browser) {
+	public JavaScriptSettings(PardusWebView browser, Activity activity) {
 		this.browser = browser;
+		this.activity = activity;
 	}
 
 	/**
@@ -60,6 +67,13 @@ public class JavaScriptSettings {
 		settings += Boolean.toString(PardusPreferences.isShipRotation());
 		settings += ",";
 		settings += Boolean.toString(PardusPreferences.isMobileChat());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences.isFullScreen());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences.isShowZoomControls());
+		settings += ",";
+		settings += Boolean.toString(PardusPreferences
+				.isRememberPageProperties());
 		return settings;
 	}
 
@@ -185,6 +199,75 @@ public class JavaScriptSettings {
 			PardusNotification.show("Enabled chat lines limit" + message);
 		} else {
 			PardusNotification.show("Disabled chat lines limit" + message);
+		}
+	}
+
+	/**
+	 * Changes the fullscreen setting.
+	 * 
+	 * @param fullScreen
+	 */
+	public void setFullScreen(boolean fullScreen) {
+		PardusPreferences.setFullScreen(fullScreen);
+		Runnable runnable;
+		String message = "";
+		if (fullScreen) {
+			runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					activity.getWindow().addFlags(
+							WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				}
+
+			};
+			message = "Enabled";
+		} else {
+			runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					activity.getWindow().clearFlags(
+							WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				}
+
+			};
+			message = "Disabled";
+		}
+		activity.runOnUiThread(runnable);
+		message += " full-screen mode";
+		PardusNotification.show(message);
+	}
+
+	/**
+	 * Changes the showZoomControls setting.
+	 * 
+	 * @param showZoomControls
+	 */
+	public void setShowZoomControls(boolean showZoomControls) {
+		PardusPreferences.setShowZoomControls(showZoomControls);
+		browser.setShowZoomControls(showZoomControls);
+		if (showZoomControls) {
+			PardusNotification.show("Zoom controls will be shown");
+		} else {
+			PardusNotification.show("Zoom controls will be hidden");
+		}
+	}
+
+	/**
+	 * Changes the rememberPageProperties setting.
+	 * 
+	 * @param rememberPageProperties
+	 */
+	public void setRememberPageProperties(boolean rememberPageProperties) {
+		PardusPreferences.setRememberPageProperties(rememberPageProperties);
+		browser.setRememberPageProperties(rememberPageProperties);
+		if (rememberPageProperties) {
+			PardusNotification
+					.show("Zoom level and scrolling position of pages will be remembered");
+		} else {
+			PardusNotification
+					.show("Zoom level and scrolling position of pages will be the browser-default");
 		}
 	}
 

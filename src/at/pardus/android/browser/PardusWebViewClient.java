@@ -17,11 +17,14 @@
 
 package at.pardus.android.browser;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
+import at.pardus.android.browser.PardusWebView.RenderStatus;
 import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
@@ -44,6 +47,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 			+ "JavaUtils.foundUniverse((htmlSource.indexOf('universe=Artemis') != -1), "
 			+ "(htmlSource.indexOf('universe=Orion') != -1), "
 			+ "(htmlSource.indexOf('universe=Pegasus') != -1));";
+
+	private static final String jsNewMsgCheck = "if (newMsg) { "
+			+ "JavaUtils.refreshNotification(); }";
 
 	private static final String jsHidePrivateInterfaces = JavaScriptLinks.DEFAULT_JS_NAME
 			+ " = null; "
@@ -68,7 +74,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *            the loading progress bar of the browser
 	 */
 	public PardusWebViewClient(ScriptStore scriptStore, String jsBridgeName,
-			String secret, ProgressBar progress) {
+			String secret, ProgressBar progress,
+			PardusPageProperties pageProperties) {
 		super(scriptStore, jsBridgeName, secret);
 		this.progress = progress;
 	}
@@ -95,13 +102,17 @@ public class PardusWebViewClient extends WebViewClientGm {
 					|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
 				pardusView.login(false);
 			} else {
-				PardusNotification
-						.showLong("The following URL is not permitted to be opened in the Pardus App: "
-								+ url);
+				if (url != null) {
+					PardusNotification
+							.showLong("Opening the default browser for " + url);
+					view.getContext().startActivity(
+							new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+				}
 			}
 			// abort
 			return true;
 		}
+		pardusView.propertiesBeforePageLoad(url);
 		// continue
 		return false;
 	}
@@ -158,6 +169,14 @@ public class PardusWebViewClient extends WebViewClientGm {
 				|| url.equals(PardusConstants.logoutUrlHttps)) {
 			// logout page: set loggedIn false and continue
 			pardusView.setLoggedIn(false);
+		} else if (url.equals(PardusConstants.loggedOutUrl)
+				|| url.equals(PardusConstants.loggedOutUrlHttps)) {
+			// index page: stop loading if redirected from the logout page
+			if (pardusView.isLoggingOut()) {
+				pardusView.loadUrl("about:blank");
+				pardusView.clearHistory();
+				pardusView.setLoggingOut(false);
+			}
 		} else if (url.endsWith(".pardus.at/" + PardusConstants.gameFrame)) {
 			// game frame (without params): redirect to previous page or nav
 			redirectBack(pardusView, PardusConstants.gameFrame,
@@ -195,7 +214,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 					+ view.getUrl());
 		}
 		PardusWebView pardusView = (PardusWebView) view;
+		pardusView.propertiesAfterPageLoad();
 		progress.setVisibility(View.GONE);
+		boolean lookForNewMsg = true;
 		if (url.equals(PardusConstants.loginScreen)) {
 			// local login page: apply query parameters via javascript
 			if (PardusConstants.DEBUG) {
@@ -206,10 +227,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 					+ (PardusPreferences.isUseHttps() ? "true" : "false")
 					+ ", " + (pardusView.isAutoLogin() ? "true" : "false")
 					+ ");");
+			return;
 		} else if (url.equals(PardusConstants.loginUrlHttps)
 				|| url.equals(PardusConstants.loginUrl)) {
 			// login POST target: only finishes loading if login was invalid
-			PardusNotification.showLong("Login failed!");
+			PardusNotification.showLong("Login failed or aborted!");
 			pardusView.login(false);
 			return;
 		} else if (url.contains(PardusConstants.sendMsgPage)) {
@@ -238,6 +260,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 				|| url.contains(PardusConstants.paymentLogPage)) {
 			// messages/logs page: refresh new messages/logs display
 			pardusView.refreshNotification();
+			lookForNewMsg = false;
 		} else if (url.contains(PardusConstants.bbAcceptFrame)) {
 			// bulletin board accept frame: redirect to bulletin board
 			pardusView.loadUniversePage(PardusConstants.bulletinBoardPage);
@@ -246,6 +269,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 		// user scripts
 		if (!isLocalUrl(url)) {
 			runMatchingScripts(view, url, true, jsHidePrivateInterfaces, null);
+		}
+		// new (system) message/log check
+		if (lookForNewMsg && isPardusUniUrl(url)) {
+			view.loadUrl("javascript:(function() { " + jsNewMsgCheck + " })()");
 		}
 	}
 
@@ -259,6 +286,12 @@ public class PardusWebViewClient extends WebViewClientGm {
 	public void onLoadResource(WebView view, String url) {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Loading resource " + url);
+		}
+		// new (system) message/log check after ajax loads
+		if (((PardusWebView) view).getRenderStatus() == RenderStatus.RENDER_FINISH
+				&& url.contains(".pardus.at/main_ajax.php")) {
+			view.loadUrl("javascript:(function() { setTimeout(function() { "
+					+ jsNewMsgCheck + " }, 3000) })()");
 		}
 	}
 
@@ -274,6 +307,21 @@ public class PardusWebViewClient extends WebViewClientGm {
 		Log.w(this.getClass().getSimpleName(), "Error at " + failingUrl + "\n"
 				+ errorCode + " " + description);
 		PardusNotification.show(description);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.webkit.WebViewClient#onScaleChanged(android.webkit.WebView,
+	 * float, float)
+	 */
+	@Override
+	public void onScaleChanged(WebView view, float oldScale, float newScale) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Scale changed from "
+					+ oldScale + " to " + newScale);
+		}
+		super.onScaleChanged(view, oldScale, newScale);
 	}
 
 	/**
@@ -320,22 +368,30 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any Pardus URL, false else
 	 */
 	public static boolean isPardusUrl(String url) {
-		return (url.startsWith("http://www.pardus.at/")
+		return (isPardusUniUrl(url) || url.startsWith("http://www.pardus.at/")
 				|| url.startsWith("https://www.pardus.at/")
 				|| url.startsWith("http://pardus.at/")
 				|| url.startsWith("https://pardus.at/")
-				|| url.startsWith("http://artemis.pardus.at/")
-				|| url.startsWith("https://artemis.pardus.at/")
-				|| url.startsWith("http://orion.pardus.at/")
-				|| url.startsWith("https://orion.pardus.at/")
-				|| url.startsWith("http://pegasus.pardus.at/")
-				|| url.startsWith("https://pegasus.pardus.at/")
 				|| url.startsWith("http://chat.pardus.at/")
 				|| url.startsWith("https://chat.pardus.at/")
 				|| url.startsWith("http://forum.pardus.at/")
 				|| url.startsWith("https://forum.pardus.at/")
 				|| url.startsWith("http://static.pardus.at/") || url
 					.startsWith("https://static.pardus.at/"));
+	}
+
+	/**
+	 * @param url
+	 *            URL to check
+	 * @return true for any Pardus universe URL, false else
+	 */
+	public static boolean isPardusUniUrl(String url) {
+		return (url.startsWith("http://artemis.pardus.at/")
+				|| url.startsWith("https://artemis.pardus.at/")
+				|| url.startsWith("http://orion.pardus.at/")
+				|| url.startsWith("https://orion.pardus.at/")
+				|| url.startsWith("http://pegasus.pardus.at/") || url
+					.startsWith("https://pegasus.pardus.at/"));
 	}
 
 	/**
@@ -368,11 +424,12 @@ public class PardusWebViewClient extends WebViewClientGm {
 	/**
 	 * @param url
 	 *            URL to check
-	 * @return true for any local content or javascript, Pardus URLs except
-	 *         account pages; false else
+	 * @return true for any local content or javascript, about:blank, Pardus
+	 *         URLs except account pages; false else
 	 */
 	public static boolean isAllowedUrlLoggedOut(String url) {
-		return (isLocalUrl(url) || url.startsWith("https://static.pardus.at/")
+		return (isLocalUrl(url) || url.equals("about:blank")
+				|| url.startsWith("https://static.pardus.at/")
 				|| url.startsWith("http://static.pardus.at/")
 				|| url.startsWith(PardusConstants.loggedInUrlHttps)
 				|| url.startsWith(PardusConstants.loggedInUrl)

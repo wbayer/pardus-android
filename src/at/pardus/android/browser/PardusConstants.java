@@ -58,6 +58,10 @@ public abstract class PardusConstants {
 
 	public static final String logoutUrlHttps = "https://www.pardus.at/index.php?section=account_logout";
 
+	public static final String loggedOutUrl = "http://www.pardus.at/index.php";
+
+	public static final String loggedOutUrlHttps = "https://www.pardus.at/index.php";
+
 	public static final String signupUrl = "http://www.pardus.at/index.php?section=signup";
 
 	public static final String signupUrlHttps = "https://www.pardus.at/index.php?section=signup";
