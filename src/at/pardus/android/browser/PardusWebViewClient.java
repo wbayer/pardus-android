@@ -75,8 +75,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *            the loading progress bar of the browser
 	 */
 	public PardusWebViewClient(ScriptStore scriptStore, String jsBridgeName,
-			String secret, ProgressBar progress,
-			PardusPageProperties pageProperties) {
+			String secret, ProgressBar progress) {
 		super(scriptStore, jsBridgeName, secret);
 		this.progress = progress;
 	}

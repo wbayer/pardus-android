@@ -197,7 +197,7 @@ public class PardusWebView extends WebViewGm {
 		this.messageChecker = messageChecker;
 		viewClient = new PardusWebViewClient(getScriptStore(),
 				getWebViewClient().getJsBridgeName(), getWebViewClient()
-						.getSecret(), progress, pageProperties);
+						.getSecret(), progress);
 		setWebViewClient(viewClient);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -608,7 +608,9 @@ public class PardusWebView extends WebViewGm {
 		clearCache(true);
 		cookieManager.removeSessionCookie();
 		cookieManager.removeAllCookie();
-		pageProperties.forget();
+		if (pageProperties != null) {
+			pageProperties.forget();
+		}
 		setUniverse(null);
 	}
 
