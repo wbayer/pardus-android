@@ -25,6 +25,10 @@ import at.pardus.android.browser.PardusWebView.RenderStatus;
 /**
  * PictureListener implementation determining when a page has finished rendering
  * and is ready to be scrolled.
+ * 
+ * Currently not required anymore for scrolling, since this can be done in
+ * onPageFinished if subsequent scrolls are blocked until a touch event is
+ * recognized.
  */
 public class PardusPictureListener implements PictureListener {
 
@@ -68,7 +72,8 @@ public class PardusPictureListener implements PictureListener {
 		long time = System.currentTimeMillis();
 		if (renderStatus == RenderStatus.RENDER_FINISH) {
 			if (url.equals(lastUrl)) {
-				if (time - lastRenderTime > MAX_MS_BETWEEN_RENDER) {
+				if (lastRenderTime != 0
+						&& time - lastRenderTime > MAX_MS_BETWEEN_RENDER) {
 					return;
 				}
 				if (scrollRangeX <= lastScrollRangeX
@@ -80,11 +85,36 @@ public class PardusPictureListener implements PictureListener {
 			return;
 		}
 		// this may be the final rendering of this page
-		lastScrollRangeX = scrollRangeX;
-		lastScrollRangeY = scrollRangeY;
-		lastUrl = url;
-		lastRenderTime = time;
-		pardusView.propertiesAfterPageRender(scrollRangeX, scrollRangeY);
+		setLastRenderInfo(url, time, scrollRangeX, scrollRangeY);
+		pardusView.propertiesAfterPageRender();
+	}
+
+	/**
+	 * Resets the last render info.
+	 */
+	public void resetLastRenderInfo() {
+		setLastRenderInfo(null, 0, 0, 0);
+	}
+
+	/**
+	 * Saves information about the last rendering to help determine if the next
+	 * call to onNewPicture is a meaningful re-rendering.
+	 * 
+	 * @param lastUrl
+	 *            the URL of the page rendered
+	 * @param lastRenderTime
+	 *            the time of the rendering
+	 * @param lastScrollRangeX
+	 *            the total horizontal scroll range of the page rendered
+	 * @param lastScrollRangeY
+	 *            the total vertical scroll range of the page rendered
+	 */
+	private void setLastRenderInfo(String lastUrl, long lastRenderTime,
+			int lastScrollRangeX, int lastScrollRangeY) {
+		this.lastUrl = lastUrl;
+		this.lastRenderTime = lastRenderTime;
+		this.lastScrollRangeX = lastScrollRangeX;
+		this.lastScrollRangeY = lastScrollRangeY;
 	}
 
 }

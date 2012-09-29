@@ -64,7 +64,11 @@ public class PardusWebView extends WebViewGm {
 
 	private PardusDownloadListener downloadListener;
 
+	// private PardusPictureListener pictureListener;
+
 	private PardusPageProperties pageProperties;
+
+	private PardusLinks links;
 
 	private WebViewDatabase database;
 
@@ -80,11 +84,13 @@ public class PardusWebView extends WebViewGm {
 
 	private int defaultInitialScale;
 
-	private PardusLinks links;
+	private RenderStatus renderStatus = RenderStatus.RENDER_FINISH;
 
-	private int menuSensitivity;
+	private volatile boolean touchedAfterPageLoad = false;
 
-	private boolean scrolling = false;
+	private volatile PardusPageProperty initialScroll;
+
+	private volatile boolean scrolling = false;
 
 	private boolean loggedIn = false;
 
@@ -94,7 +100,7 @@ public class PardusWebView extends WebViewGm {
 
 	private boolean autoLogin;
 
-	private RenderStatus renderStatus = RenderStatus.RENDER_FINISH;
+	private int menuSensitivity;
 
 	/**
 	 * Constructor.
@@ -158,8 +164,8 @@ public class PardusWebView extends WebViewGm {
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
+		// pictureListener = new PardusPictureListener();
 		setRememberPageProperties(PardusPreferences.isRememberPageProperties());
-		setPictureListener(new PardusPictureListener());
 		setMenuSensitivity(PardusPreferences.getMenuSensitivity());
 		clearCache(true);
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
@@ -197,7 +203,7 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up web chrome client");
 		}
-		chromeClient = new PardusWebChromeClient(progress, messageChecker);
+		chromeClient = new PardusWebChromeClient(progress);
 		setWebChromeClient(chromeClient);
 	}
 
@@ -258,7 +264,7 @@ public class PardusWebView extends WebViewGm {
 							float distanceX, float distanceY) {
 						scrolling = true;
 						if (PardusConstants.DEBUG) {
-							Log.v(this.getClass().getSimpleName(),
+							Log.v(PardusWebView.class.getSimpleName(),
 									"onScroll: " + e1.getX() + "/" + e1.getY()
 											+ " -> " + e2.getX() + "/"
 											+ e2.getY() + ", distance "
@@ -277,12 +283,11 @@ public class PardusWebView extends WebViewGm {
 					@Override
 					public void onLongPress(MotionEvent e) {
 						if (PardusConstants.DEBUG) {
-							Log.v(this.getClass().getSimpleName(),
+							Log.v(PardusWebView.class.getSimpleName(),
 									"onLongPress: " + e.getX() + "/" + e.getY());
 						}
 						if (Build.VERSION.SDK_INT < 11) {
-							// v2.3- webviews need help going into selection
-							// mode
+							// v2.3- webviews need help going into sel. mode
 							fakeEmulateShiftHeld();
 						}
 						return;
@@ -292,7 +297,7 @@ public class PardusWebView extends WebViewGm {
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
 							float velocityX, float velocityY) {
 						if (PardusConstants.DEBUG) {
-							Log.v(this.getClass().getSimpleName(),
+							Log.v(PardusWebView.class.getSimpleName(),
 									"onFling: " + e1.getX() + "/" + e1.getY()
 											+ " -> " + e2.getX() + "/"
 											+ e2.getY() + ", velocity "
@@ -303,9 +308,10 @@ public class PardusWebView extends WebViewGm {
 
 					@Override
 					public boolean onDown(MotionEvent e) {
+						touchedAfterPageLoad = true;
 						if (PardusConstants.DEBUG) {
-							Log.v(this.getClass().getSimpleName(), "onDown: "
-									+ e.getX() + "/" + e.getY());
+							Log.v(PardusWebView.class.getSimpleName(),
+									"onDown: " + e.getX() + "/" + e.getY());
 						}
 						return true;
 					}
@@ -362,22 +368,6 @@ public class PardusWebView extends WebViewGm {
 	}
 
 	/**
-	 * @return the relative horizontal scroll position (0-1)
-	 */
-	private float getScrollXRel() {
-		return computeHorizontalScrollOffset()
-				/ (float) computeHorizontalScrollRange();
-	}
-
-	/**
-	 * @return the relative vertical scroll position (0-1)
-	 */
-	private float getScrollYRel() {
-		return computeVerticalScrollOffset()
-				/ (float) computeVerticalScrollRange();
-	}
-
-	/**
 	 * @return true if the viewport is in landscape mode, false else
 	 */
 	public boolean isOrientationLandscape() {
@@ -391,8 +381,11 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void savePageProperties() {
 		if (pageProperties != null) {
-			pageProperties.save(getUrl(), getScale(), getScrollXRel(),
-					getScrollYRel(), isOrientationLandscape());
+			pageProperties.save(getUrl(), getScale(),
+					computeHorizontalScrollOffset(),
+					computeVerticalScrollOffset(),
+					computeHorizontalScrollRange(),
+					computeVerticalScrollRange(), isOrientationLandscape());
 		}
 	}
 
@@ -643,11 +636,11 @@ public class PardusWebView extends WebViewGm {
 		if (rememberPageProperties) {
 			if (pageProperties == null) {
 				pageProperties = new PardusPageProperties(getContext());
-				setPictureListener(new PardusPictureListener());
+				// setPictureListener(pictureListener);
 			}
 		} else {
 			if (pageProperties != null) {
-				setPictureListener(null);
+				// setPictureListener(null);
 				pageProperties.forget();
 				pageProperties = null;
 			}
@@ -795,42 +788,6 @@ public class PardusWebView extends WebViewGm {
 	}
 
 	/**
-	 * Sets the scroll position of the rendered page.
-	 * 
-	 * @param scrollRangeX
-	 *            the current horizontal scroll range
-	 * @param scrollRangeY
-	 *            the current vertical scroll range
-	 */
-	public void propertiesAfterPageRender(int scrollRangeX, int scrollRangeY) {
-		setRenderStatus(RenderStatus.RENDER_FINISH);
-		PardusPageProperty property = pageProperties.get(getUrl());
-		if (property != null && property.landscape == isOrientationLandscape()) {
-			// restore scroll position
-			if (PardusConstants.DEBUG) {
-				Log.v(this.getClass().getSimpleName(),
-						"Restoring scroll position for " + getUrl() + ": "
-								+ property.scrollXRel + "/"
-								+ property.scrollYRel);
-			}
-			scrollTo(
-					(int) FloatMath.ceil(property.scrollXRel * scrollRangeX
-							- 0.5f),
-					(int) FloatMath.ceil(property.scrollYRel * scrollRangeY
-							- 0.5f));
-		} else {
-			scrollTo(0, 0);
-		}
-	}
-
-	/**
-	 * Sets a flag that the current page finished loading.
-	 */
-	public void propertiesAfterPageLoad() {
-		setRenderStatus(RenderStatus.LOAD_FINISH);
-	}
-
-	/**
 	 * Saves the current page's properties and sets the initial scale of the
 	 * page to be loaded.
 	 * 
@@ -842,26 +799,123 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		setRenderStatus(RenderStatus.LOAD_START);
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"New render status: LOAD_START");
+		}
+		if (pageProperties == null) {
+			return;
+		}
+		// pictureListener.resetLastRenderInfo();
 		// save current page's properties
 		savePageProperties();
 		// restore next page's zoom level (setInitialScale must be called early)
-		if (pageProperties != null) {
-			PardusPageProperty property = pageProperties.get(url);
-			if (property != null
-					&& property.landscape == isOrientationLandscape()) {
-				if (PardusConstants.DEBUG) {
-					Log.v(this.getClass().getSimpleName(),
-							"Restoring zoom level for "
-									+ url
-									+ ": "
-									+ (int) FloatMath
-											.ceil(property.scale * 100 - 0.5f));
-				}
-				setInitialScale((int) FloatMath
-						.ceil(property.scale * 100 - 0.5f));
-			} else {
-				resetInitialScale();
+		PardusPageProperty property = pageProperties.get(url);
+		if (property != null && property.landscape == isOrientationLandscape()) {
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Restoring zoom level for "
+								+ url
+								+ ": "
+								+ (int) FloatMath
+										.ceil(property.scale * 100 - 0.5f));
 			}
+			setInitialScale((int) FloatMath.ceil(property.scale * 100 - 0.5f));
+		} else {
+			resetInitialScale();
+		}
+	}
+
+	/**
+	 * Sets the page's scroll position.
+	 */
+	public void propertiesAfterPageLoad() {
+		setRenderStatus(RenderStatus.LOAD_FINISH);
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"New render status: LOAD_FINISH");
+		}
+		touchedAfterPageLoad = false;
+		if (pageProperties == null) {
+			return;
+		}
+		// restore scroll position
+		PardusPageProperty property = pageProperties.get(getUrl());
+		if (property != null && property.landscape == isOrientationLandscape()) {
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Restoring scroll position for " + getUrl() + ": "
+								+ property.posX + "/" + property.posY);
+			}
+			initialScroll = property;
+		} else {
+			initialScroll = PardusPageProperties.getEmptyProperty();
+		}
+		scrollTo(initialScroll.posX, initialScroll.posY);
+	}
+
+	/**
+	 * Previously called by the PardusPictureListener when a potentially final
+	 * rendering of the page was detected.
+	 */
+	public void propertiesAfterPageRender() {
+		setRenderStatus(RenderStatus.RENDER_FINISH);
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"New (or unchanged) render status: RENDER_FINISH");
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.view.View#scrollTo(int, int)
+	 */
+	public void scrollTo(int x, int y) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"WebView#scrollTo called for " + x + "/" + y);
+		}
+		if (touchedAfterPageLoad || pageProperties == null) {
+			super.scrollTo(x, y);
+			return;
+		}
+		if (x != initialScroll.posX || y != initialScroll.posY) {
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Blocking scroll attempt to " + x + "/" + y
+								+ " (expected " + initialScroll.posX + "/"
+								+ initialScroll.posY + ")");
+				// Log.v(this.getClass().getSimpleName(),
+				// Log.getStackTraceString(new Throwable()));
+			}
+			return;
+		}
+		super.scrollTo(initialScroll.posX, initialScroll.posY);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.webkit.WebView#onScrollChanged(int, int, int, int)
+	 */
+	protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Scrolled from " + oldl
+					+ "/" + oldt + " to " + l + "/" + t + " (Scale "
+					+ (int) FloatMath.ceil(getScale() * 100 - 0.5f) + ")");
+		}
+		super.onScrollChanged(l, t, oldl, oldt);
+		if (touchedAfterPageLoad || pageProperties == null) {
+			return;
+		}
+		if (l != initialScroll.posX || t != initialScroll.posY) {
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(),
+						"Scrolling back to initial position "
+								+ initialScroll.posX + "/" + initialScroll.posY);
+			}
+			super.scrollTo(initialScroll.posX, initialScroll.posY);
 		}
 	}
 
@@ -873,8 +927,13 @@ public class PardusWebView extends WebViewGm {
 	public boolean back() {
 		if (canGoBack()) {
 			WebBackForwardList list = copyBackForwardList();
-			propertiesBeforePageLoad(list.getItemAtIndex(
-					list.getCurrentIndex() - 1).getUrl());
+			String previousUrl = list
+					.getItemAtIndex(list.getCurrentIndex() - 1).getUrl();
+			if (PardusConstants.DEBUG) {
+				Log.v(this.getClass().getSimpleName(), "Going back to "
+						+ previousUrl);
+			}
+			propertiesBeforePageLoad(previousUrl);
 			goBack();
 			return true;
 		}
@@ -888,6 +947,10 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@Override
 	public void loadUrl(String url) {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(),
+					"WebView#loadUrl called for " + url);
+		}
 		propertiesBeforePageLoad(url);
 		super.loadUrl(url);
 	}
@@ -899,6 +962,12 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@Override
 	public void reload() {
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Reloading page " + getUrl());
+		}
+		if (pageProperties != null) {
+			pageProperties.resetLastUrl();
+		}
 		propertiesBeforePageLoad(getUrl());
 		super.reload();
 	}

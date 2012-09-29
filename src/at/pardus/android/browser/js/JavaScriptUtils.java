@@ -78,13 +78,13 @@ public class JavaScriptUtils {
 	}
 
 	/**
-	 * Refreshes the notification display due to the assumption of an arrived
-	 * system message or log.
+	 * Refreshes the notification display due to the assumption of having
+	 * received a (status) message.
 	 */
 	public void refreshNotification() {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
-					"Looking for a new system message or log (initiated by JS)");
+					"Looking for a new status or system message (initiated by JS)");
 		}
 		pardusView.refreshNotification();
 	}

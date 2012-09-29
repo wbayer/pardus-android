@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.util.FloatMath;
 import android.util.Log;
 
 /**
@@ -58,16 +59,22 @@ public class PardusPageProperties {
 	 *            the URL of the page
 	 * @param scale
 	 *            the zoom level
-	 * @param scrollXRel
-	 *            the horizontal scroll position relative to the content's width
-	 * @param scrollYRel
-	 *            the vertical scroll position relative to the content's height
+	 * @param posX
+	 *            the x-coordinate of the top-left position of the viewport (in
+	 *            dp * scale)
+	 * @param posY
+	 *            the y-coordinate of the top-left position of the viewport (in
+	 *            dp * scale)
+	 * @param totalX
+	 *            the width of the web page (in dp * scale)
+	 * @param totalY
+	 *            the height of the web page (in dp * scale)
 	 * @param landscape
 	 *            the screen's orientation, true if in landscape mode
 	 */
-	public void save(String url, float scale, float scrollXRel,
-			float scrollYRel, boolean landscape) {
-		if (url == null || url.equals(lastUrl)) {
+	public void save(String url, float scale, int posX, int posY, int totalX,
+			int totalY, boolean landscape) {
+		if (url == null || url.equals(lastUrl) || url.contains("/game.php")) {
 			return;
 		}
 		lastUrl = url;
@@ -77,7 +84,7 @@ public class PardusPageProperties {
 		}
 		boolean noScroll = trimmedUrl.startsWith("FORUM/") && url.contains("#");
 		PardusPageProperty property = new PardusPageProperty(scale,
-				noScroll ? 0.0f : scrollXRel, noScroll ? 0.0f : scrollYRel,
+				noScroll ? 0 : posX, noScroll ? 0 : posY, totalX, totalY,
 				landscape);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Saving properties for "
@@ -225,6 +232,21 @@ public class PardusPageProperties {
 	}
 
 	/**
+	 * Resets the last URL so its properties may be overridden (i.e. after a
+	 * manual page refresh).
+	 */
+	public void resetLastUrl() {
+		lastUrl = null;
+	}
+
+	/**
+	 * @return a new PardusPageProperty object initialized with zero values
+	 */
+	public static PardusPageProperty getEmptyProperty() {
+		return new PardusPageProperty(0.0f, 0, 0, 0, 0, false);
+	}
+
+	/**
 	 * Immutable object containing property values of a page.
 	 */
 	public static class PardusPageProperty implements Serializable {
@@ -233,7 +255,7 @@ public class PardusPageProperties {
 
 		public final float scale;
 
-		public final float scrollXRel, scrollYRel;
+		public final int posX, posY, totalX, totalY;
 
 		public final boolean landscape;
 
@@ -242,25 +264,38 @@ public class PardusPageProperties {
 		 * 
 		 * @param scale
 		 *            the zoom level
-		 * @param scrollXRel
-		 *            the horizontal scroll position
-		 * @param scrollYRel
-		 *            the vertical scroll position
+		 * @param posX
+		 *            the x-coordinate of the top-left position of the viewport
+		 *            (in dp * scale)
+		 * @param posY
+		 *            the y-coordinate of the top-left position of the viewport
+		 *            (in dp * scale)
+		 * @param totalX
+		 *            the width of the web page (in dp * scale)
+		 * @param totalY
+		 *            the height of the web page (in dp * scale)
 		 * @param landscape
 		 *            the screen's orientation, true if in landscape mode
 		 */
-		private PardusPageProperty(float scale, float scrollXRel,
-				float scrollYRel, boolean landscape) {
+		private PardusPageProperty(float scale, int posX, int posY, int totalX,
+				int totalY, boolean landscape) {
 			this.scale = scale;
-			this.scrollXRel = scrollXRel;
-			this.scrollYRel = scrollYRel;
+			this.posX = posX;
+			this.posY = posY;
+			this.totalX = totalX;
+			this.totalY = totalY;
 			this.landscape = landscape;
 		}
 
 		/**
+		 * Previously used to scroll via Javascript, currently replaced by Java
+		 * View#scrollTo.
+		 * 
 		 * @return Javascript scrollTo method to scroll to the saved values
 		 */
 		public String getScrollJs() {
+			float scrollXRel = posX / (float) totalX;
+			float scrollYRel = posY / (float) totalY;
 			return String
 					.format("window.scrollTo("
 							+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollWidth),"
@@ -275,8 +310,10 @@ public class PardusPageProperties {
 		 */
 		@Override
 		public String toString() {
-			return "Scale " + scale + ", Scroll " + scrollXRel + "/"
-					+ scrollYRel + ", Landscape " + Boolean.toString(landscape);
+			return "Scale " + (int) FloatMath.ceil(scale * 100 - 0.5f)
+					+ ", Scroll-X " + posX + "/" + totalX + ", Scroll-Y "
+					+ posY + "/" + totalY + ", Landscape "
+					+ Boolean.toString(landscape);
 		}
 
 	}

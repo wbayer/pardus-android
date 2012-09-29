@@ -31,20 +31,14 @@ public class PardusWebChromeClient extends WebChromeClient {
 
 	private ProgressBar progress;
 
-	private PardusMessageChecker messageChecker;
-
 	/**
 	 * Constructor.
 	 * 
 	 * @param progress
 	 *            the loading progress bar of the browser
-	 * @param messageChecker
-	 *            the message checker used to display info from the msgframe
 	 */
-	public PardusWebChromeClient(ProgressBar progress,
-			PardusMessageChecker messageChecker) {
+	public PardusWebChromeClient(ProgressBar progress) {
 		this.progress = progress;
-		this.messageChecker = messageChecker;
 	}
 
 	/*
@@ -62,12 +56,6 @@ public class PardusWebChromeClient extends WebChromeClient {
 			Log.d(this.getClass().getSimpleName(), messageLevel.name() + ": "
 					+ message + " at " + consoleMessage.sourceId() + ":"
 					+ consoleMessage.lineNumber());
-		}
-		if (messageLevel == MessageLevel.ERROR
-				&& (message.contains("msgframe") || message
-						.contains("location"))) {
-			// refresh message checker to display status message from msgframe
-			messageChecker.restart();
 		}
 		return true;
 	}

@@ -20,6 +20,7 @@ package at.pardus.android.browser;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -48,7 +49,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			+ "(htmlSource.indexOf('universe=Orion') != -1), "
 			+ "(htmlSource.indexOf('universe=Pegasus') != -1));";
 
-	private static final String jsNewMsgCheck = "if (newMsg) { "
+	private static final String jsNewMsgCheck = "if (typeof newMsg != 'undefined' && newMsg) { "
 			+ "JavaUtils.refreshNotification(); }";
 
 	private static final String jsHidePrivateInterfaces = JavaScriptLinks.DEFAULT_JS_NAME
@@ -270,7 +271,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		if (!isLocalUrl(url)) {
 			runMatchingScripts(view, url, true, jsHidePrivateInterfaces, null);
 		}
-		// new (system) message/log check
+		// new (status) message check
 		if (lookForNewMsg && isPardusUniUrl(url)) {
 			view.loadUrl("javascript:(function() { " + jsNewMsgCheck + " })()");
 		}
@@ -288,7 +289,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			Log.v(this.getClass().getSimpleName(), "Loading resource " + url);
 		}
 		// new (system) message/log check after ajax loads
-		if (((PardusWebView) view).getRenderStatus() == RenderStatus.RENDER_FINISH
+		if (((PardusWebView) view).getRenderStatus() != RenderStatus.LOAD_START
 				&& url.contains(".pardus.at/main_ajax.php")) {
 			view.loadUrl("javascript:(function() { setTimeout(function() { "
 					+ jsNewMsgCheck + " }, 3000) })()");
@@ -319,7 +320,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 	public void onScaleChanged(WebView view, float oldScale, float newScale) {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Scale changed from "
-					+ oldScale + " to " + newScale);
+					+ FloatMath.ceil(oldScale * 100 - 0.5f) + " to "
+					+ FloatMath.ceil(newScale * 100 - 0.5f));
 		}
 		super.onScaleChanged(view, oldScale, newScale);
 	}
