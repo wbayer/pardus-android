@@ -30,6 +30,7 @@ import at.pardus.android.browser.PardusWebView.RenderStatus;
  * onPageFinished if subsequent scrolls are blocked until a touch event is
  * recognized.
  */
+@SuppressWarnings("deprecation")
 public class PardusPictureListener implements PictureListener {
 
 	private static final int MAX_MS_BETWEEN_RENDER = 3000;

@@ -20,8 +20,8 @@ package at.pardus.android.browser;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.FloatMath;
@@ -160,6 +160,12 @@ public class PardusWebView extends WebViewGm {
 		settings.setSaveFormData(true);
 		settings.setSavePassword(true);
 		settings.setDatabaseEnabled(true);
+		SharedPreferences prefs = getContext().getSharedPreferences(
+				"WebViewSettings", Context.MODE_PRIVATE);
+		if (prefs.getInt("double_tap_toast_count", 1) > 0) {
+			// attempt to not display the automatic "double-tap tip"
+			prefs.edit().putInt("double_tap_toast_count", 0).commit();
+		}
 		database = WebViewDatabase.getInstance(getContext());
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
@@ -259,6 +265,8 @@ public class PardusWebView extends WebViewGm {
 		gestureDetector = new GestureDetector(getContext(),
 				new SimpleOnGestureListener() {
 
+					private int scrollRangeY;
+
 					@Override
 					public boolean onScroll(MotionEvent e1, MotionEvent e2,
 							float distanceX, float distanceY) {
@@ -273,7 +281,7 @@ public class PardusWebView extends WebViewGm {
 						float newPosY = getScrollY() + distanceY;
 						if (distanceY != 0
 								&& menuSensitivity >= 0
-								&& (newPosY <= menuSensitivity * (-1) || newPosY >= computeVerticalScrollRange()
+								&& (newPosY <= menuSensitivity * (-1) || newPosY >= scrollRangeY
 										- getHeight() + menuSensitivity)) {
 							links.show();
 						}
@@ -308,6 +316,7 @@ public class PardusWebView extends WebViewGm {
 
 					@Override
 					public boolean onDown(MotionEvent e) {
+						scrollRangeY = computeVerticalScrollRange();
 						touchedAfterPageLoad = true;
 						if (PardusConstants.DEBUG) {
 							Log.v(PardusWebView.class.getSimpleName(),
@@ -368,24 +377,15 @@ public class PardusWebView extends WebViewGm {
 	}
 
 	/**
-	 * @return true if the viewport is in landscape mode, false else
-	 */
-	public boolean isOrientationLandscape() {
-		int orientation = getContext().getResources().getConfiguration().orientation;
-		return orientation == Configuration.ORIENTATION_LANDSCAPE
-				|| (orientation == Configuration.ORIENTATION_UNDEFINED && getWidth() > getHeight());
-	}
-
-	/**
 	 * Saves the zoom level and scroll position of the currently opened page.
 	 */
 	public void savePageProperties() {
 		if (pageProperties != null) {
-			pageProperties.save(getUrl(), getScale(),
+			pageProperties.save(getUrl(), Pardus.orientation, getScale(),
 					computeHorizontalScrollOffset(),
 					computeVerticalScrollOffset(),
 					computeHorizontalScrollRange(),
-					computeVerticalScrollRange(), isOrientationLandscape());
+					computeVerticalScrollRange());
 		}
 	}
 
@@ -812,8 +812,9 @@ public class PardusWebView extends WebViewGm {
 		// save current page's properties
 		savePageProperties();
 		// restore next page's zoom level (setInitialScale must be called early)
-		PardusPageProperty property = pageProperties.get(url);
-		if (property != null && property.landscape == isOrientationLandscape()) {
+		PardusPageProperty property = pageProperties.get(url,
+				Pardus.orientation);
+		if (property != null) {
 			if (PardusConstants.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Restoring zoom level for "
@@ -842,8 +843,9 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		// restore scroll position
-		PardusPageProperty property = pageProperties.get(getUrl());
-		if (property != null && property.landscape == isOrientationLandscape()) {
+		PardusPageProperty property = pageProperties.get(getUrl(),
+				Pardus.orientation);
+		if (property != null) {
 			if (PardusConstants.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Restoring scroll position for " + getUrl() + ": "

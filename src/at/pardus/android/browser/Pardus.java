@@ -72,6 +72,8 @@ public class Pardus extends ScriptManagerActivity {
 
 	public static int displayDpi;
 
+	public static int orientation;
+
 	public static boolean isTablet;
 
 	private final Handler handler = new Handler();
@@ -601,7 +603,10 @@ public class Pardus extends ScriptManagerActivity {
 		}
 		// this method may not be reached pre-honeycomb
 		// used for time-consuming low-priority tasks
-		browser.getPageProperties().persist();
+		PardusPageProperties pageProperties = browser.getPageProperties();
+		if (pageProperties != null) {
+			pageProperties.persist();
+		}
 		super.onStop();
 	}
 
@@ -614,7 +619,9 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		Log.v(this.getClass().getSimpleName(), "Configuration change");
+		if (PardusConstants.DEBUG) {
+			Log.i(this.getClass().getSimpleName(), "Configuration change");
+		}
 		super.onConfigurationChanged(newConfig);
 		parseDisplayMetrics();
 		links.calcAndApplyDimensions();
@@ -634,6 +641,8 @@ public class Pardus extends ScriptManagerActivity {
 				/ displayMetrics.density);
 		displayDensityScale = displayMetrics.density;
 		displayDpi = displayMetrics.densityDpi;
+		orientation = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE || displayWidthPx > displayHeightPx) ? Configuration.ORIENTATION_LANDSCAPE
+				: Configuration.ORIENTATION_PORTRAIT;
 	}
 
 	/**
