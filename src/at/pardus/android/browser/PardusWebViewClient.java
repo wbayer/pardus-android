@@ -227,6 +227,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 					+ (PardusPreferences.isUseHttps() ? "true" : "false")
 					+ ", " + (pardusView.isAutoLogin() ? "true" : "false")
 					+ ");");
+			view.clearHistory();
 			return;
 		} else if (url.equals(PardusConstants.loginUrlHttps)
 				|| url.equals(PardusConstants.loginUrl)) {
@@ -266,13 +267,17 @@ public class PardusWebViewClient extends WebViewClientGm {
 			pardusView.loadUniversePage(PardusConstants.bulletinBoardPage);
 			return;
 		}
-		// user scripts
-		if (!isLocalUrl(url)) {
-			runMatchingScripts(view, url, true, jsHidePrivateInterfaces, null);
-		}
-		// new (status) message check
-		if (lookForNewMsg && isPardusUniUrl(url)) {
-			view.loadUrl("javascript:(function() { " + jsNewMsgCheck + " })()");
+		if (!isSkippedUrl(url)) {
+			// user scripts
+			if (!isLocalUrl(url)) {
+				runMatchingScripts(view, url, true, jsHidePrivateInterfaces,
+						null);
+			}
+			// new (status) message check
+			if (lookForNewMsg && isPardusUniUrl(url)) {
+				view.loadUrl("javascript:(function() { " + jsNewMsgCheck
+						+ " })()");
+			}
 		}
 	}
 
@@ -287,7 +292,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Loading resource " + url);
 		}
-		// new (system) message/log check after ajax loads
+		// new (status) message check after ajax loads
 		if (((PardusWebView) view).getRenderStatus() != RenderStatus.LOAD_START
 				&& url.contains(".pardus.at/main_ajax.php")) {
 			view.loadUrl("javascript:(function() { setTimeout(function() { "
@@ -439,5 +444,15 @@ public class PardusWebViewClient extends WebViewClientGm {
 				.contains("/index.php?section=account_") && (url
 				.startsWith("https://www.pardus.at/") || url
 				.startsWith("http://www.pardus.at/"))));
+	}
+
+	/**
+	 * @param url
+	 *            URL to check
+	 * @return true for Pardus pages that are skipped in the Android app (i.e.
+	 *         game.php)
+	 */
+	public static boolean isSkippedUrl(String url) {
+		return (url.endsWith(".pardus.at/" + PardusConstants.gameFrame));
 	}
 }

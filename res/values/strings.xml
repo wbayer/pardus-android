@@ -3,7 +3,8 @@
 
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
-    <string name="app_update_msg">New features:\nVisited pages remember their last zoom level and scroll position.\nZoom buttons are not displayed anymore if your phone supports multi-touch.\nBoth changes can be disabled in the Settings.\n*Fixed a regression regarding screen orientation changes (stored page positions from the day of release have been reset).</string>
+    <string name="app_update_msg">New features:\nVisited pages remember their last zoom level and scroll position.\nZoom buttons are not displayed anymore if your phone supports multi-touch.\nBoth changes can be disabled in the Settings.\nPlease visit our Google Play page for details.</string>
+    <string name="app_update_msg_minor"></string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
     <string name="option_userscripts">Userscripts.org</string>
@@ -16,7 +17,7 @@
     <string name="option_settings">Settings</string>
     <string name="option_login">Log in</string>
     <string name="option_logout">Log out</string>
-    <string name="option_switch">Switch to</string>
+    <string name="option_switch">-></string>
     <string name="option_account">Account</string>
 
 </resources>

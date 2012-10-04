@@ -17,6 +17,8 @@
 
 package at.pardus.android.browser;
 
+import java.lang.reflect.Method;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -51,10 +53,12 @@ import at.pardus.android.webview.gm.run.WebViewGm;
 public class PardusWebView extends WebViewGm {
 
 	public static enum RenderStatus {
-		LOAD_START, LOAD_FINISH, RENDER_FINISH
+		LOAD_START, LOAD_FINISH
 	};
 
 	private WebSettings settings;
+
+	private Activity activity;
 
 	private PardusWebViewClient viewClient;
 
@@ -63,8 +67,6 @@ public class PardusWebView extends WebViewGm {
 	private PardusMessageChecker messageChecker;
 
 	private PardusDownloadListener downloadListener;
-
-	// private PardusPictureListener pictureListener;
 
 	private PardusPageProperties pageProperties;
 
@@ -84,7 +86,7 @@ public class PardusWebView extends WebViewGm {
 
 	private int defaultInitialScale;
 
-	private RenderStatus renderStatus = RenderStatus.RENDER_FINISH;
+	private RenderStatus renderStatus = RenderStatus.LOAD_FINISH;
 
 	private volatile boolean touchedAfterPageLoad = false;
 
@@ -170,10 +172,10 @@ public class PardusWebView extends WebViewGm {
 		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
-		// pictureListener = new PardusPictureListener();
 		setRememberPageProperties(PardusPreferences.isRememberPageProperties());
 		setMenuSensitivity(PardusPreferences.getMenuSensitivity());
 		clearCache(true);
+		resetMinZoom();
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
 		if (Pardus.displayDpi <= 160 || Pardus.isTablet) {
 			defaultInitialScale = (int) FloatMath
@@ -190,13 +192,17 @@ public class PardusWebView extends WebViewGm {
 	 * Sets up and adds a web view client for browser events and a web chrome
 	 * client for window handling.
 	 * 
+	 * 
+	 * @param activity
+	 *            the activity this browser component runs in
 	 * @param progress
 	 *            the loading progress bar of the browser
 	 * @param messageChecker
 	 *            the message checker to share cookies with
 	 */
-	public void initClients(ProgressBar progress,
+	public void initClients(Activity activity, ProgressBar progress,
 			PardusMessageChecker messageChecker) {
+		this.activity = activity;
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
 		}
@@ -215,11 +221,8 @@ public class PardusWebView extends WebViewGm {
 
 	/**
 	 * Sets up the bridges between Java and Javascript.
-	 * 
-	 * @param activity
-	 *            the activity this browser component runs in
 	 */
-	public void initJavascriptBridges(Activity activity) {
+	public void initJavascriptBridges() {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up javascript interfaces");
@@ -638,11 +641,9 @@ public class PardusWebView extends WebViewGm {
 		if (rememberPageProperties) {
 			if (pageProperties == null) {
 				pageProperties = new PardusPageProperties(getContext());
-				// setPictureListener(pictureListener);
 			}
 		} else {
 			if (pageProperties != null) {
-				// setPictureListener(null);
 				pageProperties.forget();
 				pageProperties = null;
 			}
@@ -654,6 +655,46 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void resetInitialScale() {
 		setInitialScale(defaultInitialScale);
+	}
+
+	/**
+	 * Resets the minimum zoom scale (= maximum the view can be zoomed out) via
+	 * reflection. Does not work consistently.
+	 */
+	private void resetMinZoom() {
+		if (Build.VERSION.SDK_INT <= 10) {
+			// the minimum zoom scale is fine in android versions <= 2.3
+			return;
+		}
+		settings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
+		Object webViewObj;
+		Method adjustDefaultZoomDensity;
+		try {
+			if (Build.VERSION.SDK_INT <= 14) {
+				webViewObj = this;
+				adjustDefaultZoomDensity = Class.forName(
+						"android.webkit.WebView").getDeclaredMethod(
+						"updateDefaultZoomDensity", new Class[] { int.class });
+			} else if (Build.VERSION.SDK_INT <= 15) {
+				webViewObj = this;
+				adjustDefaultZoomDensity = Class.forName(
+						"android.webkit.WebView").getDeclaredMethod(
+						"adjustDefaultZoomDensity", new Class[] { int.class });
+			} else {
+				webViewObj = Class.forName("android.webkit.WebView")
+						.getMethod("getWebViewProvider", (Class[]) null)
+						.invoke(this, (Object[]) null);
+				adjustDefaultZoomDensity = Class.forName(
+						"android.webkit.WebViewClassic").getDeclaredMethod(
+						"adjustDefaultZoomDensity", new Class[] { int.class });
+			}
+			adjustDefaultZoomDensity.setAccessible(true);
+			adjustDefaultZoomDensity.invoke(webViewObj, new Object[] { 200 });
+		} catch (Exception e) {
+			Log.w(this.getClass().getSimpleName(),
+					"Exception while attempting to set the minimum zoom scale via reflection (API level "
+							+ Build.VERSION.SDK_INT + "): " + e);
+		}
 	}
 
 	/**
@@ -676,7 +717,7 @@ public class PardusWebView extends WebViewGm {
 		if (zoomButtonsController != null) {
 			return;
 		}
-		if (android.os.Build.VERSION.SDK_INT >= 11) {
+		if (Build.VERSION.SDK_INT >= 11) {
 			try {
 				Class.forName("android.webkit.WebSettings")
 						.getMethod("setDisplayZoomControls",
@@ -687,7 +728,7 @@ public class PardusWebView extends WebViewGm {
 			} catch (Exception e) {
 				Log.w(this.getClass().getSimpleName(),
 						"Exception while attempting to call setDisplayZoomControls via reflection (API level "
-								+ android.os.Build.VERSION.SDK_INT + "): " + e);
+								+ Build.VERSION.SDK_INT + "): " + e);
 			}
 		}
 		try {
@@ -700,7 +741,7 @@ public class PardusWebView extends WebViewGm {
 		} catch (Exception e) {
 			Log.w(this.getClass().getSimpleName(),
 					"Exception while attempting to get the ZoomButtonsController via reflection (API level "
-							+ android.os.Build.VERSION.SDK_INT + "): " + e);
+							+ Build.VERSION.SDK_INT + "): " + e);
 		}
 	}
 
@@ -742,22 +783,55 @@ public class PardusWebView extends WebViewGm {
 	 *            the url to parse the universe from
 	 */
 	public void setUniverse(String url) {
+		String newUniverse;
 		if (url == null) {
-			universe = null;
-			messageChecker.setUniverse(null, null);
-			return;
-		}
-		if (url.startsWith("http://artemis.pardus.at/")
+			newUniverse = null;
+		} else if (url.startsWith("http://artemis.pardus.at/")
 				|| url.startsWith("https://artemis.pardus.at/")) {
-			universe = "artemis";
+			newUniverse = "artemis";
 		} else if (url.startsWith("http://orion.pardus.at/")
 				|| url.startsWith("https://orion.pardus.at/")) {
-			universe = "orion";
+			newUniverse = "orion";
 		} else if (url.startsWith("http://pegasus.pardus.at/")
 				|| url.startsWith("https://pegasus.pardus.at/")) {
-			universe = "pegasus";
+			newUniverse = "pegasus";
+		} else {
+			return;
 		}
-		messageChecker.setUniverse(universe, cookieManager.getCookie(url));
+		boolean uniChange = false;
+		if (newUniverse == null) {
+			if (universe != null) {
+				uniChange = true;
+			}
+		} else {
+			if (!newUniverse.equals(universe)) {
+				uniChange = true;
+			}
+		}
+		if (uniChange) {
+			universe = newUniverse;
+			messageChecker.setUniverse(newUniverse, newUniverse == null ? null
+					: cookieManager.getCookie(url));
+			if (Build.VERSION.SDK_INT >= 11) {
+				activity.runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							Class.forName("android.app.Activity")
+									.getMethod("invalidateOptionsMenu",
+											(Class[]) null)
+									.invoke(activity, (Object[]) null);
+						} catch (Exception e) {
+							Log.w(this.getClass().getSimpleName(),
+									"Exception while attempting to call invalidateOptionsMenu via reflection (API level "
+											+ Build.VERSION.SDK_INT + "): " + e);
+						}
+					}
+
+				});
+			}
+		}
 	}
 
 	/**
@@ -805,10 +879,9 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(),
 					"New render status: LOAD_START");
 		}
-		if (pageProperties == null) {
+		if (pageProperties == null || PardusWebViewClient.isSkippedUrl(url)) {
 			return;
 		}
-		// pictureListener.resetLastRenderInfo();
 		// save current page's properties
 		savePageProperties();
 		// restore next page's zoom level (setInitialScale must be called early)
@@ -839,7 +912,8 @@ public class PardusWebView extends WebViewGm {
 					"New render status: LOAD_FINISH");
 		}
 		touchedAfterPageLoad = false;
-		if (pageProperties == null) {
+		if (pageProperties == null
+				|| PardusWebViewClient.isSkippedUrl(getUrl())) {
 			return;
 		}
 		// restore scroll position
@@ -856,18 +930,6 @@ public class PardusWebView extends WebViewGm {
 			initialScroll = PardusPageProperties.getEmptyProperty();
 		}
 		scrollTo(initialScroll.posX, initialScroll.posY);
-	}
-
-	/**
-	 * Previously called by the PardusPictureListener when a potentially final
-	 * rendering of the page was detected.
-	 */
-	public void propertiesAfterPageRender() {
-		setRenderStatus(RenderStatus.RENDER_FINISH);
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(),
-					"New (or unchanged) render status: RENDER_FINISH");
-		}
 	}
 
 	/*
@@ -929,19 +991,34 @@ public class PardusWebView extends WebViewGm {
 	 * @return false if the browser history is empty
 	 */
 	public boolean back() {
-		if (canGoBack()) {
-			WebBackForwardList list = copyBackForwardList();
-			String previousUrl = list
-					.getItemAtIndex(list.getCurrentIndex() - 1).getUrl();
-			if (PardusConstants.DEBUG) {
-				Log.v(this.getClass().getSimpleName(), "Going back to "
-						+ previousUrl);
-			}
-			propertiesBeforePageLoad(previousUrl);
-			goBack();
-			return true;
+		WebBackForwardList list = copyBackForwardList();
+		int currentPos = list.getCurrentIndex();
+		if (currentPos == 0) {
+			return false;
 		}
-		return false;
+		int posBack = 1;
+		String previousUrl = list.getItemAtIndex(currentPos - 1).getUrl();
+		if (PardusWebViewClient.isSkippedUrl(previousUrl)) {
+			if (currentPos >= 2) {
+				previousUrl = list.getItemAtIndex(currentPos - 2).getUrl();
+				posBack = 2;
+			} else {
+				clearHistory();
+				return false;
+			}
+		}
+		if (PardusConstants.DEBUG) {
+			Log.v(this.getClass().getSimpleName(), "Going back to "
+					+ previousUrl);
+		}
+		if (previousUrl.equals(PardusConstants.loginScreen)) {
+			clearHistory();
+			login(false);
+		} else {
+			propertiesBeforePageLoad(previousUrl);
+			goBackOrForward(posBack * (-1));
+		}
+		return true;
 	}
 
 	/*

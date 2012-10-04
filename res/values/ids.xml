@@ -2,6 +2,7 @@
 <resources>
 
     <item name="dialog_app_update" type="id"/>
+    <item name="dialog_app_update_minor" type="id"/>
     <item name="option_group_scripts" type="id"/>
     <item name="option_userscripts" type="id"/>
     <item name="option_pardus" type="id"/>

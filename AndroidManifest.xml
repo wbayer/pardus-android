@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="at.pardus.android.browser"
     android:installLocation="auto"
-    android:versionCode="16"
-    android:versionName="1.22" >
+    android:versionCode="17"
+    android:versionName="1.23" >
 
     <uses-sdk
         android:minSdkVersion="8"

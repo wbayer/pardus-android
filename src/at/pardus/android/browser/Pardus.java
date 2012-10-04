@@ -39,6 +39,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieSyncManager;
@@ -75,6 +76,8 @@ public class Pardus extends ScriptManagerActivity {
 	public static int orientation;
 
 	public static boolean isTablet;
+
+	public static boolean hasMenuKey;
 
 	private final Handler handler = new Handler();
 
@@ -195,8 +198,25 @@ public class Pardus extends ScriptManagerActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		isTablet = getResources().getBoolean(R.bool.isTablet);
-		if (!isTablet) {
-			// on tablets the action bar (menu) is in the title bar
+		if (Build.VERSION.SDK_INT <= 10) {
+			hasMenuKey = true;
+		} else if (Build.VERSION.SDK_INT <= 13) {
+			hasMenuKey = false;
+		} else {
+			try {
+				Method hasPermanentMenuKey = Class.forName(
+						"android.view.ViewConfiguration").getMethod(
+						"hasPermanentMenuKey", (Class[]) null);
+				hasMenuKey = (Boolean) hasPermanentMenuKey.invoke(
+						ViewConfiguration.get(this), (Object[]) null);
+			} catch (Exception e) {
+				Log.w(this.getClass().getSimpleName(),
+						"Exception while attempting to call hasPermanentMenuKey via reflection (API level "
+								+ Build.VERSION.SDK_INT + "): " + e);
+				hasMenuKey = false;
+			}
+		}
+		if (!isTablet && hasMenuKey) {
 			requestWindowFeature(Window.FEATURE_NO_TITLE);
 		}
 		PardusPreferences.init(this);
@@ -249,8 +269,8 @@ public class Pardus extends ScriptManagerActivity {
 		// initialize browser and links
 		browser = (PardusWebView) findViewById(R.id.browser);
 		browser.setScriptStore(scriptStore);
-		browser.initClients(progress, messageChecker);
-		browser.initJavascriptBridges(this);
+		browser.initClients(this, progress, messageChecker);
+		browser.initJavascriptBridges();
 		browser.initDownloadListener(storageDir, cacheDir);
 		GridView linksGridView = (GridView) findViewById(R.id.links);
 		links = new PardusLinks(this, handler, getLayoutInflater(), browser,
@@ -262,9 +282,17 @@ public class Pardus extends ScriptManagerActivity {
 		int currentVersion = getVersionCode();
 		if (versionLastStart == -1) {
 			PardusPreferences.setVersionCode(currentVersion);
-		} else if (versionLastStart < currentVersion
-				&& getString(R.string.app_update_msg).length() > 0) {
-			showDialog(R.id.dialog_app_update);
+		} else if (versionLastStart < currentVersion) {
+			if (versionLastStart < getResources().getInteger(
+					R.integer.last_major_update)) {
+				if (getString(R.string.app_update_msg).length() > 0) {
+					showDialog(R.id.dialog_app_update);
+				}
+			} else {
+				if (getString(R.string.app_update_msg_minor).length() > 0) {
+					showDialog(R.id.dialog_app_update_minor);
+				}
+			}
 			PardusPreferences.setVersionCode(currentVersion);
 		}
 	}
@@ -399,23 +427,38 @@ public class Pardus extends ScriptManagerActivity {
 			menu.add(R.id.option_group_scripts, R.id.option_pardus, 0,
 					R.string.option_pardus);
 		}
-		if (isTablet) {
-			// declare action bar items on tablets
+		if (isTablet || !hasMenuKey) {
+			// declare action bar items on tablets and devices without menu key
 			try {
 				Method showAsAction = Class
 						.forName("android.view.MenuItem")
 						.getMethod("setShowAsAction", new Class[] { int.class });
 				int[] actionItemIds = { R.id.option_showlinks,
-						R.id.option_logout };
+						R.id.option_orion, R.id.option_artemis,
+						R.id.option_pegasus, R.id.option_logout };
 				for (int itemId : actionItemIds) {
 					MenuItem item = menu.findItem(itemId);
 					if (item != null) {
-						showAsAction.invoke(item, new Object[] { 1 });
+						int showProperty = -1;
+						if (itemId == R.id.option_showlinks
+								|| itemId == R.id.option_logout) {
+							showProperty = 2;
+						} else {
+							if (Pardus.displayWidthDp > 400
+									&& Pardus.displayHeightDp > 400) {
+								showProperty = 1;
+							}
+						}
+						if (showProperty != -1) {
+							showAsAction.invoke(item,
+									new Object[] { showProperty });
+						}
 					}
 				}
 			} catch (Exception e) {
 				Log.i(this.getClass().getSimpleName(),
-						"Running a tablet without action bar support. " + e);
+						"Running a tablet or device without menu button without action bar support. "
+								+ e);
 			}
 		}
 		return super.onPrepareOptionsMenu(menu);
@@ -428,12 +471,23 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		Dialog dialog;
+		Dialog dialog = null;
+		Integer msgId;
 		switch (id) {
 		case R.id.dialog_app_update:
+			msgId = R.string.app_update_msg;
+			break;
+		case R.id.dialog_app_update_minor:
+			msgId = R.string.app_update_msg_minor;
+			break;
+		default:
+			msgId = null;
+			break;
+		}
+		if (msgId != null) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.app_update_title)
-					.setMessage(R.string.app_update_msg)
+					.setMessage(msgId)
 					.setNeutralButton(R.string.app_update_button,
 							new DialogInterface.OnClickListener() {
 
@@ -445,9 +499,6 @@ public class Pardus extends ScriptManagerActivity {
 
 							}).setCancelable(true);
 			dialog = builder.create();
-			break;
-		default:
-			dialog = null;
 		}
 		return dialog;
 	}
