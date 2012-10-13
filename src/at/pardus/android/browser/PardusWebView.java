@@ -90,7 +90,8 @@ public class PardusWebView extends WebViewGm {
 
 	private volatile boolean touchedAfterPageLoad = false;
 
-	private volatile PardusPageProperty initialScroll;
+	private volatile PardusPageProperty initialScroll = PardusPageProperties
+			.getNoScrollProperty();
 
 	private volatile boolean scrolling = false;
 
@@ -912,24 +913,30 @@ public class PardusWebView extends WebViewGm {
 					"New render status: LOAD_FINISH");
 		}
 		touchedAfterPageLoad = false;
-		if (pageProperties == null
-				|| PardusWebViewClient.isSkippedUrl(getUrl())) {
+		String url = getUrl();
+		if (pageProperties == null || PardusWebViewClient.isSkippedUrl(url)) {
 			return;
 		}
 		// restore scroll position
-		PardusPageProperty property = pageProperties.get(getUrl(),
+		PardusPageProperty property = pageProperties.get(url,
 				Pardus.orientation);
 		if (property != null) {
 			if (PardusConstants.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
-						"Restoring scroll position for " + getUrl() + ": "
+						"Restoring scroll position for " + url + ": "
 								+ property.posX + "/" + property.posY);
 			}
 			initialScroll = property;
 		} else {
-			initialScroll = PardusPageProperties.getEmptyProperty();
+			initialScroll = (url.contains("#")
+					|| url.contains("view=getnewpost") || url
+					.contains("view=findpost")) ? PardusPageProperties
+					.getNoScrollProperty() : PardusPageProperties
+					.getEmptyProperty();
 		}
-		scrollTo(initialScroll.posX, initialScroll.posY);
+		if (initialScroll.posX != -1 || initialScroll.posY != -1) {
+			scrollTo(initialScroll.posX, initialScroll.posY);
+		}
 	}
 
 	/*
@@ -942,7 +949,8 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(),
 					"WebView#scrollTo called for " + x + "/" + y);
 		}
-		if (touchedAfterPageLoad || pageProperties == null) {
+		if (touchedAfterPageLoad || pageProperties == null
+				|| (initialScroll.posX == -1 && initialScroll.posY == -1)) {
 			super.scrollTo(x, y);
 			return;
 		}
@@ -972,7 +980,8 @@ public class PardusWebView extends WebViewGm {
 					+ (int) FloatMath.ceil(getScale() * 100 - 0.5f) + ")");
 		}
 		super.onScrollChanged(l, t, oldl, oldt);
-		if (touchedAfterPageLoad || pageProperties == null) {
+		if (touchedAfterPageLoad || pageProperties == null
+				|| (initialScroll.posX == -1 && initialScroll.posY == -1)) {
 			return;
 		}
 		if (l != initialScroll.posX || t != initialScroll.posY) {

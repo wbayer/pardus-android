@@ -90,10 +90,11 @@ public class PardusPageProperties {
 		if (identifier.url == null) {
 			return;
 		}
-		boolean noScroll = identifier.url.startsWith("FORUM/")
-				&& url.contains("#");
+		boolean noScroll = identifier.url.equals("FORUM/IN_THREAD")
+				|| identifier.url.equals("FORUM/POST")
+				|| identifier.url.equals("FORUM/SEARCH_RESULT");
 		PardusPageProperty property = new PardusPageProperty(scale,
-				noScroll ? 0 : posX, noScroll ? 0 : posY, totalX, totalY);
+				noScroll ? -1 : posX, noScroll ? -1 : posY, totalX, totalY);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Saving properties for "
 					+ identifier + " (" + url + "): " + property);
@@ -155,7 +156,6 @@ public class PardusPageProperties {
 			is = new ObjectInputStream(context.openFileInput(FILENAME));
 			properties = (Map<PardusPageIdentifier, PardusPageProperty>) is
 					.readObject();
-			is.close();
 		} catch (FileNotFoundException e) {
 			if (PardusConstants.DEBUG) {
 				Log.d(this.getClass().getSimpleName(),
@@ -169,10 +169,12 @@ public class PardusPageProperties {
 			Log.w(this.getClass().getSimpleName(),
 					"Error loading page properties from disk. "
 							+ Log.getStackTraceString(e));
-			try {
+		}
+		try {
+			if (is != null) {
 				is.close();
-			} catch (Exception e2) {
 			}
+		} catch (Exception e) {
 		}
 		if (PardusConstants.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
@@ -202,6 +204,14 @@ public class PardusPageProperties {
 	 */
 	public static PardusPageProperty getEmptyProperty() {
 		return new PardusPageProperty(0.0f, 0, 0, 0, 0);
+	}
+
+	/**
+	 * @return a new PardusPageProperty object with scroll positions set to -1
+	 *         to indicate that no automatic scrolling should take place
+	 */
+	public static PardusPageProperty getNoScrollProperty() {
+		return new PardusPageProperty(0.0f, -1, -1, 0, 0);
 	}
 
 	/**
