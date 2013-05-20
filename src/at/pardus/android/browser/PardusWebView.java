@@ -18,6 +18,7 @@
 package at.pardus.android.browser;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -26,7 +27,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -179,12 +179,10 @@ public class PardusWebView extends WebViewGm {
 		resetMinZoom();
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
 		if (Pardus.displayDpi <= 160 || Pardus.isTablet) {
-			defaultInitialScale = (int) FloatMath
-					.floor(Pardus.displayDpi / 1.6f);
+			defaultInitialScale = (int) Math.floor(Pardus.displayDpi / 1.6f);
 		} else {
 			// start 240dpi screens zoomed out if it's not a tablet
-			defaultInitialScale = (int) FloatMath
-					.floor(Pardus.displayDpi / 2.4f);
+			defaultInitialScale = (int) Math.floor(Pardus.displayDpi / 2.4f);
 		}
 		resetInitialScale();
 	}
@@ -250,7 +248,7 @@ public class PardusWebView extends WebViewGm {
 					"Setting up download listener");
 		}
 		downloadListener = new PardusDownloadListener(this, getContext(),
-				storageDir, cacheDir);
+				storageDir, storageDir, cacheDir);
 		setDownloadListener(downloadListener);
 	}
 
@@ -405,8 +403,17 @@ public class PardusWebView extends WebViewGm {
 		}
 		this.autoLogin = autoLogin;
 		String imagePath = PardusPreferences.getImagePath();
-		if (PardusPreferences.checkImagePath(imagePath)) {
+		PardusImagePack imagePack = new PardusImagePack(imagePath);
+		if (imagePack.isInstalled()) {
 			LocalContentProvider.FILEPATH = imagePath;
+			downloadListener.setUpdateStorageDir(imagePath);
+			Date now = new Date();
+			Date nextCheck = PardusPreferences.getNextImagePackUpdateCheck();
+			if (!nextCheck.after(now)) {
+				imagePack.updateCheck(activity);
+				PardusPreferences.setNextImagePackUpdateCheck(new Date(now
+						.getTime() + 86400000));
+			}
 		} else {
 			if (PardusConstants.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "No image pack set yet");
@@ -891,13 +898,10 @@ public class PardusWebView extends WebViewGm {
 		if (property != null) {
 			if (PardusConstants.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
-						"Restoring zoom level for "
-								+ url
-								+ ": "
-								+ (int) FloatMath
-										.ceil(property.scale * 100 - 0.5f));
+						"Restoring zoom level for " + url + ": "
+								+ (int) Math.ceil(property.scale * 100 - 0.5f));
 			}
-			setInitialScale((int) FloatMath.ceil(property.scale * 100 - 0.5f));
+			setInitialScale((int) Math.ceil(property.scale * 100 - 0.5f));
 		} else {
 			resetInitialScale();
 		}
@@ -977,7 +981,7 @@ public class PardusWebView extends WebViewGm {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Scrolled from " + oldl
 					+ "/" + oldt + " to " + l + "/" + t + " (Scale "
-					+ (int) FloatMath.ceil(getScale() * 100 - 0.5f) + ")");
+					+ (int) Math.ceil(getScale() * 100 - 0.5f) + ")");
 		}
 		super.onScrollChanged(l, t, oldl, oldt);
 		if (touchedAfterPageLoad || pageProperties == null

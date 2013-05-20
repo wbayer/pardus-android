@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/browserLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,7 +19,6 @@
         android:scrollbarStyle="insideOverlay" />
 
     <TextView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/notify"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,10 +36,10 @@
         android:textColor="#eaeaee"
         android:textSize="11sp"
         android:textStyle="bold"
-        android:typeface="monospace" />
+        android:typeface="monospace"
+        tools:ignore="SmallSp" />
 
     <GridView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/links"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

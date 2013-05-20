@@ -22,11 +22,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.util.FloatMath;
 import android.util.Log;
 
 /**
@@ -405,9 +405,10 @@ public class PardusPageProperties {
 			float scrollXRel = posX / (float) totalX;
 			float scrollYRel = posY / (float) totalY;
 			return String
-					.format("window.scrollTo("
-							+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollWidth),"
-							+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollHeight));",
+					.format(Locale.ENGLISH,
+							"window.scrollTo("
+									+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollWidth),"
+									+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollHeight));",
 							scrollXRel, scrollYRel);
 		}
 
@@ -418,7 +419,7 @@ public class PardusPageProperties {
 		 */
 		@Override
 		public String toString() {
-			return "Scale " + (int) FloatMath.ceil(scale * 100 - 0.5f)
+			return "Scale " + (int) Math.ceil(scale * 100 - 0.5f)
 					+ ", Scroll-X " + posX + "/" + totalX + ", Scroll-Y "
 					+ posY + "/" + totalY;
 		}

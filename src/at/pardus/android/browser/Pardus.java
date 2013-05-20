@@ -17,9 +17,10 @@
 
 package at.pardus.android.browser;
 
-import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.EmptyStackException;
+import java.util.Locale;
 import java.util.Stack;
 
 import android.app.AlertDialog;
@@ -33,7 +34,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.DisplayMetrics;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -151,7 +151,7 @@ public class Pardus extends ScriptManagerActivity {
 						@Override
 						public boolean shouldOverrideUrlLoading(WebView view,
 								final String url) {
-							String urlLower = url.toLowerCase();
+							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
 									&& !urlLower
 											.equals(PardusConstants.scriptsUrl)
@@ -168,7 +168,7 @@ public class Pardus extends ScriptManagerActivity {
 						@Override
 						public void onPageStarted(WebView view, String url,
 								Bitmap favicon) {
-							String urlLower = url.toLowerCase();
+							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
 									&& !urlLower
 											.equals(PardusConstants.scriptsUrl)
@@ -236,24 +236,22 @@ public class Pardus extends ScriptManagerActivity {
 					+ ", Density (dpi): " + displayDpi);
 		}
 		CookieSyncManager.createInstance(this);
-		// determine available storage directories (prefer external device)
-		String storageDir = getExternalPardusDir();
-		if (storageDir == null) {
-			// no external storage available
-			storageDir = getInternalPardusDir();
-			if (storageDir == null) {
-				Log.e(this.getClass().getSimpleName(),
-						"Unable to determine storage directory");
-				PardusNotification
-						.showLong("No suitable place to store the image pack found");
-				finish();
+		PardusImagePack imagePack = new PardusImagePack(Environment
+				.getExternalStorageDirectory().getAbsolutePath(), getFilesDir()
+				.getAbsolutePath());
+		if (imagePack.getPath() == null) {
+			Log.e(this.getClass().getSimpleName(),
+					"Unable to determine storage directory");
+			PardusNotification
+					.showLong("No suitable place to store the image pack found");
+			finish();
+		} else {
+			if (PardusConstants.DEBUG) {
+				Log.d(PardusImagePack.class.getClass().getSimpleName(),
+						"Pardus image pack directory set to "
+								+ imagePack.getPath());
 			}
 		}
-		if (PardusConstants.DEBUG) {
-			Log.d(this.getClass().getSimpleName(), "Storage directory set to "
-					+ storageDir);
-		}
-		String cacheDir = getCacheDir().getAbsolutePath();
 		// load the script store
 		scriptStore = new ScriptStoreSQLite(this);
 		scriptStore.open();
@@ -271,7 +269,8 @@ public class Pardus extends ScriptManagerActivity {
 		browser.setScriptStore(scriptStore);
 		browser.initClients(this, progress, messageChecker);
 		browser.initJavascriptBridges();
-		browser.initDownloadListener(storageDir, cacheDir);
+		browser.initDownloadListener(imagePack.getPath(), getCacheDir()
+				.getAbsolutePath());
 		GridView linksGridView = (GridView) findViewById(R.id.links);
 		links = new PardusLinks(this, handler, getLayoutInflater(), browser,
 				linksGridView);
@@ -286,11 +285,11 @@ public class Pardus extends ScriptManagerActivity {
 			if (versionLastStart < getResources().getInteger(
 					R.integer.last_major_update)) {
 				if (getString(R.string.app_update_msg).length() > 0) {
-					showDialog(R.id.dialog_app_update);
+					showDialog(R.id.dialog_app_update, null);
 				}
 			} else {
 				if (getString(R.string.app_update_msg_minor).length() > 0) {
-					showDialog(R.id.dialog_app_update_minor);
+					showDialog(R.id.dialog_app_update_minor, null);
 				}
 			}
 			PardusPreferences.setVersionCode(currentVersion);
@@ -470,24 +469,14 @@ public class Pardus extends ScriptManagerActivity {
 	 * @see android.app.Activity#onCreateDialog(int)
 	 */
 	@Override
-	protected Dialog onCreateDialog(int id) {
+	protected Dialog onCreateDialog(int id, Bundle args) {
 		Dialog dialog = null;
-		Integer msgId;
-		switch (id) {
-		case R.id.dialog_app_update:
-			msgId = R.string.app_update_msg;
-			break;
-		case R.id.dialog_app_update_minor:
-			msgId = R.string.app_update_msg_minor;
-			break;
-		default:
-			msgId = null;
-			break;
-		}
-		if (msgId != null) {
+		if (id == R.id.dialog_app_update || id == R.id.dialog_app_update_minor) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.app_update_title)
-					.setMessage(msgId)
+					.setMessage(
+							(id == R.id.dialog_app_update) ? R.string.app_update_msg
+									: R.string.app_update_msg_minor)
 					.setNeutralButton(R.string.app_update_button,
 							new DialogInterface.OnClickListener() {
 
@@ -495,6 +484,36 @@ public class Pardus extends ScriptManagerActivity {
 								public void onClick(DialogInterface dialog,
 										int which) {
 									dialog.dismiss();
+								}
+
+							}).setCancelable(true);
+			dialog = builder.create();
+		} else if (id == R.id.dialog_ip_update) {
+			final String updateUrl = args.getString("updateUrl");
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.ip_update_title)
+					.setMessage(R.string.ip_update_msg)
+					.setNegativeButton(R.string.ip_update_button_neg,
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									PardusPreferences
+											.setNextImagePackUpdateCheck(new Date(
+													new Date().getTime() + 86400000 * 7));
+									dialog.dismiss();
+								}
+
+							})
+					.setPositiveButton(R.string.ip_update_button_pos,
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									dialog.dismiss();
+									browser.loadUrl(updateUrl);
 								}
 
 							}).setCancelable(true);
@@ -686,63 +705,14 @@ public class Pardus extends ScriptManagerActivity {
 		getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 		displayWidthPx = displayMetrics.widthPixels;
 		displayHeightPx = displayMetrics.heightPixels;
-		displayWidthDp = (int) FloatMath.ceil(displayMetrics.widthPixels
+		displayWidthDp = (int) Math.ceil(displayMetrics.widthPixels
 				/ displayMetrics.density);
-		displayHeightDp = (int) FloatMath.ceil(displayMetrics.heightPixels
+		displayHeightDp = (int) Math.ceil(displayMetrics.heightPixels
 				/ displayMetrics.density);
 		displayDensityScale = displayMetrics.density;
 		displayDpi = displayMetrics.densityDpi;
 		orientation = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE || displayWidthPx > displayHeightPx) ? Configuration.ORIENTATION_LANDSCAPE
 				: Configuration.ORIENTATION_PORTRAIT;
-	}
-
-	/**
-	 * Gets (or creates if needed) the pardus directory on an external device.
-	 * 
-	 * @return the location of the pardus directory, or null if no external
-	 *         device or if the directory cannot be created
-	 */
-	private String getExternalPardusDir() {
-		String dir = null;
-		File externalStorage = Environment.getExternalStorageDirectory();
-		if (externalStorage.isDirectory()) {
-			// external storage mounted
-			if (PardusConstants.DEBUG) {
-				Log.v(this.getClass().getSimpleName(),
-						"External storage directory at "
-								+ externalStorage.getAbsolutePath());
-			}
-			dir = externalStorage.getAbsolutePath() + "/pardus/img";
-			File externalPardusStorage = new File(dir);
-			if (!externalPardusStorage.canRead()
-					|| !externalPardusStorage.isDirectory()) {
-				if (!externalPardusStorage.mkdirs()) {
-					if (PardusConstants.DEBUG) {
-						Log.v(this.getClass().getSimpleName(),
-								"Cannot create external Pardus storage directory");
-					}
-					return null;
-				}
-			}
-		}
-		return dir;
-	}
-
-	/**
-	 * Gets (or creates if needed) the internal pardus directory.
-	 * 
-	 * @return the location of the pardus directory, or null if it cannot be
-	 *         created
-	 */
-	private String getInternalPardusDir() {
-		String dir = getFilesDir().getAbsolutePath() + "/img";
-		File storage = new File(dir);
-		if (!storage.canRead() || !storage.isDirectory()) {
-			if (!storage.mkdirs()) {
-				return null;
-			}
-		}
-		return dir;
 	}
 
 	/**

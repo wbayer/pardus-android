@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="at.pardus.android.browser"
     android:installLocation="auto"
-    android:versionCode="18"
-    android:versionName="1.24" >
+    android:versionCode="19"
+    android:versionName="1.25" >
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="16" />
+        android:targetSdkVersion="16"
+        tools:ignore="OldTargetApi" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -19,6 +21,7 @@
         android:xlargeScreens="true" />
 
     <application
+        android:allowBackup="true"
         android:description="@string/app_description"
         android:enabled="true"
         android:icon="@drawable/icon"

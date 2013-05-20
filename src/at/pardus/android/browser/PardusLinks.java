@@ -21,7 +21,6 @@ import java.util.StringTokenizer;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -244,8 +243,8 @@ public class PardusLinks {
 		int w = Math.max(
 				Math.min(numButtons * BUTTON_WIDTH_PX, Pardus.displayWidthPx),
 				BUTTON_WIDTH_PX);
-		int numColumns = (int) FloatMath.floor((w + 2) / BUTTON_WIDTH_PX);
-		int numRows = (int) FloatMath.ceil(numButtons / (float) numColumns);
+		int numColumns = (int) Math.floor((w + 2) / BUTTON_WIDTH_PX);
+		int numRows = (int) Math.ceil(numButtons / (float) numColumns);
 		int h = Math.max(
 				Math.min(numRows * (BUTTON_HEIGHT_PX + ROW_VSPACING_PX),
 						Pardus.displayHeightPx), BUTTON_HEIGHT_PX);

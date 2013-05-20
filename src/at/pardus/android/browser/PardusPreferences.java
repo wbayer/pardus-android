@@ -17,12 +17,10 @@
 
 package at.pardus.android.browser;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.Date;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import at.pardus.android.content.LocalContentProvider;
 
 /**
@@ -44,41 +42,6 @@ public abstract class PardusPreferences {
 	 */
 	public static void init(Context context) {
 		preferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE);
-	}
-
-	/**
-	 * Checks if an image path exists and is readable.
-	 * 
-	 * Creates a .nomedia file to hide from Android's gallery app.
-	 * 
-	 * @return true if valid, false else
-	 */
-	public static boolean checkImagePath(String imagePath) {
-		boolean valid = false;
-		if (!imagePath.equals("")) {
-			File galleryHideFile = new File(imagePath + "/.nomedia");
-			if (galleryHideFile.exists() && galleryHideFile.canRead()) {
-				// .nomedia file exists - expect image pack to be there
-				valid = true;
-			} else {
-				// .nomedia file does not exist
-				File imagePathCheckFile = new File(imagePath + "/vip.png");
-				if (imagePathCheckFile.exists() && imagePathCheckFile.canRead()) {
-					valid = true;
-					// image pack exists -> create .nomedia file
-					try {
-						galleryHideFile.createNewFile();
-					} catch (IOException e) {
-						if (PardusConstants.DEBUG) {
-							Log.w("PardusPreferences",
-									"Error creating new file "
-											+ galleryHideFile.getAbsolutePath());
-						}
-					}
-				}
-			}
-		}
-		return valid;
 	}
 
 	/**
@@ -359,6 +322,25 @@ public abstract class PardusPreferences {
 	public static void setLinks(String links) {
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putString("links", links);
+		editor.commit();
+	}
+
+	/**
+	 * @return the date of the next scheduled image pack update check
+	 */
+	public static Date getNextImagePackUpdateCheck() {
+		return new Date(preferences.getLong("ipUpdateCheck", 0));
+	}
+
+	/**
+	 * Stores the date to next check for an update of the image pack.
+	 * 
+	 * @param ipUpdateCheck
+	 *            the date of the next scheduled image pack update check
+	 */
+	public static void setNextImagePackUpdateCheck(Date ipUpdateCheck) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putLong("ipUpdateCheck", ipUpdateCheck.getTime());
 		editor.commit();
 	}
 

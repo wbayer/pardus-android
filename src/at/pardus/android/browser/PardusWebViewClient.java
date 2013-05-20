@@ -20,7 +20,6 @@ package at.pardus.android.browser;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -323,9 +322,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 	@Override
 	public void onScaleChanged(WebView view, float oldScale, float newScale) {
 		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "Scale changed from "
-					+ FloatMath.ceil(oldScale * 100 - 0.5f) + " to "
-					+ FloatMath.ceil(newScale * 100 - 0.5f));
+			Log.v(this.getClass().getSimpleName(),
+					"Scale changed from " + Math.ceil(oldScale * 100 - 0.5f)
+							+ " to " + Math.ceil(newScale * 100 - 0.5f));
 		}
 		super.onScaleChanged(view, oldScale, newScale);
 	}
@@ -453,6 +452,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *         game.php)
 	 */
 	public static boolean isSkippedUrl(String url) {
-		return (url.endsWith(".pardus.at/" + PardusConstants.gameFrame));
+		return (url == null || url.endsWith(".pardus.at/"
+				+ PardusConstants.gameFrame));
 	}
 }

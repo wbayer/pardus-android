@@ -50,6 +50,8 @@ public class PardusDownloadListener implements DownloadListener {
 
 	private String storageDir;
 
+	private String updateStorageDir;
+
 	private String cacheFile;
 
 	private boolean working = false;
@@ -145,13 +147,15 @@ public class PardusDownloadListener implements DownloadListener {
 				if (PardusConstants.DEBUG) {
 					Log.d(this.getClass().getSimpleName(), "Unzipping");
 				}
-				if (unzipFile()) {
+				boolean update = url.contains("/update_");
+				if (unzipFile(update)) {
 					// successfully unzipped and moved
 					if (PardusConstants.DEBUG) {
 						Log.d(this.getClass().getSimpleName(),
 								"Storing image pack location");
 					}
-					PardusPreferences.setImagePath(storageDir);
+					PardusPreferences.setImagePath(update ? updateStorageDir
+							: storageDir);
 					// make ui thread switch to login page
 					setDialogMessage("");
 				} else {
@@ -227,19 +231,29 @@ public class PardusDownloadListener implements DownloadListener {
 	/**
 	 * Unzips a file.
 	 * 
+	 * @param update
+	 *            true to extract files into updateStorageDir and keep old
+	 *            files, false to extract files into storageDir and delete any
+	 *            old files first
 	 * @return true if successful, false else
 	 */
-	private boolean unzipFile() {
+	private boolean unzipFile(boolean update) {
 		setDialogMessage("Unzipping ...");
 		ZipFile zipFile = null;
 		try {
+			String targetDir;
+			if (update) {
+				targetDir = updateStorageDir;
+			} else {
+				targetDir = storageDir;
+				// delete old image pack files
+				deleteDir(new File(targetDir));
+				new File(targetDir).mkdir();
+			}
 			zipFile = new ZipFile(cacheFile);
 			setDialogMax(zipFile.size());
 			int filesExtracted = 0;
 			Enumeration<? extends ZipEntry> zipFiles = zipFile.entries();
-			// delete old image pack files
-			deleteDir(new File(storageDir));
-			new File(storageDir).mkdir();
 			// extract new image pack archive
 			while (zipFiles.hasMoreElements()) {
 				ZipEntry zipEntry = zipFiles.nextElement();
@@ -247,7 +261,7 @@ public class PardusDownloadListener implements DownloadListener {
 					// directories will be created as needed below
 					continue;
 				}
-				File file = new File(storageDir, zipEntry.getName());
+				File file = new File(targetDir, zipEntry.getName());
 				// create directory path if needed
 				if (!file.getParentFile().exists()
 						&& !file.getParentFile().mkdirs()) {
@@ -324,7 +338,6 @@ public class PardusDownloadListener implements DownloadListener {
 			URL u = new URL(url);
 			con = (HttpURLConnection) u.openConnection();
 			con.setReadTimeout(5000);
-			con.setDoOutput(true);
 			con.setRequestMethod("GET");
 			con.connect();
 			InputStream is = con.getInputStream();
@@ -373,15 +386,26 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            context the webview is running in
 	 * @param storageDir
 	 *            final storage directory
+	 * @param updateStorageDir
+	 *            final storage directory for updates
 	 * @param cacheDir
 	 *            temporary download directory
 	 */
 	public PardusDownloadListener(PardusWebView browser, Context context,
-			String storageDir, String cacheDir) {
+			String storageDir, String updateStorageDir, String cacheDir) {
 		this.browser = browser;
 		this.context = context;
 		this.storageDir = storageDir;
+		this.updateStorageDir = updateStorageDir;
 		this.cacheFile = cacheDir + "/img.zip";
+	}
+
+	/**
+	 * @param updateStorageDir
+	 *            the final storage directory for updates to set
+	 */
+	public void setUpdateStorageDir(String updateStorageDir) {
+		this.updateStorageDir = updateStorageDir;
 	}
 
 	/**

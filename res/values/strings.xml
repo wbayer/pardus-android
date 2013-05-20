@@ -4,9 +4,13 @@
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
     <string name="app_update_msg">New features:\nVisited pages remember their last zoom level and scroll position.\nZoom buttons are not displayed anymore if your phone supports multi-touch.\nBoth changes can be disabled in the Settings.\nPlease visit our Google Play page for details.</string>
-    <string name="app_update_msg_minor"></string>
+    <string name="app_update_msg_minor">On May 1st all image packs were updated due to the new Contacts feature. Please re-download the image pack (Settings->Image packs) if you experience missing images. Once you have downloaded the latest image pack the app will be able to check for incremental updates automatically.</string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
+    <string name="ip_update_title">Image Pack Update</string>
+    <string name="ip_update_msg">An update is available for your image pack.</string>
+    <string name="ip_update_button_neg">Remind me later</string>
+    <string name="ip_update_button_pos">Update now</string>
     <string name="option_userscripts">Userscripts.org</string>
     <string name="option_pardus">Back to Pardus</string>
     <string name="option_showlinks">Show links</string>
