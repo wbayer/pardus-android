@@ -35,8 +35,16 @@ public abstract class PardusNotification {
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
 
+	public static void show(int messageId) {
+		show(context.getResources().getString(messageId));
+	}
+
 	public static void showLong(String message) {
 		Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+	}
+
+	public static void showLong(int messageId) {
+		showLong(context.getResources().getString(messageId));
 	}
 
 }

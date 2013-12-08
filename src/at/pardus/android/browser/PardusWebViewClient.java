@@ -20,6 +20,7 @@ package at.pardus.android.browser;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -265,6 +266,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 			// bulletin board accept frame: redirect to bulletin board
 			pardusView.loadUniversePage(PardusConstants.bulletinBoardPage);
 			return;
+		} else if (url.equals(PardusConstants.imageSelectionScreen)) {
+			// image pack selection page: android 4.4 incompatibility info
+			if (Build.VERSION.SDK_INT >= 19) {
+				PardusNotification.showLong(R.string.warning_ip_broken);
+			}
 		}
 		if (!isSkippedUrl(url)) {
 			// user scripts

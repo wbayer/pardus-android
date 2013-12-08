@@ -527,8 +527,11 @@ public class PardusWebView extends WebViewGm {
 			url = PardusConstants.loggedInUrl;
 			cookieManager.setCookie(url, "usehttps=1; max-age=0" + cookieInfo);
 		}
-		cookieManager.setCookie(url, "image_path=" + LocalContentProvider.URI
-				+ cookieInfo);
+		// android 4.4 webview does not allow access to content:// anymore
+		if (Build.VERSION.SDK_INT < 19) {
+			cookieManager.setCookie(url, "image_path="
+					+ LocalContentProvider.URI + cookieInfo);
+		}
 		cookieManager.setCookie(url, "resolution_tiles=64" + cookieInfo);
 		cookieManager.setCookie(url,
 				"nav_size=" + PardusPreferences.getNavSize() + cookieInfo);
