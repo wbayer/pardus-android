@@ -58,7 +58,9 @@ public class JavaScriptSettings {
 		settings += ",";
 		settings += Boolean.toString(PardusPreferences.isLogoutOnHide());
 		settings += ",";
-		settings += Integer.toString(PardusPreferences.getNavSize());
+		settings += Integer.toString(PardusPreferences.getNavSizeHor());
+		settings += ",";
+		settings += Integer.toString(PardusPreferences.getNavSizeVer());
 		settings += ",";
 		settings += Boolean.toString(PardusPreferences.isPartialRefresh());
 		settings += ",";
@@ -110,16 +112,29 @@ public class JavaScriptSettings {
 	}
 
 	/**
-	 * Changes the navSize setting.
+	 * Changes the navSizeHor setting.
 	 * 
-	 * @param navSize
+	 * @param navSizeHor
 	 */
-	public void setNavSize(String navSize) {
-		PardusPreferences.setNavSize(Integer.parseInt(navSize));
+	public void setNavSizeHor(String navSizeHor) {
+		PardusPreferences.setNavSizeHor(Integer.parseInt(navSizeHor));
 		if (browser.isLoggedIn()) {
 			browser.setCookies();
 		}
-		PardusNotification.show("Set Nav size to " + navSize);
+		PardusNotification.show("Set Nav width to " + navSizeHor);
+	}
+
+	/**
+	 * Changes the navSizeVer setting.
+	 * 
+	 * @param navSizeVer
+	 */
+	public void setNavSizeVer(String navSizeVer) {
+		PardusPreferences.setNavSizeVer(Integer.parseInt(navSizeVer));
+		if (browser.isLoggedIn()) {
+			browser.setCookies();
+		}
+		PardusNotification.show("Set Nav height to " + navSizeVer);
 	}
 
 	/**

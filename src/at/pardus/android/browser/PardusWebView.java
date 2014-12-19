@@ -179,11 +179,12 @@ public class PardusWebView extends WebViewGm {
 		resetMinZoom();
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
 		if (Pardus.displayDpi <= 160 || Pardus.isTablet) {
-			defaultInitialScale = (int) Math.floor(Pardus.displayDpi / 1.6f);
+			defaultInitialScale = (int) Math.round(Pardus.displayDpi / 1.6f);
 		} else {
 			// start 240dpi screens zoomed out if it's not a tablet
-			defaultInitialScale = (int) Math.floor(Pardus.displayDpi / 2.4f);
+			defaultInitialScale = (int) Math.round(Pardus.displayDpi / 2.4f);
 		}
+		PardusPreferences.init(null, defaultInitialScale);
 		resetInitialScale();
 	}
 
@@ -534,7 +535,12 @@ public class PardusWebView extends WebViewGm {
 		}
 		cookieManager.setCookie(url, "resolution_tiles=64" + cookieInfo);
 		cookieManager.setCookie(url,
-				"nav_size=" + PardusPreferences.getNavSize() + cookieInfo);
+				"nav_size_hor=" + PardusPreferences.getNavSizeHor()
+						+ cookieInfo);
+		cookieManager.setCookie(url,
+				"nav_size_ver=" + PardusPreferences.getNavSizeVer()
+						+ cookieInfo);
+		cookieManager.setCookie(url, "nav_size_dyn=0" + cookieInfo);
 		cookieManager.setCookie(url,
 				"partial_refresh="
 						+ ((PardusPreferences.isPartialRefresh()) ? "1" : "0")

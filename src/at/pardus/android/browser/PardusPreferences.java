@@ -34,14 +34,24 @@ public abstract class PardusPreferences {
 
 	private static SharedPreferences preferences = null;
 
+	private static int defaultInitialScale = 100;
+
 	/**
 	 * Initializes required variables.
 	 * 
 	 * @param context
 	 *            context of the application
+	 * @param defaultInitialScale
+	 *            default initial scale of the webview to determine its viewport
 	 */
-	public static void init(Context context) {
-		preferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE);
+	public static void init(Context context, Integer defaultInitialScale) {
+		if (context != null) {
+			preferences = context.getSharedPreferences(NAME,
+					Context.MODE_PRIVATE);
+		}
+		if (defaultInitialScale != null) {
+			PardusPreferences.defaultInitialScale = defaultInitialScale;
+		}
 	}
 
 	/**
@@ -104,21 +114,65 @@ public abstract class PardusPreferences {
 	}
 
 	/**
-	 * @return the size of the Nav space chart, 5 if not stored yet
+	 * @return the width of the Nav space chart, calc if not stored yet
 	 */
-	public static int getNavSize() {
-		return preferences.getInt("navSize", 5);
+	public static int getNavSizeHor() {
+		int navSizeHor = preferences.getInt("navSize", 0);
+		if (navSizeHor == 0) {
+			int w = (int) Math.round(Pardus.displayWidthPx
+					/ (defaultInitialScale / 100.0));
+			int h = (int) Math.round(Pardus.displayHeightPx
+					/ (defaultInitialScale / 100.0));
+			if (w < h) {
+				int t = w;
+				w = h;
+				h = t;
+			}
+			w -= 293;
+			h -= 40;
+			navSizeHor = Math.min(Math.max((int) Math.floor(w / 64.0), 5), 11);
+			if (navSizeHor % 2 == 0) {
+				navSizeHor--;
+			}
+			int navSizeVer = Math.min(Math.max((int) Math.floor(h / 64.0), 5),
+					9);
+			if (navSizeVer % 2 == 0) {
+				navSizeVer--;
+			}
+			setNavSizeHor(navSizeHor);
+			setNavSizeVer(navSizeVer);
+		}
+		return navSizeHor;
 	}
 
 	/**
-	 * Stores the requested size of the Nav screen's space chart.
+	 * Stores the requested width of the Nav screen's space chart.
 	 * 
-	 * @param navSize
-	 *            the size in number of tiles
+	 * @param navSizeHor
+	 *            the width in number of tiles
 	 */
-	public static void setNavSize(int navSize) {
+	public static void setNavSizeHor(int navSizeHor) {
 		SharedPreferences.Editor editor = preferences.edit();
-		editor.putInt("navSize", navSize);
+		editor.putInt("navSize", navSizeHor);
+		editor.commit();
+	}
+
+	/**
+	 * @return the height of the Nav space chart, navSizeHor if not stored yet
+	 */
+	public static int getNavSizeVer() {
+		return preferences.getInt("navSizeVer", getNavSizeHor());
+	}
+
+	/**
+	 * Stores the requested height of the Nav screen's space chart.
+	 * 
+	 * @param navSizeVer
+	 *            the height in number of tiles
+	 */
+	public static void setNavSizeVer(int navSizeVer) {
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putInt("navSizeVer", navSizeVer);
 		editor.commit();
 	}
 

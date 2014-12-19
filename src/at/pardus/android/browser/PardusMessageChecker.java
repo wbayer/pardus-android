@@ -65,6 +65,9 @@ public class PardusMessageChecker {
 	private static final Pattern patternCombat = Pattern
 			.compile("<span id=\"new_cl\">(\\d+)</span>");
 
+	private static final Pattern patternMo = Pattern
+			.compile("<span id=\"new_mo\">(\\d+)</span>");
+
 	private final TextView notifyView;
 
 	private final int delayMillis;
@@ -188,6 +191,10 @@ public class PardusMessageChecker {
 		matcher = patternCombat.matcher(response);
 		if (matcher.find()) {
 			text += "Combat:" + matcher.group(1) + " ";
+		}
+		matcher = patternMo.matcher(response);
+		if (matcher.find()) {
+			text += "MO:" + matcher.group(1) + " ";
 		}
 		NotifyRunnable notify = new NotifyRunnable(text);
 		handler.post(notify);

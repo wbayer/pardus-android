@@ -70,7 +70,7 @@ public abstract class PardusConstants {
 
 	public static final String scriptsUrlHttps = "https://www.pardus.at/index.php?section=downloads";
 
-	public static final String userscriptUrl = "http://userscripts.org/scripts/search?q=pardus&submit=Search";
+	public static final String userscriptUrl = "https://greasyfork.org/en/scripts/search?q=pardus";
 
 	/* Universe-specific pages, default menu links (absolute URLs) */
 

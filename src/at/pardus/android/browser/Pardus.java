@@ -219,7 +219,7 @@ public class Pardus extends ScriptManagerActivity {
 		if (!isTablet && hasMenuKey) {
 			requestWindowFeature(Window.FEATURE_NO_TITLE);
 		}
-		PardusPreferences.init(this);
+		PardusPreferences.init(this, null);
 		PardusNotification.init(this);
 		if (PardusPreferences.isFullScreen()) {
 			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);

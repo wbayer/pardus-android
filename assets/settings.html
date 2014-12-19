@@ -9,7 +9,8 @@
 //<![CDATA[
 var usehttps;
 var logoutonhide;
-var navsize;
+var navsizehor;
+var navsizever;
 var partialrefresh;
 var shipanimation;
 var shiprotation;
@@ -21,7 +22,8 @@ function init()
 {
     usehttps = document.getElementById('usehttps');
     logoutonhide = document.getElementById('logoutonhide');
-    navsize = document.getElementById('navsize');
+    navsizehor = document.getElementById('navsizehor');
+    navsizever = document.getElementById('navsizever');
     partialrefresh = document.getElementById('partialrefresh');
     shipanimation = document.getElementById('shipanimation');
     shiprotation = document.getElementById('shiprotation');
@@ -33,19 +35,25 @@ function init()
     var settings = settingsStr.split(',');
     usehttps.checked = (settings[0] == 'true');
     logoutonhide.checked = (settings[1] == 'true');
-    for (var i = 0; i < navsize.options.length; i++) {
-        if (navsize.options[i].value == settings[2]) {
-            navsize.selectedIndex = i;
+    for (var i = 0; i < navsizehor.options.length; i++) {
+        if (navsizehor.options[i].value == settings[2]) {
+            navsizehor.selectedIndex = i;
             break;
         }
     }
-    partialrefresh.checked = (settings[3] == 'true');
-    shipanimation.checked = (settings[4] == 'true');
-    shiprotation.checked = (settings[5] == 'true');
-    mobilechat.checked = (settings[6] == 'true');
-    fullscreen.checked = (settings[7] == 'true');
-    showzoomcontrols.checked = (settings[8] == 'true');
-    rememberpageproperties.checked = (settings[9] == 'true');
+    for (var i = 0; i < navsizever.options.length; i++) {
+        if (navsizever.options[i].value == settings[3]) {
+            navsizever.selectedIndex = i;
+            break;
+        }
+    }
+    partialrefresh.checked = (settings[4] == 'true');
+    shipanimation.checked = (settings[5] == 'true');
+    shiprotation.checked = (settings[6] == 'true');
+    mobilechat.checked = (settings[7] == 'true');
+    fullscreen.checked = (settings[8] == 'true');
+    showzoomcontrols.checked = (settings[9] == 'true');
+    rememberpageproperties.checked = (settings[10] == 'true');
 }
 function setUsehttps()
 {
@@ -55,9 +63,13 @@ function setLogoutonhide()
 {
     JavaSettings.setLogoutOnHide(logoutonhide.checked);
 }
-function setNavsize()
+function setNavsizehor()
 {
-    JavaSettings.setNavSize(navsize.options[navsize.selectedIndex].value);
+    JavaSettings.setNavSizeHor(navsizehor.options[navsizehor.selectedIndex].value);
+}
+function setNavsizever()
+{
+    JavaSettings.setNavSizeVer(navsizever.options[navsizever.selectedIndex].value);
 }
 function setPartialrefresh()
 {
@@ -121,27 +133,31 @@ function doClearcache()
 <td align='right'><input type='checkbox' name='rememberpageproperties' id='rememberpageproperties' value='rememberpageproperties' onclick='setRememberpageproperties();' /></td>
 </tr>
 <tr class='cl1'>
-<td align='left'><span class='cfgheader'>Space chart display size</span><br /><span class='cfgdesc'>Sets the amount of tiles displayed in the space chart (9x9 for Premium accounts only).</span></td>
-<td align='right'><select name='navsize' id='navsize' onchange='setNavsize();'><option value='3'>3</option><option value='5'>5</option><option value='7'>7</option><option value='9'>9</option></select></td>
+<td align='left'><span class='cfgheader'>Nav horizontal tiles</span><br /><span class='cfgdesc'>Sets the width of the Nav space chart in tiles (11 for Premium accounts only).</span></td>
+<td align='right'><select name='navsizehor' id='navsizehor' onchange='setNavsizehor();'><option value='3'>3</option><option value='5'>5</option><option value='7'>7</option><option value='9'>9</option><option value='11'>11</option></select></td>
 </tr>
 <tr class='cl0'>
+<td align='left'><span class='cfgheader'>Nav vertical tiles</span><br /><span class='cfgdesc'>Sets the height of the Nav space chart in tiles (9 for Premium accounts only).</span></td>
+<td align='right'><select name='navsizever' id='navsizever' onchange='setNavsizever();'><option value='3'>3</option><option value='5'>5</option><option value='7'>7</option><option value='9'>9</option></select></td>
+</tr>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Partial page refreshes</span><br /><span class='cfgdesc'>Only refreshes sections of the Nav screen that have changed. Prerequisite for ship animation.</span></td>
 <td align='right'><input type='checkbox' name='partialrefresh' id='partialrefresh' value='partialrefresh' onclick='setPartialrefresh();' /></td>
 </tr>
-<tr class='cl1'>
+<tr class='cl0'>
 <td align='left'><span class='cfgheader'>Ship animation</span><br /><span class='cfgdesc'>Shows your ship's movement when changing location. &quot;Partial page refreshes&quot; required.</span></td>
 <td align='right'><input type='checkbox' name='shipanimation' id='shipanimation' value='shipanimation' onclick='setShipanimation();' /></td>
 </tr>
 </tr>
-<tr class='cl0'>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Ship rotation</span><br /><span class='cfgdesc'>Makes ships face the direction they are heading.</span></td>
 <td align='right'><input type='checkbox' name='shiprotation' id='shiprotation' value='shiprotation' onclick='setShiprotation();' /></td>
 </tr>
-<tr class='cl1'>
+<tr class='cl0'>
 <td align='left'><span class='cfgheader'>Chat lines limit</span><br /><span class='cfgdesc'>Limits the amount of loaded chat lines to 10.</span></td>
 <td align='right'><input type='checkbox' name='mobilechat' id='mobilechat' value='mobilechat' onclick='setMobilechat();' /></td>
 </tr>
-<tr class='cl0'>
+<tr class='cl1'>
 <td align='left'><span class='cfgheader'>Clear cache</span><br /><span class='cfgdesc'>Empties the cache including page-specific zoom levels/scroll positions and clears any stored user/password.</span></td>
 <td align='right'><input type='submit' name='clearcache' id='clearcache' value='Clear' onclick='doClearcache();return false;' /></td>
 </tr>

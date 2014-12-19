@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="at.pardus.android.browser"
     android:installLocation="auto"
-    android:versionCode="20"
-    android:versionName="1.26" >
+    android:versionCode="21"
+    android:versionName="1.27" >
 
     <uses-sdk
         android:minSdkVersion="8"
