@@ -138,8 +138,11 @@ public class Pardus extends ScriptManagerActivity {
 	@Override
 	public void openScriptBrowser() {
 		if (scriptBrowser == null) {
-			scriptBrowser = new ScriptBrowser(this, scriptStore,
-					PardusConstants.scriptsUrl);
+			scriptBrowser = new ScriptBrowser(
+					this,
+					scriptStore,
+					PardusPreferences.isUseHttps() ? PardusConstants.scriptsUrlHttps
+							: PardusConstants.scriptsUrl);
 			WebViewGm scriptBrowserWebView = scriptBrowser.getWebView();
 			scriptBrowserWebView
 					.setWebViewClient(new ScriptBrowserWebViewClientGm(
@@ -154,11 +157,11 @@ public class Pardus extends ScriptManagerActivity {
 							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
 									&& !urlLower
-											.equals(PardusConstants.scriptsUrl)
+											.startsWith(PardusConstants.downloadPageUrl)
 									&& !urlLower
-											.equals(PardusConstants.scriptsUrlHttps)
+											.startsWith(PardusConstants.downloadPageUrlHttps)
 									&& !urlLower
-											.startsWith("http://static.pardus.at/downloads/")) {
+											.startsWith(PardusConstants.downloadUrl)) {
 								openPardusBrowser();
 								return true;
 							}
@@ -171,11 +174,11 @@ public class Pardus extends ScriptManagerActivity {
 							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
 									&& !urlLower
-											.equals(PardusConstants.scriptsUrl)
+											.startsWith(PardusConstants.downloadPageUrl)
 									&& !urlLower
-											.equals(PardusConstants.scriptsUrlHttps)
+											.startsWith(PardusConstants.downloadPageUrlHttps)
 									&& !urlLower
-											.startsWith("http://static.pardus.at/downloads/")) {
+											.startsWith(PardusConstants.downloadUrl)) {
 								view.stopLoading();
 								openPardusBrowser();
 								return;

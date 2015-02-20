@@ -282,7 +282,15 @@ public class PardusMessageChecker {
 		String url = PardusPreferences.isUseHttps() ? "https://" : "http://";
 		url += universe + ".pardus.at/" + PardusConstants.msgFrame;
 		if (httpGet != null) {
-			httpGet.abort();
+			final HttpGet prevHttpGet = httpGet;
+			new Thread() {
+
+				@Override
+				public void run() {
+					prevHttpGet.abort();
+				}
+
+			}.start();
 		}
 		httpGet = new HttpGet(url);
 		httpGet.setHeader("Cookie", cookies);
