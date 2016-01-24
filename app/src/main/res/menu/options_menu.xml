@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/option_scripts_submenu"
+        android:orderInCategory="1"
+        android:title="@string/option_scripts">
+        <menu>
+            <item
+                android:id="@+id/option_scripts_get"
+                android:orderInCategory="1"
+                android:title="@string/option_scripts_get">
+            </item>
+            <item
+                android:id="@+id/option_scripts_manage"
+                android:orderInCategory="1"
+                android:title="@string/option_scripts_manage">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/option_login"
+        android:orderInCategory="1"
+        android:title="@string/option_login">
+    </item>
+    <item
+        android:id="@+id/option_logout"
+        android:orderInCategory="1"
+        android:title="@string/option_logout">
+    </item>
+    <item
+        android:id="@+id/option_settings"
+        android:orderInCategory="1"
+        android:title="@string/option_settings">
+    </item>
+
+</menu>

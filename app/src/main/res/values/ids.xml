@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="dialog_app_update" type="id"/>
+    <item name="dialog_app_update_minor" type="id"/>
+    <item name="dialog_ip_update" type="id"/>
+    <item name="option_group_scripts" type="id"/>
+    <item name="option_userscripts" type="id"/>
+    <item name="option_pardus" type="id"/>
+    <item name="option_group_pardus" type="id"/>
+    <item name="option_showlinks" type="id"/>
+    <item name="option_refresh" type="id"/>
+    <item name="option_orion" type="id"/>
+    <item name="option_artemis" type="id"/>
+    <item name="option_pegasus" type="id"/>
+    <item name="option_account" type="id"/>
+    <item name="place_pardus" type="id"/>
+    <item name="place_scriptlist" type="id"/>
+    <item name="place_scriptbrowser" type="id"/>
+    <item name="place_scripteditor" type="id"/>
+
+</resources>
