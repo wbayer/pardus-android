@@ -60,6 +60,20 @@ public class PardusWebViewClient extends WebViewClientGm {
 
 	private ProgressBar progress;
 
+    /**
+     * Executes javascript code on the current web page.
+     *
+     * @param webView the webview to run the script in
+     * @param script the piece of javascript code to run
+     */
+    private static void evaluateJavascript(WebView webView, String script) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            webView.evaluateJavascript(script, null);
+        } else {
+            webView.loadUrl("javascript:" + script);
+        }
+    }
+
 	/**
 	 * Constructor.
 	 * 
@@ -223,10 +237,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 				Log.v(this.getClass().getSimpleName(),
 						"Applying query parameters for login screen");
 			}
-			view.loadUrl("javascript:applyParameters("
-					+ (PardusPreferences.isUseHttps() ? "true" : "false")
-					+ ", " + (pardusView.isAutoLogin() ? "true" : "false")
-					+ ");");
+            evaluateJavascript(view, "applyParameters(" + (PardusPreferences.isUseHttps() ? "true" :
+                    "false") + ", " + (pardusView.isAutoLogin() ? "true" : "false") + ");");
 			view.clearHistory();
 			return;
 		} else if (url.equals(PardusConstants.loginUrlHttps)
@@ -241,8 +253,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 				Log.v(this.getClass().getSimpleName(),
 						"Checking send message page for self.close()");
 			}
-			view.loadUrl("javascript:(function() { " + jsSkipSendMessageDeath
-					+ " })()");
+            evaluateJavascript(view, "(function() { " + jsSkipSendMessageDeath + " })()");
 		} else if (url.equals(PardusConstants.loggedInUrl)
 				|| url.equals(PardusConstants.loggedInUrlHttps)) {
 			// account play page: save the available characters/universes
@@ -250,8 +261,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 				Log.v(this.getClass().getSimpleName(),
 						"Parsing account play page for available universes");
 			}
-			view.loadUrl("javascript:(function() { " + jsFoundUniverse
-					+ " })()");
+            evaluateJavascript(view, "(function() { " + jsFoundUniverse + " })()");
 		} else if (url.contains(PardusConstants.msgPagePrivate)
 				|| url.contains(PardusConstants.msgPageAlliance)
 				|| url.contains(PardusConstants.tradeLogsPage)
@@ -280,8 +290,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			}
 			// new (status) message check
 			if (lookForNewMsg && isPardusUniUrl(url)) {
-				view.loadUrl("javascript:(function() { " + jsNewMsgCheck
-						+ " })()");
+                evaluateJavascript(view, "(function() { " + jsNewMsgCheck + " })()");
 			}
 		}
 	}
@@ -300,8 +309,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 		// new (status) message check after ajax loads
 		if (((PardusWebView) view).getRenderStatus() != RenderStatus.LOAD_START
 				&& url.contains(".pardus.at/main_ajax.php")) {
-			view.loadUrl("javascript:(function() { setTimeout(function() { "
-					+ jsNewMsgCheck + " }, 3000) })()");
+			evaluateJavascript(view, "(function() { setTimeout(function() { " + jsNewMsgCheck + " }, 3000) " +
+                    "})()");
 		}
 	}
 

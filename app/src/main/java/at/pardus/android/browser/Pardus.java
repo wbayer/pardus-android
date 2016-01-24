@@ -17,12 +17,6 @@
 
 package at.pardus.android.browser;
 
-import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.EmptyStackException;
-import java.util.Locale;
-import java.util.Stack;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -42,11 +36,17 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.EmptyStackException;
+import java.util.Locale;
+import java.util.Stack;
+
 import at.pardus.android.webview.gm.model.ScriptId;
 import at.pardus.android.webview.gm.run.WebViewGm;
 import at.pardus.android.webview.gm.store.ScriptStoreSQLite;
@@ -238,7 +238,6 @@ public class Pardus extends ScriptManagerActivity {
 					+ displayHeightPx + ", Scale: " + displayDensityScale
 					+ ", Density (dpi): " + displayDpi);
 		}
-		CookieSyncManager.createInstance(this);
 		PardusImagePack imagePack = new PardusImagePack(Environment
 				.getExternalStorageDirectory().getAbsolutePath(), getFilesDir()
 				.getAbsolutePath());
@@ -615,7 +614,6 @@ public class Pardus extends ScriptManagerActivity {
 							+ Log.getStackTraceString(e));
 		}
 		browser.resumeTimers();
-		CookieSyncManager.getInstance().startSync();
 		if (!browser.isLoggedIn()) {
 			// open the login page if not logged in
 			browser.login(true);
@@ -641,7 +639,6 @@ public class Pardus extends ScriptManagerActivity {
 		}
 		progress.setVisibility(View.GONE);
 		// keep the browser from working in the background
-		CookieSyncManager.getInstance().stopSync();
 		browser.pauseTimers();
 		try {
 			Class.forName("android.webkit.WebView")

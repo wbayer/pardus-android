@@ -18,6 +18,8 @@
 package at.pardus.android.browser.js;
 
 import android.util.Log;
+import android.webkit.JavascriptInterface;
+
 import at.pardus.android.browser.PardusConstants;
 import at.pardus.android.browser.PardusPreferences;
 import at.pardus.android.browser.PardusWebView;
@@ -51,6 +53,7 @@ public class JavaScriptUtils {
 	 * @param pegasus
 	 *            true if a character exists in Pegasus
 	 */
+    @JavascriptInterface
 	public void foundUniverse(boolean artemis, boolean orion, boolean pegasus) {
 		String universes = "";
 		if (artemis) {
@@ -81,6 +84,7 @@ public class JavaScriptUtils {
 	 * Refreshes the notification display due to the assumption of having
 	 * received a (status) message.
 	 */
+    @JavascriptInterface
 	public void refreshNotification() {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),

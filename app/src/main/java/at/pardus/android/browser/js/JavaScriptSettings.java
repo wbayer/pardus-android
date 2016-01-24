@@ -19,6 +19,8 @@ package at.pardus.android.browser.js;
 
 import android.app.Activity;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
+
 import at.pardus.android.browser.PardusNotification;
 import at.pardus.android.browser.PardusPreferences;
 import at.pardus.android.browser.PardusWebView;
@@ -52,6 +54,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @return a string of all values delimited by ,
 	 */
+    @JavascriptInterface
 	public String getSettings() {
 		String settings = "";
 		settings += Boolean.toString(PardusPreferences.isUseHttps());
@@ -84,6 +87,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param useHttps
 	 */
+    @JavascriptInterface
 	public void setUseHttps(boolean useHttps) {
 		PardusPreferences.setUseHttps(useHttps);
 		String message = (browser.isLoggedIn()) ? " (must re-login!)" : "";
@@ -100,6 +104,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param logoutOnHide
 	 */
+    @JavascriptInterface
 	public void setLogoutOnHide(boolean logoutOnHide) {
 		PardusPreferences.setLogoutOnHide(logoutOnHide);
 		if (logoutOnHide) {
@@ -116,6 +121,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param navSizeHor
 	 */
+    @JavascriptInterface
 	public void setNavSizeHor(String navSizeHor) {
 		PardusPreferences.setNavSizeHor(Integer.parseInt(navSizeHor));
 		if (browser.isLoggedIn()) {
@@ -129,6 +135,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param navSizeVer
 	 */
+    @JavascriptInterface
 	public void setNavSizeVer(String navSizeVer) {
 		PardusPreferences.setNavSizeVer(Integer.parseInt(navSizeVer));
 		if (browser.isLoggedIn()) {
@@ -142,6 +149,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param partialRefresh
 	 */
+    @JavascriptInterface
 	public void setPartialRefresh(boolean partialRefresh) {
 		PardusPreferences.setPartialRefresh(partialRefresh);
 		String message = "";
@@ -163,6 +171,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param shipAnimation
 	 */
+    @JavascriptInterface
 	public void setShipAnimation(boolean shipAnimation) {
 		PardusPreferences.setShipAnimation(shipAnimation);
 		String message = "";
@@ -184,6 +193,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param shipRotation
 	 */
+    @JavascriptInterface
 	public void setShipRotation(boolean shipRotation) {
 		PardusPreferences.setShipRotation(shipRotation);
 		String message = "";
@@ -203,6 +213,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param mobileChat
 	 */
+    @JavascriptInterface
 	public void setMobileChat(boolean mobileChat) {
 		PardusPreferences.setMobileChat(mobileChat);
 		String message = "";
@@ -222,6 +233,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param fullScreen
 	 */
+    @JavascriptInterface
 	public void setFullScreen(boolean fullScreen) {
 		PardusPreferences.setFullScreen(fullScreen);
 		Runnable runnable;
@@ -259,6 +271,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param showZoomControls
 	 */
+    @JavascriptInterface
 	public void setShowZoomControls(boolean showZoomControls) {
 		PardusPreferences.setShowZoomControls(showZoomControls);
 		browser.setShowZoomControls(showZoomControls);
@@ -274,6 +287,7 @@ public class JavaScriptSettings {
 	 * 
 	 * @param rememberPageProperties
 	 */
+    @JavascriptInterface
 	public void setRememberPageProperties(boolean rememberPageProperties) {
 		PardusPreferences.setRememberPageProperties(rememberPageProperties);
 		browser.setRememberPageProperties(rememberPageProperties);
@@ -289,6 +303,7 @@ public class JavaScriptSettings {
 	/**
 	 * Deletes all cached data.
 	 */
+    @JavascriptInterface
 	public void clearCache() {
 		browser.removeTraces();
 		String message = "Emptied cache";

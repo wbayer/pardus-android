@@ -17,9 +17,6 @@
 
 package at.pardus.android.browser;
 
-import java.lang.reflect.Method;
-import java.util.Date;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -34,12 +31,15 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebSettings;
 import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
 import android.widget.ZoomButtonsController;
+
+import java.lang.reflect.Method;
+import java.util.Date;
+
 import at.pardus.android.browser.PardusPageProperties.PardusPageProperty;
 import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptSettings;
@@ -73,8 +73,6 @@ public class PardusWebView extends WebViewGm {
 	private PardusLinks links;
 
 	private WebViewDatabase database;
-
-	private CookieSyncManager cookieSyncManager;
 
 	private CookieManager cookieManager;
 
@@ -151,7 +149,6 @@ public class PardusWebView extends WebViewGm {
 		setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 		settings = getSettings();
 		settings.setSupportMultipleWindows(false);
-		settings.setPluginState(WebSettings.PluginState.OFF);
 		settings.setGeolocationEnabled(false);
 		settings.setJavaScriptEnabled(true);
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
@@ -160,7 +157,10 @@ public class PardusWebView extends WebViewGm {
 		settings.setBuiltInZoomControls(true);
 		setShowZoomControls(PardusPreferences.isShowZoomControls());
 		settings.setLoadsImagesAutomatically(true);
-		settings.setSaveFormData(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        }
+        settings.setSaveFormData(true);
 		settings.setSavePassword(true);
 		settings.setDatabaseEnabled(true);
 		SharedPreferences prefs = getContext().getSharedPreferences(
@@ -170,7 +170,6 @@ public class PardusWebView extends WebViewGm {
 			prefs.edit().putInt("double_tap_toast_count", 0).commit();
 		}
 		database = WebViewDatabase.getInstance(getContext());
-		cookieSyncManager = CookieSyncManager.getInstance();
 		cookieManager = CookieManager.getInstance();
 		cookieManager.setAcceptCookie(true);
 		setRememberPageProperties(PardusPreferences.isRememberPageProperties());
@@ -235,9 +234,7 @@ public class PardusWebView extends WebViewGm {
 
 	/**
 	 * Sets up and adds a download listener for image packs.
-	 * 
-	 * @param context
-	 *            application context
+	 *
 	 * @param storageDir
 	 *            final storage directory
 	 * @param cacheDir
@@ -426,7 +423,6 @@ public class PardusWebView extends WebViewGm {
 		stopLoading();
 		loadUrl(PardusConstants.loginScreen);
 		cookieManager.removeSessionCookie();
-		cookieSyncManager.sync();
 		setUniverse(null);
 		clearHistory();
 	}
@@ -557,7 +553,6 @@ public class PardusWebView extends WebViewGm {
 				"mobile_chat="
 						+ ((PardusPreferences.isMobileChat()) ? "1" : "0")
 						+ cookieInfo);
-		cookieSyncManager.sync();
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Cookies set: "
 					+ cookieManager.getCookie(url));

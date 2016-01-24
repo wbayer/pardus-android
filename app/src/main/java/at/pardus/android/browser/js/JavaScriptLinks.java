@@ -22,6 +22,8 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import android.util.Log;
+import android.webkit.JavascriptInterface;
+
 import at.pardus.android.browser.PardusConstants;
 import at.pardus.android.browser.PardusLinks;
 import at.pardus.android.browser.PardusLinks.PardusLink;
@@ -57,6 +59,7 @@ public class JavaScriptLinks {
 	/**
 	 * @return the links menu bar's fade-in sensitivity
 	 */
+    @JavascriptInterface
 	public String getMenuSensitivity() {
 		return Integer.toString(PardusPreferences.getMenuSensitivity());
 	}
@@ -69,6 +72,7 @@ public class JavaScriptLinks {
 	 *            amount of inches * 10 scrolled over the border after which to
 	 *            fade in the links menu bar (-1 for never)
 	 */
+    @JavascriptInterface
 	public void setMenuSensitivity(String sensitivityStr) {
 		int sensitivity = Integer.parseInt(sensitivityStr);
 		view.setMenuSensitivity(sensitivity);
@@ -82,6 +86,7 @@ public class JavaScriptLinks {
 	/**
 	 * @return all links in serialized form
 	 */
+    @JavascriptInterface
 	public String getLinks() {
 		String serialized = PardusLinks.PardusLinkStore.serializeLinks(links
 				.getLinks());
@@ -98,6 +103,7 @@ public class JavaScriptLinks {
 	 * @param links
 	 *            string containing order, title, url for each link
 	 */
+    @JavascriptInterface
 	public void saveLinks(String links) {
 		if (PardusConstants.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
