@@ -116,13 +116,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 					|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
 				pardusView.login(false);
 			} else {
-				if (url != null) {
-					PardusNotification
-							.showLong("Opening the default browser for " + url);
-					view.getContext().startActivity(
-							new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-				}
-			}
+                PardusNotification
+                        .showLong("Opening the default browser for " + url);
+                view.getContext().startActivity(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            }
 			// abort
 			return true;
 		}

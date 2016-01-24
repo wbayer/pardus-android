@@ -17,12 +17,9 @@
 
 package at.pardus.android.browser;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import android.os.Handler;
+import android.util.Log;
+import android.widget.TextView;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -35,9 +32,12 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 
-import android.os.Handler;
-import android.util.Log;
-import android.widget.TextView;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class to periodically send HTTP GET requests to the currently logged in
@@ -127,7 +127,7 @@ public class PardusMessageChecker {
 			reader = new InputStreamReader(entity.getContent());
 			StringBuilder sb = new StringBuilder();
 			char[] buffer = new char[2048];
-			int i = 0;
+			int i;
 			while ((i = reader.read(buffer, 0, buffer.length)) >= 0) {
 				if (i > 0) {
 					sb.append(buffer, 0, i);
@@ -148,7 +148,7 @@ public class PardusMessageChecker {
 			if (reader != null) {
 				try {
 					reader.close();
-				} catch (IOException e) {
+				} catch (IOException ignored) {
 
 				}
 			}
@@ -266,7 +266,8 @@ public class PardusMessageChecker {
 	 *            the cookies to authenticate
 	 */
 	public void setUniverse(String universe, String cookies) {
-		if (universe == this.universe) {
+		if ((universe == null && this.universe == null) || (universe != null && universe.equals(this
+                .universe))) {
 			return;
 		}
 		this.universe = universe;

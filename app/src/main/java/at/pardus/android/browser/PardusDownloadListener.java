@@ -17,6 +17,15 @@
 
 package at.pardus.android.browser;
 
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.webkit.DownloadListener;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,18 +38,10 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.webkit.DownloadListener;
-
 /**
  * Class handling image pack downloads.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @SuppressLint("HandlerLeak")
 public class PardusDownloadListener implements DownloadListener {
 
@@ -208,7 +209,7 @@ public class PardusDownloadListener implements DownloadListener {
 	 * @param progress
 	 *            new progress
 	 */
-	public void setDialogProgress(int progress) {
+    private void setDialogProgress(int progress) {
 		Message msg = handler.obtainMessage();
 		msg.arg1 = progress;
 		msg.arg2 = 0;
@@ -221,7 +222,7 @@ public class PardusDownloadListener implements DownloadListener {
 	 * @param max
 	 *            new max
 	 */
-	public void setDialogMax(int max) {
+    private void setDialogMax(int max) {
 		Message msg = handler.obtainMessage();
 		msg.arg1 = 0;
 		msg.arg2 = max;
@@ -277,18 +278,22 @@ public class PardusDownloadListener implements DownloadListener {
 					bis = new BufferedInputStream(
 							zipFile.getInputStream(zipEntry), 10240);
 					byte[] buffer = new byte[10240];
-					int bytesRead = 0;
+					int bytesRead;
 					while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
 						fos.write(buffer, 0, bytesRead);
 					}
 				} finally {
 					try {
-						fos.close();
-					} catch (Exception e) {
+                        if (fos != null) {
+                            fos.close();
+                        }
+                    } catch (Exception ignored) {
 					}
 					try {
-						bis.close();
-					} catch (Exception e) {
+                        if (bis != null) {
+                            bis.close();
+                        }
+                    } catch (Exception ignored) {
 					}
 				}
 				filesExtracted++;
@@ -306,7 +311,7 @@ public class PardusDownloadListener implements DownloadListener {
 			if (zipFile != null) {
 				try {
 					zipFile.close();
-				} catch (IOException e) {
+				} catch (IOException ignored) {
 				}
 			}
 			new File(cacheFile).delete();
@@ -343,7 +348,7 @@ public class PardusDownloadListener implements DownloadListener {
 			InputStream is = con.getInputStream();
 			bis = new BufferedInputStream(is, 10240);
 			byte[] buffer = new byte[10240];
-			int bytesRead = 0;
+			int bytesRead;
 			int totalRead = 0;
 			int numReads = 0;
 			while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
@@ -365,15 +370,21 @@ public class PardusDownloadListener implements DownloadListener {
 			return false;
 		} finally {
 			try {
-				fos.close();
-			} catch (Exception e) {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (Exception ignored) {
 			}
 			try {
-				bis.close();
-			} catch (Exception e) {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (Exception ignored) {
 			}
-			con.disconnect();
-		}
+            if (con != null) {
+                con.disconnect();
+            }
+        }
 		return true;
 	}
 
@@ -434,20 +445,19 @@ public class PardusDownloadListener implements DownloadListener {
 	 * 
 	 * @param dir
 	 *            directory to delete
-	 * @return true if successful, false else
 	 */
 	private static boolean deleteDir(File dir) {
 		File[] files = dir.listFiles();
 		if (files == null) {
 			return false;
 		}
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].isDirectory()) {
-				deleteDir(files[i]);
-			} else {
-				files[i].delete();
-			}
-		}
+        for (File file : files) {
+            if (file.isDirectory()) {
+                deleteDir(file);
+            } else {
+                file.delete();
+            }
+        }
 		return (dir.delete());
 	}
 

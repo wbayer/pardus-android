@@ -16,9 +16,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
+    }
 }
 
 dependencies {
-    compile('at.pardus.android:webview-gm-lib:1.2.0')
-    compile('at.pardus.android:webview-gm-ui:1.2.0')
+    compile 'at.pardus.android:webview-gm-lib:1.2.0'
+    compile 'at.pardus.android:webview-gm-ui:1.2.0'
 }

@@ -17,12 +17,13 @@
 
 package at.pardus.android.browser.js;
 
+import android.util.Log;
+import android.webkit.JavascriptInterface;
+
+import java.util.Collection;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-
-import android.util.Log;
-import android.webkit.JavascriptInterface;
 
 import at.pardus.android.browser.PardusConstants;
 import at.pardus.android.browser.PardusLinks;
@@ -68,7 +69,7 @@ public class JavaScriptLinks {
 	 * Saves the links menu bar's fade-in sensitivity as received from
 	 * javascript.
 	 * 
-	 * @param sensitivity
+	 * @param sensitivityStr
 	 *            amount of inches * 10 scrolled over the border after which to
 	 *            fade in the links menu bar (-1 for never)
 	 */
@@ -126,7 +127,8 @@ public class JavaScriptLinks {
 			}
 			sortedMap.put(order, link);
 		}
-		PardusLink[] linkArray = sortedMap.values().toArray(new PardusLink[0]);
+        Collection<PardusLink> values = sortedMap.values();
+        PardusLink[] linkArray = values.toArray(new PardusLink[values.size()]);
 		this.links.updateLinksViaHandler(linkArray);
 	}
 }

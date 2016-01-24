@@ -28,6 +28,7 @@ import at.pardus.android.browser.PardusWebView;
 /**
  * Contains methods to be called by JavaScript from the Settings screen.
  */
+@SuppressWarnings("JavaDoc")
 public class JavaScriptSettings {
 
 	public static final String DEFAULT_JS_NAME = "JavaSettings";
@@ -237,7 +238,7 @@ public class JavaScriptSettings {
 	public void setFullScreen(boolean fullScreen) {
 		PardusPreferences.setFullScreen(fullScreen);
 		Runnable runnable;
-		String message = "";
+		String message;
 		if (fullScreen) {
 			runnable = new Runnable() {
 
@@ -284,7 +285,7 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the rememberPageProperties setting.
-	 * 
+	 *
 	 * @param rememberPageProperties
 	 */
     @JavascriptInterface

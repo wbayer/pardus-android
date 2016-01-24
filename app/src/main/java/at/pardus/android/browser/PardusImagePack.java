@@ -17,6 +17,10 @@
 
 package at.pardus.android.browser;
 
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -28,9 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.util.Log;
 import at.pardus.android.webview.gm.util.UnicodeReader;
 
 /**
@@ -106,7 +107,7 @@ public class PardusImagePack {
 					in = new UnicodeReader(is, con.getContentEncoding());
 					StringBuilder sb = new StringBuilder();
 					char[] buffer = new char[1024];
-					int bytesRead = 0;
+					int bytesRead;
 					while ((bytesRead = in.read(buffer, 0, 1024)) != -1) {
 						if (bytesRead > 0) {
 							sb.append(buffer, 0, bytesRead);
@@ -120,8 +121,10 @@ public class PardusImagePack {
 					}
 				} finally {
 					try {
-						in.close();
-					} catch (Exception e) {
+                        if (in != null) {
+                            in.close();
+                        }
+                    } catch (Exception ignored) {
 					}
 					if (con != null) {
 						con.disconnect();
@@ -225,15 +228,18 @@ public class PardusImagePack {
 			if (imagePathCheckFile.exists() && imagePathCheckFile.canRead()) {
 				installed = true;
 				// image pack exists -> create .nomedia file
+                boolean nomediaFileCreated = false;
 				try {
-					galleryHideFile.createNewFile();
-				} catch (IOException e) {
-					if (PardusConstants.DEBUG) {
-						Log.w(PardusImagePack.class.getSimpleName(),
-								"Error creating new file "
-										+ galleryHideFile.getAbsolutePath());
-					}
+                    nomediaFileCreated = galleryHideFile.createNewFile();
+				} catch (IOException ignored) {
 				}
+                if (PardusConstants.DEBUG) {
+                    if (!nomediaFileCreated) {
+                        Log.w(PardusImagePack.class.getSimpleName(), "Error creating new file " +
+                                galleryHideFile.getAbsolutePath());
+
+                    }
+                }
 			}
 		}
 		return installed;

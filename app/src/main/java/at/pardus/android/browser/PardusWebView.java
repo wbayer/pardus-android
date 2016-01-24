@@ -52,19 +52,15 @@ import at.pardus.android.webview.gm.run.WebViewGm;
  */
 public class PardusWebView extends WebViewGm {
 
-	public static enum RenderStatus {
+	public enum RenderStatus {
 		LOAD_START, LOAD_FINISH
-	};
+	}
 
 	private WebSettings settings;
 
 	private Activity activity;
 
-	private PardusWebViewClient viewClient;
-
-	private PardusWebChromeClient chromeClient;
-
-	private PardusMessageChecker messageChecker;
+    private PardusMessageChecker messageChecker;
 
 	private PardusDownloadListener downloadListener;
 
@@ -103,34 +99,16 @@ public class PardusWebView extends WebViewGm {
 
 	private int menuSensitivity;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param context
-	 */
 	public PardusWebView(Context context) {
 		super(context);
 		init();
 	}
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param context
-	 * @param attrs
-	 */
 	public PardusWebView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param context
-	 * @param attrs
-	 * @param defStyle
-	 */
 	public PardusWebView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
@@ -178,10 +156,10 @@ public class PardusWebView extends WebViewGm {
 		resetMinZoom();
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
 		if (Pardus.displayDpi <= 160 || Pardus.isTablet) {
-			defaultInitialScale = (int) Math.round(Pardus.displayDpi / 1.6f);
+			defaultInitialScale = Math.round(Pardus.displayDpi / 1.6f);
 		} else {
 			// start 240dpi screens zoomed out if it's not a tablet
-			defaultInitialScale = (int) Math.round(Pardus.displayDpi / 2.4f);
+			defaultInitialScale = Math.round(Pardus.displayDpi / 2.4f);
 		}
 		PardusPreferences.init(null, defaultInitialScale);
 		resetInitialScale();
@@ -206,22 +184,22 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
 		}
 		this.messageChecker = messageChecker;
-		viewClient = new PardusWebViewClient(getScriptStore(),
-				getWebViewClient().getJsBridgeName(), getWebViewClient()
-						.getSecret(), progress);
+        PardusWebViewClient viewClient = new PardusWebViewClient(getScriptStore(), getWebViewClient()
+                .getJsBridgeName(), getWebViewClient().getSecret(), progress);
 		setWebViewClient(viewClient);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up web chrome client");
 		}
-		chromeClient = new PardusWebChromeClient(progress);
+        PardusWebChromeClient chromeClient = new PardusWebChromeClient(progress);
 		setWebChromeClient(chromeClient);
 	}
 
 	/**
 	 * Sets up the bridges between Java and Javascript.
 	 */
-	public void initJavascriptBridges() {
+	@SuppressLint("AddJavascriptInterface")
+    public void initJavascriptBridges() {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up javascript interfaces");
@@ -258,7 +236,8 @@ public class PardusWebView extends WebViewGm {
 	 * @param l
 	 *            PardusLinks object to show
 	 */
-	public void initLinks(PardusLinks l) {
+	@SuppressLint("AddJavascriptInterface")
+    public void initLinks(PardusLinks l) {
 		links = l;
 		addJavascriptInterface(new JavaScriptLinks(this, l),
 				JavaScriptLinks.DEFAULT_JS_NAME);
@@ -298,7 +277,6 @@ public class PardusWebView extends WebViewGm {
 							// v2.3- webviews need help going into sel. mode
 							fakeEmulateShiftHeld();
 						}
-						return;
 					}
 
 					@Override
@@ -364,7 +342,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Switches into text selection mode.
 	 */
-	public void fakeEmulateShiftHeld() {
+    private void fakeEmulateShiftHeld() {
 		try {
 			KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
 					KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
@@ -379,7 +357,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Saves the zoom level and scroll position of the currently opened page.
 	 */
-	public void savePageProperties() {
+    private void savePageProperties() {
 		if (pageProperties != null) {
 			pageProperties.save(getUrl(), Pardus.orientation, getScale(),
 					computeHorizontalScrollOffset(),
@@ -515,7 +493,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void setCookies() {
 		String cookieInfo = "; path=/; domain=.pardus.at;";
-		String url = "";
+		String url;
 		if (PardusPreferences.isUseHttps()) {
 			url = PardusConstants.loggedInUrlHttps;
 			cookieManager.setCookie(url, "usehttps=1" + cookieInfo);
@@ -549,10 +527,8 @@ public class PardusWebView extends WebViewGm {
 				"ship_rotation="
 						+ ((PardusPreferences.isShipRotation()) ? "1" : "0")
 						+ cookieInfo);
-		cookieManager.setCookie(url,
-				"mobile_chat="
-						+ ((PardusPreferences.isMobileChat()) ? "1" : "0")
-						+ cookieInfo);
+		cookieManager.setCookie(url, "mobile_chat=" + ((PardusPreferences.isMobileChat()) ? "1" : "0") +
+                cookieInfo);
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Cookies set: "
 					+ cookieManager.getCookie(url));
@@ -665,7 +641,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Resets the webview's zoom level to the configured default scale.
 	 */
-	public void resetInitialScale() {
+    private void resetInitialScale() {
 		setInitialScale(defaultInitialScale);
 	}
 
@@ -686,22 +662,22 @@ public class PardusWebView extends WebViewGm {
 				webViewObj = this;
 				adjustDefaultZoomDensity = Class.forName(
 						"android.webkit.WebView").getDeclaredMethod(
-						"updateDefaultZoomDensity", new Class[] { int.class });
+						"updateDefaultZoomDensity", int.class);
 			} else if (Build.VERSION.SDK_INT <= 15) {
 				webViewObj = this;
 				adjustDefaultZoomDensity = Class.forName(
 						"android.webkit.WebView").getDeclaredMethod(
-						"adjustDefaultZoomDensity", new Class[] { int.class });
+						"adjustDefaultZoomDensity", int.class);
 			} else {
 				webViewObj = Class.forName("android.webkit.WebView")
 						.getMethod("getWebViewProvider", (Class[]) null)
 						.invoke(this, (Object[]) null);
 				adjustDefaultZoomDensity = Class.forName(
 						"android.webkit.WebViewClassic").getDeclaredMethod(
-						"adjustDefaultZoomDensity", new Class[] { int.class });
+						"adjustDefaultZoomDensity", int.class);
 			}
 			adjustDefaultZoomDensity.setAccessible(true);
-			adjustDefaultZoomDensity.invoke(webViewObj, new Object[] { 200 });
+			adjustDefaultZoomDensity.invoke(webViewObj, 200);
 		} catch (Exception e) {
 			Log.w(this.getClass().getSimpleName(),
 					"Exception while attempting to set the minimum zoom scale via reflection (API level "
@@ -734,8 +710,7 @@ public class PardusWebView extends WebViewGm {
 				Class.forName("android.webkit.WebSettings")
 						.getMethod("setDisplayZoomControls",
 								new Class[] { boolean.class })
-						.invoke(settings,
-								new Object[] { this.showZoomControls });
+						.invoke(settings, this.showZoomControls);
 				return;
 			} catch (Exception e) {
 				Log.w(this.getClass().getSimpleName(),
@@ -871,7 +846,7 @@ public class PardusWebView extends WebViewGm {
 	 * @param renderStatus
 	 *            the renderStatus to set
 	 */
-	public void setRenderStatus(RenderStatus renderStatus) {
+    private void setRenderStatus(RenderStatus renderStatus) {
 		this.renderStatus = renderStatus;
 	}
 

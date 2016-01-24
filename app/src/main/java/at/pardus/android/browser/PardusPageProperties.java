@@ -16,6 +16,10 @@
  */
 package at.pardus.android.browser;
 
+import android.content.Context;
+import android.content.res.Configuration;
+import android.util.Log;
+
 import java.io.FileNotFoundException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
@@ -24,10 +28,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import android.content.Context;
-import android.content.res.Configuration;
-import android.util.Log;
 
 /**
  * Class managing properties for each visited page and screen orientation (zoom
@@ -136,8 +136,10 @@ public class PardusPageProperties {
 					"Error persisting page properties. "
 							+ Log.getStackTraceString(e));
 			try {
-				os.close();
-			} catch (Exception e2) {
+                if (os != null) {
+                    os.close();
+                }
+            } catch (Exception ignored) {
 			}
 		}
 	}
@@ -174,7 +176,7 @@ public class PardusPageProperties {
 			if (is != null) {
 				is.close();
 			}
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 		if (PardusConstants.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),

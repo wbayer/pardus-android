@@ -17,6 +17,7 @@
 
 package at.pardus.android.browser;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -96,10 +97,10 @@ public class Pardus extends ScriptManagerActivity {
 	/**
 	 * Sets the Pardus browser layout as the app's content.
 	 */
-	public void openPardusBrowser() {
+	@SuppressLint("InflateParams")
+    public void openPardusBrowser() {
 		if (browserContainer == null) {
-			browserContainer = getLayoutInflater().inflate(R.layout.browser,
-					null);
+			browserContainer = getLayoutInflater().inflate(R.layout.browser, null);
 		}
 		setContentView(browserContainer);
 		placeHistory.push(R.id.place_pardus);
@@ -433,7 +434,7 @@ public class Pardus extends ScriptManagerActivity {
 			try {
 				Method showAsAction = Class
 						.forName("android.view.MenuItem")
-						.getMethod("setShowAsAction", new Class[] { int.class });
+						.getMethod("setShowAsAction", int.class);
 				int[] actionItemIds = { R.id.option_showlinks,
 						R.id.option_orion, R.id.option_artemis,
 						R.id.option_pegasus, R.id.option_logout };
@@ -451,8 +452,7 @@ public class Pardus extends ScriptManagerActivity {
 							}
 						}
 						if (showProperty != -1) {
-							showAsAction.invoke(item,
-									new Object[] { showProperty });
+							showAsAction.invoke(item, showProperty);
 						}
 					}
 				}
