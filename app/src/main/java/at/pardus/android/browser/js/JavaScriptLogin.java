@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 
 import at.pardus.android.browser.PardusPreferences;
-import at.pardus.android.browser.PardusWebView;
 import at.pardus.android.browser.R;
 
 /**
@@ -32,20 +31,14 @@ public class JavaScriptLogin {
 
     public static final String DEFAULT_JS_NAME = "JavaLogin";
 
-    private PardusWebView browser;
-
     private Activity activity;
 
     /**
      * Constructor.
      *
-     * @param browser
-     *         the Pardus browser component
-     * @param activity
-     *         the activity the browser component runs in
+     * @param activity the activity the browser component runs in
      */
-    public JavaScriptLogin(PardusWebView browser, Activity activity) {
-        this.browser = browser;
+    public JavaScriptLogin(Activity activity) {
         this.activity = activity;
     }
 

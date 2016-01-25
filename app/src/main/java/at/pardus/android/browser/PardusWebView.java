@@ -405,7 +405,7 @@ public class PardusWebView extends WebViewGm {
 		}
 		stopLoading();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            addJavascriptInterface(new JavaScriptLogin(this, activity), JavaScriptLogin.DEFAULT_JS_NAME);
+            addJavascriptInterface(new JavaScriptLogin(activity), JavaScriptLogin.DEFAULT_JS_NAME);
         }
 		loadUrl(PardusConstants.loginScreen);
 		cookieManager.removeSessionCookie();
