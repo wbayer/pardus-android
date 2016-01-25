@@ -25,8 +25,10 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
+
 import at.pardus.android.browser.PardusWebView.RenderStatus;
 import at.pardus.android.browser.js.JavaScriptLinks;
+import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
 import at.pardus.android.content.LocalContentProvider;
@@ -54,8 +56,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 
 	private static final String jsHidePrivateInterfaces = JavaScriptLinks.DEFAULT_JS_NAME
 			+ " = null; "
-			+ JavaScriptSettings.DEFAULT_JS_NAME
-			+ " = null; "
+            + JavaScriptLogin.DEFAULT_JS_NAME + " = null; "
+			+ JavaScriptSettings.DEFAULT_JS_NAME + " = null; "
 			+ JavaScriptUtils.DEFAULT_JS_NAME + " = null;";
 
 	private ProgressBar progress;
@@ -230,10 +232,19 @@ public class PardusWebViewClient extends WebViewClientGm {
 		progress.setVisibility(View.GONE);
 		boolean lookForNewMsg = true;
 		if (url.equals(PardusConstants.loginScreen)) {
-			// local login page: apply query parameters via javascript
+			// local login page: prefill any stored account data and apply query parameters via javascript
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (PardusPreferences.getStoreCredentials() == PardusPreferences.StoreCredentials.YES) {
+                    String account = PardusPreferences.getAccount();
+                    String password = PardusPreferences.getPassword();
+                    evaluateJavascript(view, "document.getElementById('acc').value = '" + account + "'; " +
+                            "document.getElementById('pw').value = '" + password + "';");
+                }
+                // remove login javascript bridge (takes effect after the next page load)
+                view.removeJavascriptInterface(JavaScriptLogin.DEFAULT_JS_NAME);
+            }
 			if (PardusConstants.DEBUG) {
-				Log.v(this.getClass().getSimpleName(),
-						"Applying query parameters for login screen");
+				Log.v(this.getClass().getSimpleName(), "Applying query parameters for login screen");
 			}
             evaluateJavascript(view, "applyParameters(" + (PardusPreferences.isUseHttps() ? "true" :
                     "false") + ", " + (pardusView.isAutoLogin() ? "true" : "false") + ");");
@@ -276,7 +287,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			return;
 		} else if (url.equals(PardusConstants.imageSelectionScreen)) {
 			// image pack selection page: android 4.4 incompatibility info
-			if (Build.VERSION.SDK_INT >= 19) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 				PardusNotification.showLong(R.string.warning_ip_broken);
 			}
 		}

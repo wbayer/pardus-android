@@ -202,9 +202,9 @@ public class Pardus extends ScriptManagerActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		isTablet = getResources().getBoolean(R.bool.isTablet);
-		if (Build.VERSION.SDK_INT <= 10) {
+		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
 			hasMenuKey = true;
-		} else if (Build.VERSION.SDK_INT <= 13) {
+		} else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			hasMenuKey = false;
 		} else {
 			try {
@@ -471,7 +471,7 @@ public class Pardus extends ScriptManagerActivity {
 	 * @see android.app.Activity#onCreateDialog(int)
 	 */
 	@Override
-	protected Dialog onCreateDialog(int id, Bundle args) {
+	protected Dialog onCreateDialog(int id, final Bundle args) {
 		Dialog dialog = null;
 		if (id == R.id.dialog_app_update || id == R.id.dialog_app_update_minor) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -491,7 +491,6 @@ public class Pardus extends ScriptManagerActivity {
 							}).setCancelable(true);
 			dialog = builder.create();
 		} else if (id == R.id.dialog_ip_update) {
-			final String updateUrl = args.getString("updateUrl");
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.ip_update_title)
 					.setMessage(R.string.ip_update_msg)
@@ -515,16 +514,42 @@ public class Pardus extends ScriptManagerActivity {
 								public void onClick(DialogInterface dialog,
 										int which) {
 									dialog.dismiss();
-									browser.loadUrl(updateUrl);
+									browser.loadUrl(args.getString("updateUrl"));
 								}
 
 							}).setCancelable(true);
-			dialog = builder.create();
-		}
-		return dialog;
-	}
+            dialog = builder.create();
+        } else if (id == R.id.dialog_save_password) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.save_password_title).setMessage(R.string.save_password_msg)
+                    .setNeutralButton(R.string.save_password_button_never, new DialogInterface
+                            .OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NEVER);
+                            dialog.dismiss();
+                        }
+                    }).setNegativeButton(R.string.save_password_button_no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
+                    dialog.dismiss();
+                }
+            }).setPositiveButton(R.string.save_password_button_yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.YES);
+                    PardusPreferences.setAccount(args.getString("account"));
+                    PardusPreferences.setPassword(args.getString("password"));
+                    dialog.dismiss();
+                }
+            });
+            dialog = builder.create();
+        }
+        return dialog;
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 * 
 	 * @see android.app.Activity#onBackPressed()

@@ -3,14 +3,19 @@
 
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
-    <string name="app_update_msg">New features:\nVisited pages remember their last zoom level and scroll position.\nZoom buttons are not displayed anymore if your phone supports multi-touch.\nBoth changes can be disabled in the Settings.\nPlease visit our Google Play page for details.</string>
-    <string name="app_update_msg_minor">This update includes vastly improved support for user scripts and bugfixes for the latest Android versions.</string>
+    <string name="app_update_msg"></string>
+    <string name="app_update_msg_minor"></string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
     <string name="ip_update_title">Image Pack Update</string>
     <string name="ip_update_msg">An update is available for your image pack.</string>
     <string name="ip_update_button_neg">Remind me later</string>
     <string name="ip_update_button_pos">Update now</string>
+    <string name="save_password_title">Remember password</string>
+    <string name="save_password_msg">Would you like your password to be remembered?</string>
+    <string name="save_password_button_never">Never</string>
+    <string name="save_password_button_no">No</string>
+    <string name="save_password_button_yes">Yes</string>
     <string name="option_userscripts">Greasyfork.org</string>
     <string name="option_pardus">Back to Pardus</string>
     <string name="option_showlinks">Show links</string>

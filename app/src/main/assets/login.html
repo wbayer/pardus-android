@@ -26,6 +26,7 @@ function checkSubmitLogin()
             return;
         }
         loggingIn = true;
+        askSavePassword();
         document.getElementById('loginform').submit();
         return;
     }
@@ -42,6 +43,9 @@ function applyParameters(https, auto) {
     if (auto) {
         checksInterval = setInterval("checkSubmitLogin()", 500);
     }
+}
+function askSavePassword() {
+    JavaLogin.askSavePassword(document.getElementById('acc').value, document.getElementById('pw').value);
 }
 //]]>
 </script>
@@ -64,7 +68,8 @@ function applyParameters(https, auto) {
 <br />
 <input type='hidden' value='0' name='usehttps' id='usehttps' />
 <input type='hidden' value='1' name='login' />
-<input type='submit' value='Login!' class='savebutton' style='width:10em;' onclick="loggingIn=true;makeMD5('pw');this.form.submit();" />
+<input type='submit' value='Login!' class='savebutton' style='width:10em;'
+       onclick="loggingIn=true;makeMD5('pw');askSavePassword();this.form.submit();" />
 </form>
 </td></tr>
 </table>

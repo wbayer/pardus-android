@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "at.pardus.android.browser"
-        minSdkVersion 8
+        minSdkVersion 10
         targetSdkVersion 22
     }
 

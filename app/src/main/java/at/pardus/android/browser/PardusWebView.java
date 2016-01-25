@@ -42,6 +42,7 @@ import java.util.Date;
 
 import at.pardus.android.browser.PardusPageProperties.PardusPageProperty;
 import at.pardus.android.browser.js.JavaScriptLinks;
+import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
 import at.pardus.android.content.LocalContentProvider;
@@ -139,13 +140,16 @@ public class PardusWebView extends WebViewGm {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         }
         settings.setSaveFormData(true);
-		settings.setSavePassword(true);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            //noinspection deprecation
+            settings.setSavePassword(true);
+        }
 		settings.setDatabaseEnabled(true);
 		SharedPreferences prefs = getContext().getSharedPreferences(
 				"WebViewSettings", Context.MODE_PRIVATE);
 		if (prefs.getInt("double_tap_toast_count", 1) > 0) {
 			// attempt to not display the automatic "double-tap tip"
-			prefs.edit().putInt("double_tap_toast_count", 0).commit();
+			prefs.edit().putInt("double_tap_toast_count", 0).apply();
 		}
 		database = WebViewDatabase.getInstance(getContext());
 		cookieManager = CookieManager.getInstance();
@@ -273,8 +277,8 @@ public class PardusWebView extends WebViewGm {
 							Log.v(PardusWebView.class.getSimpleName(),
 									"onLongPress: " + e.getX() + "/" + e.getY());
 						}
-						if (Build.VERSION.SDK_INT < 11) {
-							// v2.3- webviews need help going into sel. mode
+						if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+							// v2.3.7- webviews need help going into sel. mode
 							fakeEmulateShiftHeld();
 						}
 					}
@@ -373,7 +377,8 @@ public class PardusWebView extends WebViewGm {
 	 * @param autoLogin
 	 *            whether to automatically log in if the account info is stored
 	 */
-	public void login(boolean autoLogin) {
+	@SuppressLint("AddJavascriptInterface")
+    public void login(boolean autoLogin) {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Showing login screen");
 		}
@@ -399,6 +404,9 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		stopLoading();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            addJavascriptInterface(new JavaScriptLogin(this, activity), JavaScriptLogin.DEFAULT_JS_NAME);
+        }
 		loadUrl(PardusConstants.loginScreen);
 		cookieManager.removeSessionCookie();
 		setUniverse(null);
@@ -503,7 +511,7 @@ public class PardusWebView extends WebViewGm {
 			cookieManager.setCookie(url, "usehttps=1; max-age=0" + cookieInfo);
 		}
 		// android 4.4 webview does not allow access to content:// anymore
-		if (Build.VERSION.SDK_INT < 19) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
 			cookieManager.setCookie(url, "image_path="
 					+ LocalContentProvider.URI + cookieInfo);
 		}
@@ -587,14 +595,16 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Deletes website cache, cookies, page properties and any stored form data.
 	 */
-	public void removeTraces() {
+	@SuppressWarnings("deprecation")
+    public void removeTraces() {
 		if (PardusConstants.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Clearing cache");
 		}
 		if (database != null) {
-			database.clearUsernamePassword();
+            database.clearUsernamePassword();
 			database.clearFormData();
 		}
+        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
 		clearFormData();
 		clearCache(true);
 		cookieManager.removeSessionCookie();
@@ -650,20 +660,20 @@ public class PardusWebView extends WebViewGm {
 	 * reflection. Does not work consistently.
 	 */
 	private void resetMinZoom() {
-		if (Build.VERSION.SDK_INT <= 10) {
-			// the minimum zoom scale is fine in android versions <= 2.3
+		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+			// the minimum zoom scale is fine in android versions <= 2.3.7
 			return;
 		}
 		settings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
 		Object webViewObj;
 		Method adjustDefaultZoomDensity;
 		try {
-			if (Build.VERSION.SDK_INT <= 14) {
+			if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 				webViewObj = this;
 				adjustDefaultZoomDensity = Class.forName(
 						"android.webkit.WebView").getDeclaredMethod(
 						"updateDefaultZoomDensity", int.class);
-			} else if (Build.VERSION.SDK_INT <= 15) {
+			} else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
 				webViewObj = this;
 				adjustDefaultZoomDensity = Class.forName(
 						"android.webkit.WebView").getDeclaredMethod(
@@ -686,7 +696,7 @@ public class PardusWebView extends WebViewGm {
 	}
 
 	/**
-	 * Uses the setDisplayZoomControls method for android versions >= 3 to show
+	 * Uses the setDisplayZoomControls method for android versions >= 3.0 to show
 	 * or hide the zoom control buttons. In other versions the
 	 * ZoomButtonsController is prepared for invocations of its setVisible
 	 * method in onTouchEvent.
@@ -705,7 +715,7 @@ public class PardusWebView extends WebViewGm {
 		if (zoomButtonsController != null) {
 			return;
 		}
-		if (Build.VERSION.SDK_INT >= 11) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			try {
 				Class.forName("android.webkit.WebSettings")
 						.getMethod("setDisplayZoomControls",
@@ -799,7 +809,7 @@ public class PardusWebView extends WebViewGm {
 			universe = newUniverse;
 			messageChecker.setUniverse(newUniverse, newUniverse == null ? null
 					: cookieManager.getCookie(url));
-			if (Build.VERSION.SDK_INT >= 11) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 				activity.runOnUiThread(new Runnable() {
 
 					@Override
