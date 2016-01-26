@@ -42,6 +42,7 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.EmptyStackException;
@@ -242,20 +243,23 @@ public class Pardus extends ScriptManagerActivity {
 					+ displayHeightPx + ", Scale: " + displayDensityScale
 					+ ", Density (dpi): " + displayDpi);
 		}
-		imagePack = new PardusImagePack(Environment
-				.getExternalStorageDirectory().getAbsolutePath(), getFilesDir()
-				.getAbsolutePath());
+        File externalStorage;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            externalStorage = Environment.getExternalStorageDirectory();
+        } else {
+            externalStorage = getExternalFilesDir(null);
+        }
+        imagePack = new PardusImagePack(externalStorage, getFilesDir());
 		if (imagePack.getPath() == null) {
-			Log.e(this.getClass().getSimpleName(),
+			Log.e(getClass().getSimpleName(),
 					"Unable to determine storage directory");
 			PardusNotification
 					.showLong("No suitable place to store the image pack found");
 			finish();
 		} else {
 			if (BuildConfig.DEBUG) {
-				Log.d(PardusImagePack.class.getClass().getSimpleName(),
-						"Pardus image pack directory set to "
-								+ imagePack.getPath());
+				Log.d(getClass().getSimpleName(),
+						"Pardus image pack directory set to " + imagePack.getPath());
 			}
 		}
 		// load the script store
@@ -376,7 +380,7 @@ public class Pardus extends ScriptManagerActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.options_menu, menu);
-		return super.onCreateOptionsMenu(menu);
+        return super.onCreateOptionsMenu(menu);
 	}
 
 	/*

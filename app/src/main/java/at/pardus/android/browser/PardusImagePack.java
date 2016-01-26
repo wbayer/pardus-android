@@ -55,11 +55,11 @@ public class PardusImagePack {
 	 * Constructor with the image pack path to be determined.
 	 * 
 	 * @param externalDir
-	 *            the external directory of the device
+	 *            may be either the external root directory of the device or the app
 	 * @param internalDir
-	 *            the internal directory of the device
+	 *            the internal directory of the app
 	 */
-	public PardusImagePack(String externalDir, String internalDir) {
+	public PardusImagePack(File externalDir, File internalDir) {
 		path = determinePath(externalDir, internalDir);
 	}
 
@@ -245,82 +245,53 @@ public class PardusImagePack {
 		return installed;
 	}
 
-	/**
-	 * Determines the path to store the Pardus image pack files in.
-	 * 
-	 * @param externalDir
-	 *            the external directory of the device
-	 * @param internalDir
-	 *            the internal directory of the device
-	 * @return the absolute path to the Pardus image pack directory or null if
-	 *         it could not be determined
-	 */
-	private static String determinePath(String externalDir, String internalDir) {
-		// determine available storage directories (prefer external device)
-		String path = getExternalPardusDir(externalDir);
-		if (path == null) {
-			// no external storage available
-			path = getInternalPardusDir(internalDir);
-		}
-		return path;
-	}
+    /**
+     * Determines the path to store the Pardus image pack files in.
+     *
+     * @param externalDir may be either the external root directory of the device or the app
+     * @param internalDir the internal directory of the app
+     * @return the absolute path to the Pardus image pack directory or null if
+     * it could not be determined
+     */
+    private static String determinePath(File externalDir, File internalDir) {
+        // determine available storage directories (prefer external device)
+        String path = getPardusDir(externalDir, "/pardus/img");
+        if (path == null) {
+            // no external storage available
+            if (BuildConfig.DEBUG) {
+                Log.d(PardusImagePack.class.getSimpleName(),
+                        "Using internal storage space for the image pack");
+            }
+            path = getPardusDir(internalDir, "/img");
+        }
+        return path;
+    }
 
-	/**
-	 * Gets (or creates if needed) the pardus directory on an external device.
-	 * 
-	 * @param externalDir
-	 *            the path to the external storage
-	 * @return the location of the pardus directory, or null if no external
-	 *         device or if the directory cannot be created
-	 */
-	private static String getExternalPardusDir(String externalDir) {
-		if (externalDir == null) {
-			return null;
-		}
-		String externalPardusDir = null;
-		File externalStorage = new File(externalDir);
-		if (externalStorage.isDirectory()) {
-			if (BuildConfig.DEBUG) {
-				Log.v(PardusImagePack.class.getSimpleName(),
-						"External storage directory at "
-								+ externalStorage.getAbsolutePath());
-			}
-			externalPardusDir = externalStorage.getAbsolutePath()
-					+ "/pardus/img";
-			File externalPardusStorage = new File(externalPardusDir);
-			if (!externalPardusStorage.canRead()
-					|| !externalPardusStorage.isDirectory()) {
-				if (!externalPardusStorage.mkdirs()) {
-					if (BuildConfig.DEBUG) {
-						Log.v(PardusImagePack.class.getSimpleName(),
-								"Cannot create external Pardus storage directory");
-					}
-					return null;
-				}
-			}
-		}
-		return externalPardusDir;
-	}
-
-	/**
-	 * Gets (or creates if needed) the internal pardus directory.
-	 * 
-	 * @return the location of the pardus directory, or null if it cannot be
-	 *         created
-	 */
-	private static String getInternalPardusDir(String internalDir) {
-		if (internalDir == null) {
-			return null;
-		}
-		String internalPardusDir = internalDir + "/img";
-		File storage = new File(internalPardusDir);
-		if (!storage.canRead() || !storage.isDirectory()) {
-			if (!storage.mkdirs()) {
-				return null;
-			}
-		}
-		return internalPardusDir;
-	}
+    /**
+     * Gets (or creates if needed) the pardus directory within the specified path.
+     *
+     * @param rootPath     the root to look for the pardus directory in
+     * @param pardusSubDir the subdirectory for pardus
+     * @return the location of the pardus directory, or null if the directory cannot be created
+     */
+    private static String getPardusDir(File rootPath, String pardusSubDir) {
+        if (rootPath == null || !rootPath.canRead() || !rootPath.isDirectory()) {
+            return null;
+        }
+        String pardusDir = rootPath.getAbsolutePath() + pardusSubDir;
+        File pardusStorage = new File(pardusDir);
+        if (!pardusStorage.canRead()
+                || !pardusStorage.isDirectory()) {
+            if (!pardusStorage.mkdirs()) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(PardusImagePack.class.getSimpleName(),
+                            "Cannot create Pardus storage directory at " + pardusDir);
+                }
+                return null;
+            }
+        }
+        return pardusDir;
+    }
 
 	private static final Map<String, String> IMAGEPACKUPDATES;
 
