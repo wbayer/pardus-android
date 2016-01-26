@@ -2,10 +2,6 @@
     <methods>;
 }
 
--keep public class at.pardus.android.webview.gm.run.WebViewGmApi {
-    <methods>;
-}
-
 -assumenosideeffects class android.util.Log {
     public static int v(...);
     public static int d(...);
