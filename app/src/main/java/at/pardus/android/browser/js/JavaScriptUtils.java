@@ -20,7 +20,7 @@ package at.pardus.android.browser.js;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
-import at.pardus.android.browser.PardusConstants;
+import at.pardus.android.browser.BuildConfig;
 import at.pardus.android.browser.PardusPreferences;
 import at.pardus.android.browser.PardusWebView;
 
@@ -57,21 +57,21 @@ public class JavaScriptUtils {
 	public void foundUniverse(boolean artemis, boolean orion, boolean pegasus) {
 		String universes = "";
 		if (artemis) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Character exists in Artemis");
 			}
 			universes += "artemis" + PardusPreferences.GLUE;
 		}
 		if (orion) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Character exists in Orion");
 			}
 			universes += "orion" + PardusPreferences.GLUE;
 		}
 		if (pegasus) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Character exists in Pegasus");
 			}
@@ -86,7 +86,7 @@ public class JavaScriptUtils {
 	 */
     @JavascriptInterface
 	public void refreshNotification() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Looking for a new status or system message (initiated by JS)");
 		}

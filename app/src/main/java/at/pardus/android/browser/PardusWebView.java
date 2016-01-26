@@ -121,7 +121,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@SuppressLint("SetJavaScriptEnabled")
 	private void init() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Initializing browser component");
 		}
@@ -187,14 +187,14 @@ public class PardusWebView extends WebViewGm {
 	public void initClients(Activity activity, ProgressBar progress,
 			PardusMessageChecker messageChecker) {
 		this.activity = activity;
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Setting up web view client");
 		}
 		this.messageChecker = messageChecker;
         PardusWebViewClient viewClient = new PardusWebViewClient(getScriptStore(), getWebViewClient()
                 .getJsBridgeName(), getWebViewClient().getSecret(), progress);
 		setWebViewClient(viewClient);
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up web chrome client");
 		}
@@ -207,7 +207,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@SuppressLint("AddJavascriptInterface")
     public void initJavascriptBridges() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up javascript interfaces");
 		}
@@ -226,7 +226,7 @@ public class PardusWebView extends WebViewGm {
 	 *            temporary download directory
 	 */
 	public void initDownloadListener(String storageDir, String cacheDir) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up download listener");
 		}
@@ -257,7 +257,7 @@ public class PardusWebView extends WebViewGm {
 					public boolean onScroll(MotionEvent e1, MotionEvent e2,
 							float distanceX, float distanceY) {
 						scrolling = true;
-						if (PardusConstants.DEBUG) {
+						if (BuildConfig.DEBUG) {
 							Log.v(PardusWebView.class.getSimpleName(),
 									"onScroll: " + e1.getX() + "/" + e1.getY()
 											+ " -> " + e2.getX() + "/"
@@ -276,7 +276,7 @@ public class PardusWebView extends WebViewGm {
 
 					@Override
 					public void onLongPress(MotionEvent e) {
-						if (PardusConstants.DEBUG) {
+						if (BuildConfig.DEBUG) {
 							Log.v(PardusWebView.class.getSimpleName(),
 									"onLongPress: " + e.getX() + "/" + e.getY());
 						}
@@ -289,7 +289,7 @@ public class PardusWebView extends WebViewGm {
 					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
 							float velocityX, float velocityY) {
-						if (PardusConstants.DEBUG) {
+						if (BuildConfig.DEBUG) {
 							Log.v(PardusWebView.class.getSimpleName(),
 									"onFling: " + e1.getX() + "/" + e1.getY()
 											+ " -> " + e2.getX() + "/"
@@ -303,7 +303,7 @@ public class PardusWebView extends WebViewGm {
 					public boolean onDown(MotionEvent e) {
 						scrollRangeY = computeVerticalScrollRange();
 						touchedAfterPageLoad = true;
-						if (PardusConstants.DEBUG) {
+						if (BuildConfig.DEBUG) {
 							Log.v(PardusWebView.class.getSimpleName(),
 									"onDown: " + e.getX() + "/" + e.getY());
 						}
@@ -323,13 +323,13 @@ public class PardusWebView extends WebViewGm {
 	public boolean onTouchEvent(MotionEvent ev) {
 		gestureDetector.onTouchEvent(ev);
 		if (ev.getAction() == MotionEvent.ACTION_UP) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "onUp: " + ev.getX()
 						+ "/" + ev.getY());
 			}
 			if (scrolling) {
 				scrolling = false;
-				if (PardusConstants.DEBUG) {
+				if (BuildConfig.DEBUG) {
 					Log.v(this.getClass().getSimpleName(), "Scrolling ended");
 				}
 				// start timer to hide links bar if shown
@@ -382,7 +382,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@SuppressLint("AddJavascriptInterface")
     public void login(boolean autoLogin) {
-        if (PardusConstants.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(this.getClass().getSimpleName(), "Showing login screen");
 		}
 		this.autoLogin = autoLogin;
@@ -399,7 +399,7 @@ public class PardusWebView extends WebViewGm {
 						.getTime() + 86400000));
 			}
 		} else {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "No image pack set yet");
 			}
             selectImagePack();
@@ -425,7 +425,7 @@ public class PardusWebView extends WebViewGm {
 			login(false);
 			return;
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Logging out");
 		}
 		loggingOut = true;
@@ -441,7 +441,7 @@ public class PardusWebView extends WebViewGm {
 	 * Displays the local settings screen.
 	 */
 	public void showSettings() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Loading settings screen");
 		}
 		stopLoading();
@@ -452,7 +452,7 @@ public class PardusWebView extends WebViewGm {
 	 * Displays the local image pack selection screen.
 	 */
 	public void selectImagePack() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Loading image pack selection screen");
 		}
@@ -468,7 +468,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void loadUniversePage(String page) {
 		if (universe == null) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(),
 						"Cannot load universe page (not logged in any universe)");
 			}
@@ -487,7 +487,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void switchUniverse(String newUni) {
 		if (!loggedIn) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(),
 						"Cannot enter universe (not logged in)");
 			}
@@ -539,7 +539,7 @@ public class PardusWebView extends WebViewGm {
 						+ cookieInfo);
 		cookieManager.setCookie(url, "mobile_chat=" + ((PardusPreferences.isMobileChat()) ? "1" : "0") +
                 cookieInfo);
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Cookies set: "
 					+ cookieManager.getCookie(url));
 		}
@@ -554,7 +554,7 @@ public class PardusWebView extends WebViewGm {
 	public void setLoggedIn(boolean loggedIn) {
 		this.loggedIn = loggedIn;
 		if (loggedIn) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Logged in");
 			}
 			setCookies();
@@ -562,7 +562,7 @@ public class PardusWebView extends WebViewGm {
 				PardusNotification.showLong("Using unencrypted connection");
 			}
 		} else {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Logged out");
 			}
 			destroySession();
@@ -599,7 +599,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@SuppressWarnings("deprecation")
     public void removeTraces() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Clearing cache");
 		}
 		if (database != null) {
@@ -874,7 +874,7 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		setRenderStatus(RenderStatus.LOAD_START);
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"New render status: LOAD_START");
 		}
@@ -887,7 +887,7 @@ public class PardusWebView extends WebViewGm {
 		PardusPageProperty property = pageProperties.get(url,
 				Pardus.orientation);
 		if (property != null) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Restoring zoom level for " + url + ": "
 								+ (int) Math.ceil(property.scale * 100 - 0.5f));
@@ -903,7 +903,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	public void propertiesAfterPageLoad() {
 		setRenderStatus(RenderStatus.LOAD_FINISH);
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"New render status: LOAD_FINISH");
 		}
@@ -916,7 +916,7 @@ public class PardusWebView extends WebViewGm {
 		PardusPageProperty property = pageProperties.get(url,
 				Pardus.orientation);
 		if (property != null) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Restoring scroll position for " + url + ": "
 								+ property.posX + "/" + property.posY);
@@ -940,7 +940,7 @@ public class PardusWebView extends WebViewGm {
 	 * @see android.view.View#scrollTo(int, int)
 	 */
 	public void scrollTo(int x, int y) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"WebView#scrollTo called for " + x + "/" + y);
 		}
@@ -950,7 +950,7 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		if (x != initialScroll.posX || y != initialScroll.posY) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Blocking scroll attempt to " + x + "/" + y
 								+ " (expected " + initialScroll.posX + "/"
@@ -969,7 +969,7 @@ public class PardusWebView extends WebViewGm {
 	 * @see android.webkit.WebView#onScrollChanged(int, int, int, int)
 	 */
 	protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Scrolled from " + oldl
 					+ "/" + oldt + " to " + l + "/" + t + " (Scale "
 					+ (int) Math.ceil(getScale() * 100 - 0.5f) + ")");
@@ -980,7 +980,7 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		if (l != initialScroll.posX || t != initialScroll.posY) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Scrolling back to initial position "
 								+ initialScroll.posX + "/" + initialScroll.posY);
@@ -1011,7 +1011,7 @@ public class PardusWebView extends WebViewGm {
 				return false;
 			}
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Going back to "
 					+ previousUrl);
 		}
@@ -1032,7 +1032,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@Override
 	public void loadUrl(String url) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"WebView#loadUrl called for " + url);
 		}
@@ -1047,7 +1047,7 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@Override
 	public void reload() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Reloading page " + getUrl());
 		}
 		if (pageProperties != null) {

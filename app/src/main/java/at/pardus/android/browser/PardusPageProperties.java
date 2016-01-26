@@ -95,7 +95,7 @@ public class PardusPageProperties {
 				|| identifier.url.equals("FORUM/SEARCH_RESULT");
 		PardusPageProperty property = new PardusPageProperty(scale,
 				noScroll ? -1 : posX, noScroll ? -1 : posY, totalX, totalY);
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Saving properties for "
 					+ identifier + " (" + url + "): " + property);
 		}
@@ -121,7 +121,7 @@ public class PardusPageProperties {
 	 * Persists all entries to the disk.
 	 */
 	public void persist() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
 					"Persisting " + properties.size() + " page properties ...");
 		}
@@ -149,7 +149,7 @@ public class PardusPageProperties {
 	 */
 	@SuppressWarnings("unchecked")
 	public void loadFromDisk() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
 					"Loading page properties from disk ...");
 		}
@@ -159,7 +159,7 @@ public class PardusPageProperties {
 			properties = (Map<PardusPageIdentifier, PardusPageProperty>) is
 					.readObject();
 		} catch (FileNotFoundException e) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(),
 						"No page properties saved yet");
 			}
@@ -178,7 +178,7 @@ public class PardusPageProperties {
 			}
 		} catch (Exception ignored) {
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
 					"Loaded " + properties.size() + " page properties");
 		}

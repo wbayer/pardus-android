@@ -22,8 +22,6 @@ package at.pardus.android.browser;
  */
 public abstract class PardusConstants {
 
-	public static final boolean DEBUG = true;
-
 	/* Local pages (absolute URLs) */
 
 	public static final String loginScreen = "file:///android_asset/login.html";

@@ -87,7 +87,7 @@ public class PardusImagePack {
 				long lastUpdate = getLastUpdate();
 				if (srcUrl == null || !IMAGEPACKUPDATES.containsKey(srcUrl)
 						|| lastUpdate == -1) {
-					if (PardusConstants.DEBUG) {
+					if (BuildConfig.DEBUG) {
 						Log.d("PardusImagePack",
 								"Could not retrieve image pack info - no update reminders");
 					}
@@ -115,7 +115,7 @@ public class PardusImagePack {
 					}
 					lastSrcUpdate = Long.valueOf(sb.toString());
 				} catch (Exception e) {
-					if (PardusConstants.DEBUG) {
+					if (BuildConfig.DEBUG) {
 						Log.w(this.getClass().getSimpleName(),
 								Log.getStackTraceString(e));
 					}
@@ -131,7 +131,7 @@ public class PardusImagePack {
 					}
 				}
 				if (lastSrcUpdate > lastUpdate) {
-					if (PardusConstants.DEBUG) {
+					if (BuildConfig.DEBUG) {
 						Log.v("PardusImagePack",
 								"Image pack update available (local v"
 										+ lastUpdate + ", remote v"
@@ -149,7 +149,7 @@ public class PardusImagePack {
 
 					});
 				} else {
-					if (PardusConstants.DEBUG) {
+					if (BuildConfig.DEBUG) {
 						Log.v("PardusImagePack", "Image pack up to date (v"
 								+ lastUpdate + ")");
 					}
@@ -233,7 +233,7 @@ public class PardusImagePack {
                     nomediaFileCreated = galleryHideFile.createNewFile();
 				} catch (IOException ignored) {
 				}
-                if (PardusConstants.DEBUG) {
+                if (BuildConfig.DEBUG) {
                     if (!nomediaFileCreated) {
                         Log.w(PardusImagePack.class.getSimpleName(), "Error creating new file " +
                                 galleryHideFile.getAbsolutePath());
@@ -280,7 +280,7 @@ public class PardusImagePack {
 		String externalPardusDir = null;
 		File externalStorage = new File(externalDir);
 		if (externalStorage.isDirectory()) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(PardusImagePack.class.getSimpleName(),
 						"External storage directory at "
 								+ externalStorage.getAbsolutePath());
@@ -291,7 +291,7 @@ public class PardusImagePack {
 			if (!externalPardusStorage.canRead()
 					|| !externalPardusStorage.isDirectory()) {
 				if (!externalPardusStorage.mkdirs()) {
-					if (PardusConstants.DEBUG) {
+					if (BuildConfig.DEBUG) {
 						Log.v(PardusImagePack.class.getSimpleName(),
 								"Cannot create external Pardus storage directory");
 					}

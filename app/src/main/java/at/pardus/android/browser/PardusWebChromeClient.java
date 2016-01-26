@@ -49,7 +49,7 @@ public class PardusWebChromeClient extends WebChromeClient {
 	 */
 	@Override
 	public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(), consoleMessage.messageLevel().name() + ": "
 					+ consoleMessage.message() + " at " + consoleMessage.sourceId() + ":"
 					+ consoleMessage.lineNumber());

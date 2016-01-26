@@ -23,7 +23,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 
-import at.pardus.android.browser.PardusConstants;
+import at.pardus.android.browser.BuildConfig;
 import fi.iki.elonen.SimpleWebServer;
 
 /**
@@ -67,7 +67,7 @@ public class LocalContentProxy {
             return;
         }
         // start the local image pack webserver
-        if (PardusConstants.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.v(getClass().getSimpleName(),
                     "Starting web server at " + HOST + ":" + PORT + " to serve files from " + path);
         }
@@ -75,7 +75,7 @@ public class LocalContentProxy {
             simpleWebServer = new SimpleWebServer(HOST, PORT, new File(path), true);
         }
         if (simpleWebServer.isAlive()) {
-            if (PardusConstants.DEBUG) {
+            if (BuildConfig.DEBUG) {
                 Log.v(getClass().getSimpleName(), "Web server is still alive, not restarting");
             }
             return;
@@ -98,7 +98,7 @@ public class LocalContentProxy {
             return;
         }
         if (simpleWebServer != null) {
-            if (PardusConstants.DEBUG) {
+            if (BuildConfig.DEBUG) {
                 Log.v(getClass().getSimpleName(), "Stopping web server");
             }
             simpleWebServer.stop();

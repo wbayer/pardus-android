@@ -111,7 +111,7 @@ public class PardusMessageChecker {
 		if (universe == null) {
 			return;
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Checking for new messages/logs");
 		}
@@ -204,7 +204,7 @@ public class PardusMessageChecker {
 	 * Pauses the background message checking.
 	 */
 	public void pause() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Pausing Pardus Message Checker");
 		}
@@ -224,7 +224,7 @@ public class PardusMessageChecker {
 	 * Resumes the background message checking.
 	 */
 	public void resume() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Resuming Pardus Message Checker");
 		}
@@ -272,7 +272,7 @@ public class PardusMessageChecker {
 		}
 		this.universe = universe;
 		if (universe == null) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Message checker assumes the user logged out");
 			}
@@ -295,7 +295,7 @@ public class PardusMessageChecker {
 		}
 		httpGet = new HttpGet(url);
 		httpGet.setHeader("Cookie", cookies);
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Message checker will work with URL " + url);
 		}
@@ -322,7 +322,7 @@ public class PardusMessageChecker {
 
 		@Override
 		public void run() {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				if (!text.equals("")) {
 					Log.v(this.getClass().getSimpleName(),
 							"Setting notify text to " + text);

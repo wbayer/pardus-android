@@ -232,7 +232,7 @@ public class Pardus extends ScriptManagerActivity {
 			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
 		parseDisplayMetrics();
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Creating application");
 			Log.v(this.getClass().getSimpleName(), "SDK Version "
 					+ Build.VERSION.SDK_INT);
@@ -252,7 +252,7 @@ public class Pardus extends ScriptManagerActivity {
 					.showLong("No suitable place to store the image pack found");
 			finish();
 		} else {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(PardusImagePack.class.getClass().getSimpleName(),
 						"Pardus image pack directory set to "
 								+ imagePack.getPath());
@@ -610,7 +610,7 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	protected void onStart() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Starting (or restarting) application");
 		}
@@ -624,7 +624,7 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	protected void onResume() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Resuming (or starting) application");
 		}
@@ -658,7 +658,7 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	protected void onPause() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Pausing application (to be resumed or stopped or killed)");
 		}
@@ -697,7 +697,7 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	protected void onStop() {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Stopping application (to be destroyed or restarted)");
 		}
@@ -719,7 +719,7 @@ public class Pardus extends ScriptManagerActivity {
 	 */
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.i(this.getClass().getSimpleName(), "Configuration change");
 		}
 		super.onConfigurationChanged(newConfig);

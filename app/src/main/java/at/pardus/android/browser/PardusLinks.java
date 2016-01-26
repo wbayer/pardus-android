@@ -17,8 +17,6 @@
 
 package at.pardus.android.browser;
 
-import java.util.StringTokenizer;
-
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
@@ -34,6 +32,8 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.StringTokenizer;
 
 /**
  * Class managing Pardus links.
@@ -145,12 +145,12 @@ public class PardusLinks {
 		if (visible) {
 			return;
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(), "Showing links");
 		}
 		linksGridView.setVisibility(View.VISIBLE);
 		visible = true;
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Links grid view width/height set to (px): "
 							+ layoutParams.width + "/" + layoutParams.height);
@@ -168,7 +168,7 @@ public class PardusLinks {
 			return;
 		}
 		hidingScheduled = true;
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(), "Hiding links after "
 					+ millis + " milli-seconds");
 		}
@@ -183,7 +183,7 @@ public class PardusLinks {
 		if (!visible) {
 			return;
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(), "Hiding links");
 		}
 		linksGridView.startAnimation(fadeOutAnimation);

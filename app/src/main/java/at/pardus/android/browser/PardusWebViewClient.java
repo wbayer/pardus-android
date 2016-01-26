@@ -106,12 +106,12 @@ public class PardusWebViewClient extends WebViewClientGm {
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
 		// non-frame target user actions and redirects might trigger this
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Attempting to load " + url);
 		}
 		PardusWebView pardusView = (PardusWebView) view;
 		if (!isAllowedUrl(url)) {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Not loading " + url);
 			}
 			if (url.equals(PardusConstants.loginUrlOrig)
@@ -140,7 +140,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	@Override
 	public void onPageStarted(WebView view, String url, Bitmap favicon) {
 		// triggered by anything changing the URL (non-frame target)
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Started loading " + url);
 			Log.v(this.getClass().getSimpleName(),
 					"Webview Original URL is set to " + view.getOriginalUrl());
@@ -152,7 +152,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		// redirecting to local login page if access to the URL is disallowed
 		if (!pardusView.isLoggedIn()) {
 			if (!isAllowedUrlLoggedOut(url)) {
-				if (PardusConstants.DEBUG) {
+				if (BuildConfig.DEBUG) {
 					Log.d(this.getClass().getSimpleName(),
 							"Access to "
 									+ url
@@ -163,7 +163,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			}
 		} else {
 			if (!isAllowedUrl(url)) {
-				if (PardusConstants.DEBUG) {
+				if (BuildConfig.DEBUG) {
 					Log.d(this.getClass().getSimpleName(), "Access to " + url
 							+ " denied, redirecting to local login page");
 				}
@@ -220,7 +220,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	public void onPageFinished(WebView view, String url) {
 		// triggered when a URL has completed loading and is being displayed
 		// if a page sends a redirect header only the next page triggers this
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Finished loading " + url);
 			Log.v(this.getClass().getSimpleName(),
 					"Webview Original URL is set to " + view.getOriginalUrl());
@@ -243,7 +243,7 @@ public class PardusWebViewClient extends WebViewClientGm {
                 // remove login javascript bridge (takes effect after the next page load)
                 view.removeJavascriptInterface(JavaScriptLogin.DEFAULT_JS_NAME);
             }
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "Applying query parameters for login screen");
 			}
             evaluateJavascript(view, "applyParameters(" + (PardusPreferences.isUseHttps() ? "true" :
@@ -258,7 +258,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			return;
 		} else if (url.contains(PardusConstants.sendMsgPage)) {
 			// sendmsg page: redirect back to messages page after sending
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Checking send message page for self.close()");
 			}
@@ -266,7 +266,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		} else if (url.equals(PardusConstants.loggedInUrl)
 				|| url.equals(PardusConstants.loggedInUrlHttps)) {
 			// account play page: save the available characters/universes
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
 						"Parsing account play page for available universes");
 			}
@@ -307,7 +307,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 */
 	@Override
 	public void onLoadResource(WebView view, String url) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Loading resource " + url);
 		}
 		// new (status) message check after ajax loads
@@ -340,7 +340,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 */
 	@Override
 	public void onScaleChanged(WebView view, float oldScale, float newScale) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Scale changed from " + Math.ceil(oldScale * 100 - 0.5f)
 							+ " to " + Math.ceil(newScale * 100 - 0.5f));
@@ -372,14 +372,14 @@ public class PardusWebViewClient extends WebViewClientGm {
 				|| !previousUrl.contains(view.getUniverse())) {
 			// prev page is the page to redirect from or
 			// not uni-specific or another uni: redirect to fallback page
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "Redirecting from "
 						+ fromPage + " to fallback " + fallbackPage);
 			}
 			view.loadUniversePage(fallbackPage);
 			return;
 		}
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Redirecting from "
 					+ fromPage + " back to " + previousUrl);
 		}

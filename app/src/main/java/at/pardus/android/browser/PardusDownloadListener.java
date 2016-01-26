@@ -140,18 +140,18 @@ public class PardusDownloadListener implements DownloadListener {
 		 * Downloads, unzips and sets the new image pack path.
 		 */
 		private void getImagePack() {
-			if (PardusConstants.DEBUG) {
+			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Downloading");
 			}
 			if (downloadFile(url, contentLength)) {
 				// successfully downloaded
-				if (PardusConstants.DEBUG) {
+				if (BuildConfig.DEBUG) {
 					Log.d(this.getClass().getSimpleName(), "Unzipping");
 				}
 				boolean update = url.contains("/update_");
 				if (unzipFile(update)) {
 					// successfully unzipped and moved
-					if (PardusConstants.DEBUG) {
+					if (BuildConfig.DEBUG) {
 						Log.d(this.getClass().getSimpleName(),
 								"Storing image pack location");
 					}

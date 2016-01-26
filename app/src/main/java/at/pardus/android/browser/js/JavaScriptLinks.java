@@ -25,7 +25,7 @@ import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import at.pardus.android.browser.PardusConstants;
+import at.pardus.android.browser.BuildConfig;
 import at.pardus.android.browser.PardusLinks;
 import at.pardus.android.browser.PardusLinks.PardusLink;
 import at.pardus.android.browser.PardusNotification;
@@ -91,7 +91,7 @@ public class JavaScriptLinks {
 	public String getLinks() {
 		String serialized = PardusLinks.PardusLinkStore.serializeLinks(links
 				.getLinks());
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Sending links to javascript: " + serialized);
 		}
@@ -106,7 +106,7 @@ public class JavaScriptLinks {
 	 */
     @JavascriptInterface
 	public void saveLinks(String links) {
-		if (PardusConstants.DEBUG) {
+		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
 					"Receiving updated links from javascript: " + links);
 		}
