@@ -146,6 +146,8 @@ public class PardusWebView extends WebViewGm {
             settings.setSavePassword(true);
         }
 		settings.setDatabaseEnabled(true);
+        settings.setUserAgentString(settings.getUserAgentString() + " Pardus/" +
+                PardusPreferences.getVersionCode());
 		SharedPreferences prefs = getContext().getSharedPreferences(
 				"WebViewSettings", Context.MODE_PRIVATE);
 		if (prefs.getInt("double_tap_toast_count", 1) > 0) {
@@ -211,7 +213,7 @@ public class PardusWebView extends WebViewGm {
 		}
 		addJavascriptInterface(new JavaScriptSettings(this, activity),
 				JavaScriptSettings.DEFAULT_JS_NAME);
-		addJavascriptInterface(new JavaScriptUtils(this),
+        addJavascriptInterface(new JavaScriptUtils(this),
 				JavaScriptUtils.DEFAULT_JS_NAME);
 	}
 
@@ -230,7 +232,7 @@ public class PardusWebView extends WebViewGm {
 		}
 		downloadListener = new PardusDownloadListener(this, getContext(),
 				storageDir, storageDir, cacheDir);
-		setDownloadListener(downloadListener);
+        setDownloadListener(downloadListener);
 	}
 
 	/**
@@ -364,10 +366,10 @@ public class PardusWebView extends WebViewGm {
 	 */
     private void savePageProperties() {
 		if (pageProperties != null) {
-			pageProperties.save(getUrl(), Pardus.orientation, getScale(),
-					computeHorizontalScrollOffset(),
-					computeVerticalScrollOffset(),
-					computeHorizontalScrollRange(),
+            pageProperties.save(getUrl(), Pardus.orientation, getScale(),
+                    computeHorizontalScrollOffset(),
+                    computeVerticalScrollOffset(),
+                    computeHorizontalScrollRange(),
 					computeVerticalScrollRange());
 		}
 	}
@@ -380,8 +382,8 @@ public class PardusWebView extends WebViewGm {
 	 */
 	@SuppressLint("AddJavascriptInterface")
     public void login(boolean autoLogin) {
-		if (PardusConstants.DEBUG) {
-			Log.v(this.getClass().getSimpleName(), "Showing login screen");
+        if (PardusConstants.DEBUG) {
+            Log.v(this.getClass().getSimpleName(), "Showing login screen");
 		}
 		this.autoLogin = autoLogin;
 		String imagePath = PardusPreferences.getImagePath();
@@ -400,7 +402,7 @@ public class PardusWebView extends WebViewGm {
 			if (PardusConstants.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "No image pack set yet");
 			}
-			selectImagePack();
+            selectImagePack();
 			clearHistory();
 			return;
 		}
@@ -408,7 +410,7 @@ public class PardusWebView extends WebViewGm {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             addJavascriptInterface(new JavaScriptLogin(activity), JavaScriptLogin.DEFAULT_JS_NAME);
         }
-		loadUrl(PardusConstants.loginScreen);
+        loadUrl(PardusConstants.loginScreen);
 		cookieManager.removeSessionCookie();
 		setUniverse(null);
 		clearHistory();
@@ -430,7 +432,7 @@ public class PardusWebView extends WebViewGm {
 		String logoutUrl = (PardusPreferences.isUseHttps()) ? PardusConstants.logoutUrlHttps
 				: PardusConstants.logoutUrl;
 		stopLoading();
-		loadUrl(logoutUrl);
+        loadUrl(logoutUrl);
 		setUniverse(null);
 		clearHistory();
 	}
