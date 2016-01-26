@@ -4,8 +4,6 @@ Pardus for Android, available on [Google Play](https://play.google.com/store/app
 ## Local images ##
 An image pack is downloaded at the application's first start. Subsequently images are loaded only from the local image pack, saving expensive mobile network traffic and improving performance.
 
-*Due to restrictions in Android's webview component this feature is unavailable starting with Android 4.4.*
-
 ## Extensibility ##
 Support of Greasemonkey-compatible user scripts make Pardus fully customizable on your Android phone.
 
