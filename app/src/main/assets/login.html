@@ -45,7 +45,9 @@ function applyParameters(https, auto) {
     }
 }
 function askSavePassword() {
-    JavaLogin.askSavePassword(document.getElementById('acc').value, document.getElementById('pw').value);
+    if (typeof JavaLogin !== "undefined") {
+        JavaLogin.askSavePassword(document.getElementById('acc').value, document.getElementById('pw').value);
+    }
 }
 //]]>
 </script>
