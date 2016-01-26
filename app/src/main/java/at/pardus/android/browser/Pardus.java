@@ -48,6 +48,7 @@ import java.util.EmptyStackException;
 import java.util.Locale;
 import java.util.Stack;
 
+import at.pardus.android.content.LocalContentProxy;
 import at.pardus.android.webview.gm.model.ScriptId;
 import at.pardus.android.webview.gm.run.WebViewGm;
 import at.pardus.android.webview.gm.store.ScriptStoreSQLite;
@@ -89,6 +90,8 @@ public class Pardus extends ScriptManagerActivity {
 	private ProgressBar progress;
 
 	private PardusLinks links;
+
+    private PardusImagePack imagePack;
 
 	private PardusMessageChecker messageChecker;
 
@@ -239,7 +242,7 @@ public class Pardus extends ScriptManagerActivity {
 					+ displayHeightPx + ", Scale: " + displayDensityScale
 					+ ", Density (dpi): " + displayDpi);
 		}
-		PardusImagePack imagePack = new PardusImagePack(Environment
+		imagePack = new PardusImagePack(Environment
 				.getExternalStorageDirectory().getAbsolutePath(), getFilesDir()
 				.getAbsolutePath());
 		if (imagePack.getPath() == null) {
@@ -625,6 +628,7 @@ public class Pardus extends ScriptManagerActivity {
 			Log.v(this.getClass().getSimpleName(),
 					"Resuming (or starting) application");
 		}
+        LocalContentProxy.getInstance().start(imagePack.getPath());
 		if (scriptStore != null) {
 			scriptStore.open();
 		}
@@ -682,6 +686,7 @@ public class Pardus extends ScriptManagerActivity {
 		if (scriptStore != null) {
 			scriptStore.close();
 		}
+        LocalContentProxy.getInstance().stop();
 		super.onPause();
 	}
 

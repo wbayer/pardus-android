@@ -25,4 +25,5 @@ android {
 dependencies {
     compile 'at.pardus.android:webview-gm-lib:1.2.0'
     compile 'at.pardus.android:webview-gm-ui:1.2.0'
+    compile 'org.nanohttpd:nanohttpd-webserver:2.2.1-SNAPSHOT'
 }

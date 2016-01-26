@@ -46,6 +46,7 @@ import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
 import at.pardus.android.content.LocalContentProvider;
+import at.pardus.android.content.LocalContentProxy;
 import at.pardus.android.webview.gm.run.WebViewGm;
 
 /**
@@ -137,7 +138,7 @@ public class PardusWebView extends WebViewGm {
 		setShowZoomControls(PardusPreferences.isShowZoomControls());
 		settings.setLoadsImagesAutomatically(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         settings.setSaveFormData(true);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
@@ -510,10 +511,9 @@ public class PardusWebView extends WebViewGm {
 			url = PardusConstants.loggedInUrl;
 			cookieManager.setCookie(url, "usehttps=1; max-age=0" + cookieInfo);
 		}
-		// android 4.4 webview does not allow access to content:// anymore
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-			cookieManager.setCookie(url, "image_path="
-					+ LocalContentProvider.URI + cookieInfo);
+		String imagePathUri = LocalContentProxy.getInstance().getUri();
+        if (imagePathUri != null) {
+			cookieManager.setCookie(url, "image_path=" + imagePathUri + cookieInfo);
 		}
 		cookieManager.setCookie(url, "resolution_tiles=64" + cookieInfo);
 		cookieManager.setCookie(url,

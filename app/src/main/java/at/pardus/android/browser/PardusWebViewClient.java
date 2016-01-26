@@ -285,11 +285,6 @@ public class PardusWebViewClient extends WebViewClientGm {
 			// bulletin board accept frame: redirect to bulletin board
 			pardusView.loadUniversePage(PardusConstants.bulletinBoardPage);
 			return;
-		} else if (url.equals(PardusConstants.imageSelectionScreen)) {
-			// image pack selection page: android 4.4 incompatibility info
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-				PardusNotification.showLong(R.string.warning_ip_broken);
-			}
 		}
 		if (!isSkippedUrl(url)) {
 			// user scripts

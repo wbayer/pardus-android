@@ -19,7 +19,6 @@ package at.pardus.android.browser;
 
 import android.util.Log;
 import android.webkit.ConsoleMessage;
-import android.webkit.ConsoleMessage.MessageLevel;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
@@ -50,11 +49,9 @@ public class PardusWebChromeClient extends WebChromeClient {
 	 */
 	@Override
 	public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-		MessageLevel messageLevel = consoleMessage.messageLevel();
-		String message = consoleMessage.message();
 		if (PardusConstants.DEBUG) {
-			Log.d(this.getClass().getSimpleName(), messageLevel.name() + ": "
-					+ message + " at " + consoleMessage.sourceId() + ":"
+			Log.d(this.getClass().getSimpleName(), consoleMessage.messageLevel().name() + ": "
+					+ consoleMessage.message() + " at " + consoleMessage.sourceId() + ":"
 					+ consoleMessage.lineNumber());
 		}
 		return true;
