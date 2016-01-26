@@ -306,7 +306,12 @@ public class JavaScriptSettings {
 	 */
     @JavascriptInterface
 	public void clearCache() {
-		browser.removeTraces();
+		browser.post(new Runnable() {
+			@Override
+			public void run() {
+				browser.removeTraces();
+			}
+		});
 		String message = "Emptied cache";
 		if (browser.isLoggedIn()) {
 			message += " (must re-login!)";
