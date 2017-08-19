@@ -53,6 +53,9 @@ public class PardusMessageChecker {
 	private static final Pattern patternPm = Pattern
 			.compile("<span id=\"new_msg\">(\\d+)</span>");
 
+	private static final Pattern patternAm = Pattern
+			.compile("<span id=\"new_amsg\">(\\d+)</span>");
+
 	private static final Pattern patternTrade = Pattern
 			.compile("<span id=\"new_tl\">(\\d+)</span>");
 
@@ -173,8 +176,9 @@ public class PardusMessageChecker {
 		if (matcher.find()) {
 			text += "PM:" + matcher.group(1) + " ";
 		}
-		if (response.contains("new_amsg")) {
-			text += "AM ";
+		matcher = patternAm.matcher(response);
+		if (matcher.find()) {
+			text += "AM:" + matcher.group(1) + " ";
 		}
 		matcher = patternTrade.matcher(response);
 		if (matcher.find()) {
