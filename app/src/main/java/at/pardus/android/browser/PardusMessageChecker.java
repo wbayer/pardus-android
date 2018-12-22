@@ -284,8 +284,7 @@ public class PardusMessageChecker {
 			handler.post(notify);
 			return;
 		}
-		String url = PardusPreferences.isUseHttps() ? "https://" : "http://";
-		url += universe + ".pardus.at/" + PardusConstants.msgFrame;
+		String url = "https://" + universe + ".pardus.at/" + PardusConstants.msgFrame;
 		if (httpGet != null) {
 			final HttpGet prevHttpGet = httpGet;
 			new Thread() {

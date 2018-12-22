@@ -82,23 +82,6 @@ public class JavaScriptSettings {
 	}
 
 	/**
-	 * Changes the useHttps setting.
-	 * 
-	 * @param useHttps
-	 */
-    @JavascriptInterface
-	public void setUseHttps(boolean useHttps) {
-		PardusPreferences.setUseHttps(useHttps);
-		String message = (browser.isLoggedIn()) ? " (must re-login!)" : "";
-		if (useHttps) {
-			PardusNotification.show("Enabled HTTPS use" + message);
-		} else {
-			PardusNotification.show("Disabled HTTPS use" + message);
-		}
-		browser.destroySession();
-	}
-
-	/**
 	 * Changes the logoutOnHide setting.
 	 * 
 	 * @param logoutOnHide

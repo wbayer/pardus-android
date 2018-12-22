@@ -75,26 +75,6 @@ public abstract class PardusPreferences {
     }
 
     /**
-     * @return true
-     */
-    public static boolean isUseHttps() {
-        return true;
-    }
-
-    /**
-     * Stores whether to use HTTPS.
-     *
-     * @deprecated
-     * @param useHttps
-     *         true to use HTTPS, false for HTTP
-     */
-    public static void setUseHttps(boolean useHttps) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean("useHttps", useHttps);
-        editor.apply();
-    }
-
-    /**
      * @return whether the account should be logged out when the app is sent to the background, false if not
      * stored yet
      */
