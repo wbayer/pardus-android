@@ -34,19 +34,11 @@ public abstract class PardusConstants {
 
 	/* Remote pages (absolute URLs) */
 
-	public static final String loginUrlOrig = "http://www.pardus.at/index.php?section=login";
-
 	public static final String loginUrlHttpsOrig = "https://www.pardus.at/index.php?section=login";
-
-	public static final String loginUrl = loginUrlOrig + "&mobile";
 
 	public static final String loginUrlHttps = loginUrlHttpsOrig + "&mobile";
 
-	public static final String loggedInUrl = "http://www.pardus.at/index.php?section=account_play";
-
 	public static final String loggedInUrlHttps = "https://www.pardus.at/index.php?section=account_play";
-
-	public static final String newCharUrl = "http://www.pardus.at/index.php?section=account_newchar";
 
 	public static final String newCharUrlHttps = "https://www.pardus.at/index.php?section=account_newchar";
 
