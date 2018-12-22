@@ -75,15 +75,16 @@ public abstract class PardusPreferences {
     }
 
     /**
-     * @return whether HTTPS should be used, true if not stored yet
+     * @return true
      */
     public static boolean isUseHttps() {
-        return preferences.getBoolean("useHttps", true);
+        return true;
     }
 
     /**
      * Stores whether to use HTTPS.
      *
+     * @deprecated
      * @param useHttps
      *         true to use HTTPS, false for HTTP
      */

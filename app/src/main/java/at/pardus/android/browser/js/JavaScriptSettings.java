@@ -57,9 +57,7 @@ public class JavaScriptSettings {
 	 */
     @JavascriptInterface
 	public String getSettings() {
-		String settings = "";
-		settings += Boolean.toString(PardusPreferences.isUseHttps());
-		settings += ",";
+		String settings = ",";
 		settings += Boolean.toString(PardusPreferences.isLogoutOnHide());
 		settings += ",";
 		settings += Integer.toString(PardusPreferences.getNavSizeHor());

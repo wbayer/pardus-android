@@ -246,8 +246,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "Applying query parameters for login screen");
 			}
-            evaluateJavascript(view, "applyParameters(" + (PardusPreferences.isUseHttps() ? "true" :
-                    "false") + ", " + (pardusView.isAutoLogin() ? "true" : "false") + ");");
+            evaluateJavascript(view, "applyParameters(" + (pardusView.isAutoLogin() ? "true" : "false") + ");");
 			view.clearHistory();
 			return;
 		} else if (url.equals(PardusConstants.loginUrlHttps)

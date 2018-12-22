@@ -35,11 +35,7 @@ function checkSubmitLogin()
         clearInterval(checksInterval);
     }
 }
-function applyParameters(https, auto) {
-    if (https) {
-        document.getElementById('usehttps').value = '1';
-        document.getElementById('loginform').action = 'https://www.pardus.at/index.php?section=login&mobile';
-    }
+function applyParameters(auto) {
     if (auto) {
         checksInterval = setInterval("checkSubmitLogin()", 500);
     }
@@ -56,7 +52,7 @@ function askSavePassword() {
 <table align='center' cellpadding='4' class='std_table'>
 <tr><th>Login</th></tr>
 <tr><td align='center'><br />
-<form id='loginform' action='http://www.pardus.at/index.php?section=login&amp;mobile' method='post'>
+<form id='loginform' action='https://www.pardus.at/index.php?section=login&amp;mobile' method='post'>
 <table align='center' class='listing_table'>
 <tr class='cl0'>
 <td align='left'><span class='cfgheader'>Account</span></td>
@@ -68,7 +64,7 @@ function askSavePassword() {
 </tr>
 </table>
 <br />
-<input type='hidden' value='0' name='usehttps' id='usehttps' />
+<input type='hidden' value='1' name='usehttps' id='usehttps' />
 <input type='hidden' value='1' name='login' />
 <input type='submit' value='Login!' class='savebutton' style='width:10em;'
        onclick="loggingIn=true;makeMD5('pw');askSavePassword();this.form.submit();" />
@@ -79,7 +75,8 @@ function askSavePassword() {
 <br/>
 <br/>
 <div style='text-align:center;'>
-<a href='http://www.pardus.at/welcome.php'><img src='whatispardus.jpg' alt='What is Pardus?' title='What is Pardus?' style='width:24em;height:8.3em;' /></a>
+<a href='https://www.pardus.at/welcome.php'><img src='whatispardus.jpg' alt='What is Pardus?'
+                                                 title='What is Pardus?' style='width:24em;height:8.3em;' /></a>
 </div>
 </body>
 </html>
