@@ -119,7 +119,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Initializes the Pardus browser's behavior.
 	 */
-	@SuppressLint("SetJavaScriptEnabled")
+	@SuppressLint({"SetJavaScriptEnabled", "InlinedApi"})
 	private void init() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -184,6 +184,7 @@ public class PardusWebView extends WebViewGm {
 	 * @param messageChecker
 	 *            the message checker to share cookies with
 	 */
+    @SuppressLint("InlinedApi")
 	public void initClients(Activity activity, ProgressBar progress,
 			PardusMessageChecker messageChecker) {
 		this.activity = activity;

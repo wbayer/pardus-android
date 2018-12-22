@@ -5,3 +5,5 @@ android:
     - android-22
 before_install:
   gradle -b wrapper.gradle wrapper
+after_failure:
+  - if [ -f app/build/outputs/lint-results.xml ]; then cat app/build/outputs/lint-results.xml; fi
