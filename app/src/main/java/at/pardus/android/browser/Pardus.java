@@ -141,7 +141,7 @@ public class Pardus extends ScriptManagerActivity {
 	 * Sets the Script browser layout as the app's content.
 	 */
 	@Override
-    @SuppressLint("InlinedApi")
+    @SuppressLint("NewApi")
 	public void openScriptBrowser() {
 		if (scriptBrowser == null) {
 			scriptBrowser = new ScriptBrowser(

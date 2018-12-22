@@ -184,7 +184,7 @@ public class PardusWebView extends WebViewGm {
 	 * @param messageChecker
 	 *            the message checker to share cookies with
 	 */
-    @SuppressLint("InlinedApi")
+    @SuppressLint("NewApi")
 	public void initClients(Activity activity, ProgressBar progress,
 			PardusMessageChecker messageChecker) {
 		this.activity = activity;
