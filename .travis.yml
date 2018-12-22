@@ -3,3 +3,5 @@ android:
   components:
     - build-tools-23.0.2
     - android-22
+before_install:
+  gradle -b wrapper.gradle wrapper
