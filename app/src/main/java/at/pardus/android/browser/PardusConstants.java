@@ -32,23 +32,13 @@ public abstract class PardusConstants {
 
 	public static final String linksConfigScreen = "file:///android_asset/links.html";
 
-	public static final String aboutScreen = "file:///android_asset/about.html";
-
 	/* Remote pages (absolute URLs) */
-
-	public static final String loginUrlOrig = "http://www.pardus.at/index.php?section=login";
 
 	public static final String loginUrlHttpsOrig = "https://www.pardus.at/index.php?section=login";
 
-	public static final String loginUrl = loginUrlOrig + "&mobile";
-
 	public static final String loginUrlHttps = loginUrlHttpsOrig + "&mobile";
 
-	public static final String loggedInUrl = "http://www.pardus.at/index.php?section=account_play";
-
 	public static final String loggedInUrlHttps = "https://www.pardus.at/index.php?section=account_play";
-
-	public static final String newCharUrl = "http://www.pardus.at/index.php?section=account_newchar";
 
 	public static final String newCharUrlHttps = "https://www.pardus.at/index.php?section=account_newchar";
 
@@ -59,10 +49,6 @@ public abstract class PardusConstants {
 	public static final String loggedOutUrl = "http://www.pardus.at/index.php";
 
 	public static final String loggedOutUrlHttps = "https://www.pardus.at/index.php";
-
-	public static final String signupUrl = "http://www.pardus.at/index.php?section=signup";
-
-	public static final String signupUrlHttps = "https://www.pardus.at/index.php?section=signup";
 
 	public static final String downloadUrl = "http://static.pardus.at/downloads/";
 

@@ -114,8 +114,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Not loading " + url);
 			}
-			if (url.equals(PardusConstants.loginUrlOrig)
-					|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
+			if (url.equals(PardusConstants.loginUrlHttpsOrig)) {
 				pardusView.login(false);
 			} else {
                 PardusNotification
@@ -173,9 +172,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		}
 		// URL checks OK
 		pardusView.setUniverse(url);
-		if (url.startsWith(PardusConstants.loggedInUrl)
-				|| url.startsWith(PardusConstants.loggedInUrlHttps)
-				|| url.startsWith(PardusConstants.newCharUrl)
+		if (url.startsWith(PardusConstants.loggedInUrlHttps)
 				|| url.startsWith(PardusConstants.newCharUrlHttps)) {
 			// account play or new char page: set loggedIn true and continue
 			pardusView.setLoggedIn(true);
@@ -246,12 +243,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "Applying query parameters for login screen");
 			}
-            evaluateJavascript(view, "applyParameters(" + (PardusPreferences.isUseHttps() ? "true" :
-                    "false") + ", " + (pardusView.isAutoLogin() ? "true" : "false") + ");");
+            evaluateJavascript(view, "applyParameters(" + (pardusView.isAutoLogin() ? "true" : "false") + ");");
 			view.clearHistory();
 			return;
-		} else if (url.equals(PardusConstants.loginUrlHttps)
-				|| url.equals(PardusConstants.loginUrl)) {
+		} else if (url.equals(PardusConstants.loginUrlHttps)) {
 			// login POST target: only finishes loading if login was invalid
 			PardusNotification.showLong("Login failed or aborted!");
 			pardusView.login(false);
@@ -263,8 +258,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 						"Checking send message page for self.close()");
 			}
             evaluateJavascript(view, "(function() { " + jsSkipSendMessageDeath + " })()");
-		} else if (url.equals(PardusConstants.loggedInUrl)
-				|| url.equals(PardusConstants.loggedInUrlHttps)) {
+		} else if (url.equals(PardusConstants.loggedInUrlHttps)) {
 			// account play page: save the available characters/universes
 			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(),
@@ -438,8 +432,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *         content, false for anything else
 	 */
 	public static boolean isAllowedUrl(String url) {
-		if (url.equals(PardusConstants.loginUrlOrig)
-				|| url.equals(PardusConstants.loginUrlHttpsOrig)) {
+		if (url.equals(PardusConstants.loginUrlHttpsOrig)) {
 			return false;
 		}
 		return (isPardusUrl(url) || isLocalUrl(url));
@@ -452,17 +445,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *         URLs except account pages; false else
 	 */
 	public static boolean isAllowedUrlLoggedOut(String url) {
-		return (isLocalUrl(url) || url.equals("about:blank")
-				|| url.startsWith("https://static.pardus.at/")
-				|| url.startsWith("http://static.pardus.at/")
-				|| url.startsWith(PardusConstants.loggedInUrlHttps)
-				|| url.startsWith(PardusConstants.loggedInUrl)
-				|| url.startsWith(PardusConstants.newCharUrl)
-				|| url.startsWith(PardusConstants.newCharUrlHttps) || (!url
-				.contains("/index.php?section=account_") && (url
-				.startsWith("https://www.pardus.at/") || url
-				.startsWith("http://www.pardus.at/"))));
-	}
+        return isLocalUrl(url) || url.equals("about:blank") || url.startsWith("https://static.pardus.at/")
+                || url.startsWith("http://static.pardus.at/") || url.startsWith(PardusConstants
+                .loggedInUrlHttps) || url.startsWith(PardusConstants.newCharUrlHttps) || (!url.contains
+                ("/index.php?section=account_") && url.startsWith("https://www.pardus.at/"));
+    }
 
 	/**
 	 * @param url

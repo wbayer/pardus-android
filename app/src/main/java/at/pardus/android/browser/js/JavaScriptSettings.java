@@ -57,9 +57,7 @@ public class JavaScriptSettings {
 	 */
     @JavascriptInterface
 	public String getSettings() {
-		String settings = "";
-		settings += Boolean.toString(PardusPreferences.isUseHttps());
-		settings += ",";
+		String settings = ",";
 		settings += Boolean.toString(PardusPreferences.isLogoutOnHide());
 		settings += ",";
 		settings += Integer.toString(PardusPreferences.getNavSizeHor());
@@ -81,23 +79,6 @@ public class JavaScriptSettings {
 		settings += Boolean.toString(PardusPreferences
 				.isRememberPageProperties());
 		return settings;
-	}
-
-	/**
-	 * Changes the useHttps setting.
-	 * 
-	 * @param useHttps
-	 */
-    @JavascriptInterface
-	public void setUseHttps(boolean useHttps) {
-		PardusPreferences.setUseHttps(useHttps);
-		String message = (browser.isLoggedIn()) ? " (must re-login!)" : "";
-		if (useHttps) {
-			PardusNotification.show("Enabled HTTPS use" + message);
-		} else {
-			PardusNotification.show("Disabled HTTPS use" + message);
-		}
-		browser.destroySession();
 	}
 
 	/**

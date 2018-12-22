@@ -147,8 +147,7 @@ public class Pardus extends ScriptManagerActivity {
 			scriptBrowser = new ScriptBrowser(
 					this,
 					scriptStore,
-					PardusPreferences.isUseHttps() ? PardusConstants.scriptsUrlHttps
-							: PardusConstants.scriptsUrl);
+					PardusConstants.scriptsUrlHttps);
 			WebViewGm scriptBrowserWebView = scriptBrowser.getWebView();
 			scriptBrowserWebView
 					.setWebViewClient(new ScriptBrowserWebViewClientGm(
@@ -364,8 +363,7 @@ public class Pardus extends ScriptManagerActivity {
 			browser.switchUniverse("Pegasus");
 			return true;
 		case R.id.option_account:
-			browser.loadUrl((PardusPreferences.isUseHttps()) ? PardusConstants.loggedInUrlHttps
-					: PardusConstants.loggedInUrl);
+			browser.loadUrl(PardusConstants.loggedInUrlHttps);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

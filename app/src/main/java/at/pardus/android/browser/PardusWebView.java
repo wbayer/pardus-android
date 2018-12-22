@@ -430,10 +430,8 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(), "Logging out");
 		}
 		loggingOut = true;
-		String logoutUrl = (PardusPreferences.isUseHttps()) ? PardusConstants.logoutUrlHttps
-				: PardusConstants.logoutUrl;
 		stopLoading();
-        loadUrl(logoutUrl);
+        loadUrl(PardusConstants.logoutUrlHttps);
 		setUniverse(null);
 		clearHistory();
 	}
@@ -475,9 +473,8 @@ public class PardusWebView extends WebViewGm {
 			}
 			return;
 		}
-		String http = (PardusPreferences.isUseHttps()) ? "https" : "http";
 		stopLoading();
-		loadUrl(http + "://" + universe + ".pardus.at/" + page);
+		loadUrl("https://" + universe + ".pardus.at/" + page);
 	}
 
 	/**
@@ -494,26 +491,17 @@ public class PardusWebView extends WebViewGm {
 			}
 			return;
 		}
-		String loggedInUrl = (PardusPreferences.isUseHttps()) ? PardusConstants.loggedInUrlHttps
-				: PardusConstants.loggedInUrl;
 		stopLoading();
-		loadUrl(loggedInUrl + "&universe=" + newUni);
+		loadUrl(PardusConstants.loggedInUrlHttps + "&universe=" + newUni);
 	}
 
 	/**
 	 * Sets Pardus cookies for custom settings (image path, etc.).
 	 */
 	public void setCookies() {
-		String cookieInfo = "; path=/; domain=.pardus.at;";
-		String url;
-		if (PardusPreferences.isUseHttps()) {
-			url = PardusConstants.loggedInUrlHttps;
-			cookieManager.setCookie(url, "usehttps=1" + cookieInfo);
-			cookieInfo += " secure;";
-		} else {
-			url = PardusConstants.loggedInUrl;
-			cookieManager.setCookie(url, "usehttps=1; max-age=0" + cookieInfo);
-		}
+		String cookieInfo = "; path=/; domain=.pardus.at; secure;";
+		String url = PardusConstants.loggedInUrlHttps;
+        cookieManager.setCookie(url, "usehttps=1" + cookieInfo);
 		String imagePathUri = LocalContentProxy.getInstance().getUri();
         if (imagePathUri != null) {
 			cookieManager.setCookie(url, "image_path=" + imagePathUri + cookieInfo);
@@ -559,9 +547,6 @@ public class PardusWebView extends WebViewGm {
 				Log.d(this.getClass().getSimpleName(), "Logged in");
 			}
 			setCookies();
-			if (!PardusPreferences.isUseHttps()) {
-				PardusNotification.showLong("Using unencrypted connection");
-			}
 		} else {
 			if (BuildConfig.DEBUG) {
 				Log.d(this.getClass().getSimpleName(), "Logged out");
@@ -580,15 +565,9 @@ public class PardusWebView extends WebViewGm {
 		String cookieInfo = "; path=/; domain=.pardus.at;";
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
 				"accountid=0; max-age=0" + cookieInfo);
-		cookieManager.setCookie(PardusConstants.loggedInUrl,
-				"accountid=0; max-age=0" + cookieInfo);
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
 				"sessionid=0; max-age=0" + cookieInfo);
-		cookieManager.setCookie(PardusConstants.loggedInUrl,
-				"sessionid=0; max-age=0" + cookieInfo);
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
-				"pardus_cookie=0; max-age=0" + cookieInfo);
-		cookieManager.setCookie(PardusConstants.loggedInUrl,
 				"pardus_cookie=0; max-age=0" + cookieInfo);
 		cookieManager.removeExpiredCookie();
 		cookieManager.removeSessionCookie();
@@ -786,14 +765,11 @@ public class PardusWebView extends WebViewGm {
 		String newUniverse;
 		if (url == null) {
 			newUniverse = null;
-		} else if (url.startsWith("http://artemis.pardus.at/")
-				|| url.startsWith("https://artemis.pardus.at/")) {
+		} else if (url.startsWith("https://artemis.pardus.at/")) {
 			newUniverse = "artemis";
-		} else if (url.startsWith("http://orion.pardus.at/")
-				|| url.startsWith("https://orion.pardus.at/")) {
+		} else if (url.startsWith("https://orion.pardus.at/")) {
 			newUniverse = "orion";
-		} else if (url.startsWith("http://pegasus.pardus.at/")
-				|| url.startsWith("https://pegasus.pardus.at/")) {
+		} else if (url.startsWith("https://pegasus.pardus.at/")) {
 			newUniverse = "pegasus";
 		} else {
 			return;
