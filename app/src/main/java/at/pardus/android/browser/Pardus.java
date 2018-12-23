@@ -215,8 +215,9 @@ public class Pardus extends ScriptManagerActivity {
 				Method hasPermanentMenuKey = Class.forName(
 						"android.view.ViewConfiguration").getMethod(
 						"hasPermanentMenuKey", (Class[]) null);
-				hasMenuKey = (Boolean) hasPermanentMenuKey.invoke(
-						ViewConfiguration.get(this), (Object[]) null);
+				// hasPermanentMenuKey is unreliable, assume no hardware menu key present if > android 5
+                hasMenuKey = Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1 && (Boolean)
+                        hasPermanentMenuKey.invoke(ViewConfiguration.get(this), (Object[]) null);
 			} catch (Exception e) {
 				Log.w(this.getClass().getSimpleName(),
 						"Exception while attempting to call hasPermanentMenuKey via reflection (API level "
