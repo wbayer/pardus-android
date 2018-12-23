@@ -26,7 +26,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.CookieManager;
@@ -313,21 +312,6 @@ public class PardusWebView extends WebViewGm {
 			}
 		}
         return super.onTouchEvent(ev);
-	}
-
-	/**
-	 * Switches into text selection mode.
-	 */
-    private void fakeEmulateShiftHeld() {
-		try {
-			KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
-					KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
-			shiftPressEvent
-					.dispatch(this, new KeyEvent.DispatcherState(), null);
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(),
-					"Exception faking emulateShiftHeld() method", e);
-		}
 	}
 
 	/**

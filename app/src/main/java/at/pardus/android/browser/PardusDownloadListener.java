@@ -391,14 +391,14 @@ public class PardusDownloadListener implements DownloadListener {
 
 	/**
 	 * Recursively deletes a directory.
-	 * 
-	 * @param dir
-	 *            directory to delete
-	 */
-	private static boolean deleteDir(File dir) {
+	 *
+     * @param dir
+     *            directory to delete
+     */
+	private static void deleteDir(File dir) {
 		File[] files = dir.listFiles();
 		if (files == null) {
-			return false;
+			return;
 		}
         for (File file : files) {
             if (file.isDirectory()) {
@@ -407,7 +407,7 @@ public class PardusDownloadListener implements DownloadListener {
                 file.delete();
             }
         }
-		return (dir.delete());
-	}
+        dir.delete();
+    }
 
 }

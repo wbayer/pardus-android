@@ -26,7 +26,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -350,12 +349,10 @@ public class PardusPageProperties {
 			if (orientation != other.orientation)
 				return false;
 			if (url == null) {
-				if (other.url != null)
-					return false;
-			} else if (!url.equals(other.url))
-				return false;
-			return true;
-		}
+                return other.url == null;
+			} else
+                return url.equals(other.url);
+        }
 
 	}
 
@@ -395,23 +392,6 @@ public class PardusPageProperties {
 			this.posY = posY;
 			this.totalX = totalX;
 			this.totalY = totalY;
-		}
-
-		/**
-		 * Previously used to scroll via Javascript, currently replaced by Java
-		 * View#scrollTo.
-		 * 
-		 * @return Javascript scrollTo method to scroll to the saved values
-		 */
-		public String getScrollJs() {
-			float scrollXRel = posX / (float) totalX;
-			float scrollYRel = posY / (float) totalY;
-			return String
-					.format(Locale.ENGLISH,
-							"window.scrollTo("
-									+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollWidth),"
-									+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollHeight));",
-							scrollXRel, scrollYRel);
 		}
 
 		/*

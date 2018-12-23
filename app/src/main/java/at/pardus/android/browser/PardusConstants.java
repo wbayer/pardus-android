@@ -56,8 +56,6 @@ public abstract class PardusConstants {
 
 	public static final String downloadPageUrlHttps = "https://www.pardus.at/index.php?section=downloads";
 
-	public static final String scriptsUrl = "http://www.pardus.at/index.php?section=downloads#scripts";
-
 	public static final String scriptsUrlHttps = "https://www.pardus.at/index.php?section=downloads#scripts";
 
 	public static final String userscriptUrl = "https://greasyfork.org/en/scripts/search?q=pardus";

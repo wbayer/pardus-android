@@ -22,6 +22,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
@@ -93,16 +95,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 		this.progress = progress;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * android.webkit.WebViewClient#shouldOverrideUrlLoading(android.webkit.
-	 * WebView, java.lang.String)
-	 */
-	@Override
-	public boolean shouldOverrideUrlLoading(WebView view, String url) {
+    @Override
+	public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 		// non-frame target user actions and redirects might trigger this
+        String url = request.getUrl().toString();
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Attempting to load " + url);
 		}
@@ -314,11 +310,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * int, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void onReceivedError(WebView view, int errorCode,
-			String description, String failingUrl) {
-		Log.w(this.getClass().getSimpleName(), "Error at " + failingUrl + "\n"
-				+ errorCode + " " + description);
-		PardusNotification.show(description);
+	public void onReceivedError(WebView view, WebResourceRequest request,
+			WebResourceError error) {
+		Log.w(this.getClass().getSimpleName(), "Error at " + request.getUrl() + "\n"
+				+ error.getErrorCode() + " " + error.getDescription());
+		PardusNotification.show(error.getDescription().toString());
 	}
 
     /*
