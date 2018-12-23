@@ -153,12 +153,7 @@ public class Pardus extends ScriptManagerActivity {
 								final String url) {
 							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrl)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrlHttps)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadUrl)) {
+									&& !urlLower.startsWith(PardusConstants.downloadPageUrlHttps)) {
 								openPardusBrowser();
 								return true;
 							}
@@ -171,11 +166,7 @@ public class Pardus extends ScriptManagerActivity {
 							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
 									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrl)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrlHttps)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadUrl)) {
+											.startsWith(PardusConstants.downloadPageUrlHttps)) {
 								view.stopLoading();
 								openPardusBrowser();
 								return;

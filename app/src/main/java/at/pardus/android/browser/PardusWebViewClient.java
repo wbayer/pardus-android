@@ -32,7 +32,6 @@ import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
-import at.pardus.android.content.LocalContentProvider;
 import at.pardus.android.webview.gm.run.WebViewClientGm;
 import at.pardus.android.webview.gm.store.ScriptStore;
 
@@ -169,12 +168,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 				|| url.startsWith(PardusConstants.newCharUrlHttps)) {
 			// account play or new char page: set loggedIn true and continue
 			pardusView.setLoggedIn(true);
-		} else if (url.equals(PardusConstants.logoutUrl)
-				|| url.equals(PardusConstants.logoutUrlHttps)) {
+		} else if (url.equals(PardusConstants.logoutUrlHttps)) {
 			// logout page: set loggedIn false and continue
 			pardusView.setLoggedIn(false);
-		} else if (url.equals(PardusConstants.loggedOutUrl)
-				|| url.equals(PardusConstants.loggedOutUrlHttps)) {
+		} else if (url.equals(PardusConstants.loggedOutUrlHttps)) {
 			// index page: stop loading if redirected from the logout page
 			if (pardusView.isLoggingOut()) {
 				pardusView.loadUrl("about:blank");
@@ -385,16 +382,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any Pardus URL, false else
 	 */
 	public static boolean isPardusUrl(String url) {
-		return (isPardusUniUrl(url) || url.startsWith("http://www.pardus.at/")
+		return isPardusUniUrl(url)
 				|| url.startsWith("https://www.pardus.at/")
-				|| url.startsWith("http://pardus.at/")
-				|| url.startsWith("https://pardus.at/")
-				|| url.startsWith("http://chat.pardus.at/")
 				|| url.startsWith("https://chat.pardus.at/")
-				|| url.startsWith("http://forum.pardus.at/")
 				|| url.startsWith("https://forum.pardus.at/")
-				|| url.startsWith("http://static.pardus.at/") || url
-					.startsWith("https://static.pardus.at/"));
+                || url.startsWith("https://static.pardus.at/");
 	}
 
 	/**
@@ -403,12 +395,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any Pardus universe URL, false else
 	 */
 	public static boolean isPardusUniUrl(String url) {
-		return (url.startsWith("http://artemis.pardus.at/")
-				|| url.startsWith("https://artemis.pardus.at/")
-				|| url.startsWith("http://orion.pardus.at/")
+		return url.startsWith("https://artemis.pardus.at/")
 				|| url.startsWith("https://orion.pardus.at/")
-				|| url.startsWith("http://pegasus.pardus.at/") || url
-					.startsWith("https://pegasus.pardus.at/"));
+				|| url.startsWith("https://pegasus.pardus.at/");
 	}
 
 	/**
@@ -417,9 +406,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any local content or javascript, false else
 	 */
 	public static boolean isLocalUrl(String url) {
-		return (url.startsWith("file:///android_asset/")
-				|| url.startsWith(LocalContentProvider.URI) || url
-					.startsWith("javascript:"));
+		return url.startsWith("file:///android_asset/") || url.startsWith("javascript:");
 	}
 
 	/**
@@ -434,7 +421,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		if (url.equals(PardusConstants.loginUrlHttpsOrig)) {
 			return false;
 		}
-		return (isPardusUrl(url) || isLocalUrl(url));
+		return isPardusUrl(url) || isLocalUrl(url);
 	}
 
 	/**
@@ -445,9 +432,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 */
 	public static boolean isAllowedUrlLoggedOut(String url) {
         return isLocalUrl(url) || url.equals("about:blank") || url.startsWith("https://static.pardus.at/")
-                || url.startsWith("http://static.pardus.at/") || url.startsWith(PardusConstants
-                .loggedInUrlHttps) || url.startsWith(PardusConstants.newCharUrlHttps) || (!url.contains
-                ("/index.php?section=account_") && url.startsWith("https://www.pardus.at/"));
+                || url.startsWith(PardusConstants.loggedInUrlHttps)
+                || url.startsWith(PardusConstants.newCharUrlHttps)
+                || (!url.contains("/index.php?section=account_") && url.startsWith("https://www.pardus.at/"));
     }
 
 	/**
@@ -457,7 +444,6 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *         game.php)
 	 */
 	public static boolean isSkippedUrl(String url) {
-		return (url == null || url.endsWith(".pardus.at/"
-				+ PardusConstants.gameFrame));
+		return url == null || url.endsWith(".pardus.at/" + PardusConstants.gameFrame);
 	}
 }

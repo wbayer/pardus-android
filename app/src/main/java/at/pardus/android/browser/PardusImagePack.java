@@ -268,18 +268,18 @@ public class PardusImagePack {
 	static {
 		IMAGEPACKUPDATES = new HashMap<>();
 		IMAGEPACKUPDATES
-				.put("http://static.pardus.at/img/std",
-						"http://static.pardus.at/downloads/update_images_standard64.zip");
+				.put("https://static.pardus.at/img/std",
+						"https://static.pardus.at/downloads/update_images_standard64.zip");
 		IMAGEPACKUPDATES
-				.put("http://static.pardus.at/img/stdhq",
-						"http://static.pardus.at/downloads/update_images_standardhq64.zip");
+				.put("https://static.pardus.at/img/stdhq",
+						"https://static.pardus.at/downloads/update_images_standardhq64.zip");
 		IMAGEPACKUPDATES
-				.put("http://static.pardus.at/img/xolarix",
-						"http://static.pardus.at/downloads/update_images_xolarix64.zip");
-		IMAGEPACKUPDATES.put("http://static.pardus.at/images",
-				"http://static.pardus.at/downloads/update_images.zip");
-		IMAGEPACKUPDATES.put("http://static.pardus.at/img/kora",
-				"http://static.pardus.at/downloads/update_images_kora.zip");
+				.put("https://static.pardus.at/img/xolarix",
+						"https://static.pardus.at/downloads/update_images_xolarix64.zip");
+		IMAGEPACKUPDATES.put("https://static.pardus.at/images",
+				"https://static.pardus.at/downloads/update_images.zip");
+		IMAGEPACKUPDATES.put("https://static.pardus.at/img/kora",
+				"https://static.pardus.at/downloads/update_images_kora.zip");
 
 	}
 

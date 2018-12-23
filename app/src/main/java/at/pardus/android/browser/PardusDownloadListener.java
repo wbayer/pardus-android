@@ -39,8 +39,6 @@ import java.util.zip.ZipFile;
 /**
  * Class handling image pack downloads.
  */
-@SuppressWarnings("ResultOfMethodCallIgnored")
-@SuppressLint("HandlerLeak")
 public class PardusDownloadListener implements DownloadListener {
 
 	private PardusWebView browser;
@@ -57,6 +55,7 @@ public class PardusDownloadListener implements DownloadListener {
 
 	private ProgressDialog dialog = null;
 
+    @SuppressLint("HandlerLeak")
 	private final Handler handler = new Handler() {
 
 		/*
@@ -184,7 +183,7 @@ public class PardusDownloadListener implements DownloadListener {
 	@Override
 	public void onDownloadStart(String url, String userAgent,
 			String contentDisposition, String mimetype, long contentLength) {
-		if (url.startsWith("http://static.pardus.at/downloads/")
+		if (url.startsWith("https://static.pardus.at/downloads/")
 				&& url.endsWith(".zip") && startWorking()) {
 			new GetImagePackThread(url, contentLength).start();
 		}
@@ -239,6 +238,7 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            old files first
 	 * @return true if successful, false else
 	 */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private boolean unzipFile(boolean update) {
         setDialogMessage("Unzipping ...");
         String targetDir;
@@ -299,6 +299,7 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            size of the download
 	 * @return true if successful, false else
 	 */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private boolean downloadFile(String url, long contentLength) {
         setDialogMessage("Downloading ...");
         setDialogMax((int) (contentLength / 1024));
@@ -395,6 +396,7 @@ public class PardusDownloadListener implements DownloadListener {
      * @param dir
      *            directory to delete
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
 	private static void deleteDir(File dir) {
 		File[] files = dir.listFiles();
 		if (files == null) {
