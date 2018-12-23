@@ -27,10 +27,6 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.PardusAndroid"
         tools:ignore="GoogleAppIndexingWarning">
-        <provider
-            android:name="at.pardus.android.content.LocalContentProvider"
-            android:authorities="at.pardus.local"
-            android:exported="false"/>
 
         <activity
             android:name=".Pardus"

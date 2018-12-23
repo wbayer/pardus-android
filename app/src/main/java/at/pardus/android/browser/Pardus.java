@@ -37,7 +37,6 @@ import android.webkit.WebView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 
-import java.io.File;
 import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Locale;
@@ -205,8 +204,7 @@ public class Pardus extends ScriptManagerActivity {
 					+ displayHeightPx + ", Scale: " + displayDensityScale
 					+ ", Density (dpi): " + displayDpi);
 		}
-        File externalStorage = getExternalFilesDir(null);
-        imagePack = new PardusImagePack(externalStorage, getFilesDir());
+        imagePack = new PardusImagePack(getExternalFilesDir(null), getFilesDir());
 		if (imagePack.getPath() == null) {
 			Log.e(getClass().getSimpleName(),
 					"Unable to determine storage directory");

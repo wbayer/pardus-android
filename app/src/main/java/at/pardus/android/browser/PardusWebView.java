@@ -41,7 +41,6 @@ import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
-import at.pardus.android.content.LocalContentProvider;
 import at.pardus.android.content.LocalContentProxy;
 import at.pardus.android.webview.gm.run.WebViewGm;
 
@@ -343,7 +342,6 @@ public class PardusWebView extends WebViewGm {
 		String imagePath = PardusPreferences.getImagePath();
 		PardusImagePack imagePack = new PardusImagePack(imagePath);
 		if (imagePack.isInstalled()) {
-			LocalContentProvider.FILEPATH = imagePath;
 			downloadListener.setUpdateStorageDir(imagePath);
 			Date now = new Date();
 			Date nextCheck = PardusPreferences.getNextImagePackUpdateCheck();
