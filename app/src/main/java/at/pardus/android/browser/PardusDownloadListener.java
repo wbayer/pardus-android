@@ -17,9 +17,7 @@
 
 package at.pardus.android.browser;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,6 +28,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Enumeration;
@@ -41,10 +40,6 @@ import java.util.zip.ZipFile;
  */
 public class PardusDownloadListener implements DownloadListener {
 
-	private PardusWebView browser;
-
-	private Context context;
-
 	private String storageDir;
 
 	private String updateStorageDir;
@@ -53,24 +48,45 @@ public class PardusDownloadListener implements DownloadListener {
 
 	private boolean working = false;
 
-	private ProgressDialog dialog = null;
+    private final ProgressDialogHandler handler;
 
-    @SuppressLint("HandlerLeak")
-	private final Handler handler = new Handler() {
+    /**
+     * Handler to display and update a progress dialog.
+     */
+	private static class ProgressDialogHandler extends Handler {
+	    private WeakReference<PardusWebView> browser;
+	    private WeakReference<ProgressDialog> dialog = new WeakReference<>(null);
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.Handler#handleMessage(android.os.Message)
-		 */
-		@Override
-		public void handleMessage(Message msg) {
-			String message = msg.getData().getString("message");
-			if (message != null) {
-				if (dialog != null) {
-					// remove old dialog
-					dialog.dismiss();
-				}
+        /**
+         * @param browser browser component
+         */
+	    private ProgressDialogHandler(PardusWebView browser) {
+	        this.browser = new WeakReference<>(browser);
+        }
+
+        /**
+         * Dismisses the progress dialog. May be called from any thread.
+         */
+        private void dismissDialog() {
+            ProgressDialog dialog = this.dialog.get();
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            ProgressDialog dialog = this.dialog.get();
+            PardusWebView browser = this.browser.get();
+            if (browser == null) {
+                return;
+            }
+            String message = msg.getData().getString("message");
+            if (message != null) {
+                if (dialog != null) {
+                    // remove old dialog
+                    dialog.dismiss();
+                }
                 switch (message) {
                     case "":
                         // move to login page
@@ -82,25 +98,25 @@ public class PardusDownloadListener implements DownloadListener {
                         break;
                     default:
                         // create new progress dialog
-                        dialog = new ProgressDialog(context);
+                        dialog = new ProgressDialog(browser.getContext());
                         dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         dialog.setCancelable(false);
                         dialog.setMessage(message);
                         dialog.show();
+                        this.dialog = new WeakReference<>(dialog);
                         break;
                 }
-			} else {
-				// set new progress and max values
-				int progress = msg.arg1;
-				int max = msg.arg2;
-				dialog.setProgress(progress);
-				if (max != 0) {
-					dialog.setMax(max);
-				}
-			}
-		}
-
-	};
+            } else {
+                // set new progress and max values
+                int progress = msg.arg1;
+                int max = msg.arg2;
+                dialog.setProgress(progress);
+                if (max != 0) {
+                    dialog.setMax(max);
+                }
+            }
+        }
+    }
 
 	/**
 	 * Thread to download and unzip an image pack. Threaded so the UI (progress
@@ -161,12 +177,12 @@ public class PardusDownloadListener implements DownloadListener {
 					setDialogMessage("");
 				} else {
 					// unzipping failed
-					dialog.dismiss();
+					handler.dismissDialog();
 					setDialogMessage("error");
 				}
 			} else {
 				// downloading failed
-				dialog.dismiss();
+				handler.dismissDialog();
 				setDialogMessage("error");
 			}
 			stopWorking();
@@ -338,27 +354,23 @@ public class PardusDownloadListener implements DownloadListener {
         return true;
 	}
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param browser
-	 *            webview object
-	 * @param context
-	 *            context the webview is running in
-	 * @param storageDir
-	 *            final storage directory
-	 * @param updateStorageDir
-	 *            final storage directory for updates
-	 * @param cacheDir
-	 *            temporary download directory
-	 */
-	public PardusDownloadListener(PardusWebView browser, Context context,
-			String storageDir, String updateStorageDir, String cacheDir) {
-		this.browser = browser;
-		this.context = context;
+    /**
+     * Constructor.
+     *
+     * @param browser
+     *         webview object
+     * @param storageDir
+     *         final storage directory
+     * @param updateStorageDir
+     *         final storage directory for updates
+     * @param cacheDir
+     *         temporary download directory
+     */
+	public PardusDownloadListener(PardusWebView browser, String storageDir, String updateStorageDir, String cacheDir) {
 		this.storageDir = storageDir;
 		this.updateStorageDir = updateStorageDir;
 		this.cacheFile = cacheDir + "/img.zip";
+		handler = new ProgressDialogHandler(browser);
 	}
 
 	/**

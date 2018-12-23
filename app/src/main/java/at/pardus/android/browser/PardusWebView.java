@@ -214,8 +214,7 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up download listener");
 		}
-		downloadListener = new PardusDownloadListener(this, getContext(),
-				storageDir, storageDir, cacheDir);
+		downloadListener = new PardusDownloadListener(this, storageDir, storageDir, cacheDir);
         setDownloadListener(downloadListener);
 	}
 
