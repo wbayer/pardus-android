@@ -128,7 +128,7 @@ public class JavaScriptLinks {
 			sortedMap.put(order, link);
 		}
         Collection<PardusLink> values = sortedMap.values();
-        PardusLink[] linkArray = values.toArray(new PardusLink[values.size()]);
+        PardusLink[] linkArray = values.toArray(new PardusLink[0]);
 		this.links.updateLinksViaHandler(linkArray);
 	}
 }

@@ -72,21 +72,24 @@ public class PardusDownloadListener implements DownloadListener {
 					// remove old dialog
 					dialog.dismiss();
 				}
-				if (message.equals("")) {
-					// move to login page
-					browser.login(true);
-				} else if (message.equals("error")) {
-					// display error
-					PardusNotification
-							.showLong("Error while getting image pack");
-				} else {
-					// create new progress dialog
-					dialog = new ProgressDialog(context);
-					dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-					dialog.setCancelable(false);
-					dialog.setMessage(message);
-					dialog.show();
-				}
+                switch (message) {
+                    case "":
+                        // move to login page
+                        browser.login(true);
+                        break;
+                    case "error":
+                        // display error
+                        PardusNotification.showLong("Error while getting image pack");
+                        break;
+                    default:
+                        // create new progress dialog
+                        dialog = new ProgressDialog(context);
+                        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        dialog.setCancelable(false);
+                        dialog.setMessage(message);
+                        dialog.show();
+                        break;
+                }
 			} else {
 				// set new progress and max values
 				int progress = msg.arg1;

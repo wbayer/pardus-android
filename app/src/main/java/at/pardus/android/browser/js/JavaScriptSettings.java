@@ -221,26 +221,12 @@ public class JavaScriptSettings {
 		Runnable runnable;
 		String message;
 		if (fullScreen) {
-			runnable = new Runnable() {
-
-				@Override
-				public void run() {
-					activity.getWindow().addFlags(
-							WindowManager.LayoutParams.FLAG_FULLSCREEN);
-				}
-
-			};
+			runnable = () -> activity.getWindow().addFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			message = "Enabled";
 		} else {
-			runnable = new Runnable() {
-
-				@Override
-				public void run() {
-					activity.getWindow().clearFlags(
-							WindowManager.LayoutParams.FLAG_FULLSCREEN);
-				}
-
-			};
+			runnable = () -> activity.getWindow().clearFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			message = "Disabled";
 		}
 		activity.runOnUiThread(runnable);
@@ -287,12 +273,7 @@ public class JavaScriptSettings {
 	 */
     @JavascriptInterface
 	public void clearCache() {
-		browser.post(new Runnable() {
-			@Override
-			public void run() {
-				browser.removeTraces();
-			}
-		});
+		browser.post(() -> browser.removeTraces());
 		String message = "Emptied cache";
 		if (browser.isLoggedIn()) {
 			message += " (must re-login!)";

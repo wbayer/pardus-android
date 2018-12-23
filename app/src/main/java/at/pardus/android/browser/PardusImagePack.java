@@ -126,17 +126,12 @@ public class PardusImagePack {
 										+ lastUpdate + ", remote v"
 										+ lastSrcUpdate + ")");
 					}
-					activity.runOnUiThread(new Runnable() {
-
-						@Override
-						public void run() {
-							Bundle bundle = new Bundle();
-							bundle.putString("updateUrl",
-									IMAGEPACKUPDATES.get(srcUrl));
-							activity.showDialog(R.id.dialog_ip_update, bundle);
-						}
-
-					});
+					activity.runOnUiThread(() -> {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("updateUrl",
+                                IMAGEPACKUPDATES.get(srcUrl));
+                        activity.showDialog(R.id.dialog_ip_update, bundle);
+                    });
 				} else {
 					if (BuildConfig.DEBUG) {
 						Log.v("PardusImagePack", "Image pack up to date (v"
