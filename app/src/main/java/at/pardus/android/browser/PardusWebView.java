@@ -474,7 +474,7 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		stopLoading();
-		loadUrl("https://" + universe + ".pardus.at/" + page);
+		loadUrl(PardusConstants.getUniverseUrl(universe, page));
 	}
 
 	/**
