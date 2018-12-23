@@ -7,8 +7,8 @@ android {
         applicationId "at.pardus.android.browser"
         minSdkVersion 10
         targetSdkVersion 22
-        versionCode 24
-        versionName "1.5.1"
+        versionCode 25
+        versionName "1.5.2"
     }
     buildTypes {
         release {
