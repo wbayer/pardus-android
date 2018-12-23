@@ -22,7 +22,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -35,9 +34,7 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebSettings;
 import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
-import android.widget.ZoomButtonsController;
 
-import java.lang.reflect.Method;
 import java.util.Date;
 
 import at.pardus.android.browser.PardusPageProperties.PardusPageProperty;
@@ -76,11 +73,7 @@ public class PardusWebView extends WebViewGm {
 
 	private GestureDetector gestureDetector;
 
-	private ZoomButtonsController zoomButtonsController;
-
-	private boolean showZoomControls;
-
-	private int defaultInitialScale;
+    private int defaultInitialScale;
 
 	private RenderStatus renderStatus = RenderStatus.LOAD_FINISH;
 
@@ -137,14 +130,7 @@ public class PardusWebView extends WebViewGm {
 		settings.setBuiltInZoomControls(true);
 		setShowZoomControls(PardusPreferences.isShowZoomControls());
 		settings.setLoadsImagesAutomatically(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        }
-        settings.setSaveFormData(true);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            //noinspection deprecation
-            settings.setSavePassword(true);
-        }
+		settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 		settings.setDatabaseEnabled(true);
         settings.setUserAgentString(settings.getUserAgentString() + " Pardus/" +
                 PardusPreferences.getVersionCode());
@@ -160,7 +146,6 @@ public class PardusWebView extends WebViewGm {
 		setRememberPageProperties(PardusPreferences.isRememberPageProperties());
 		setMenuSensitivity(PardusPreferences.getMenuSensitivity());
 		clearCache(true);
-		resetMinZoom();
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
 		if (Pardus.displayDpi <= 160 || Pardus.isTablet) {
 			defaultInitialScale = Math.round(Pardus.displayDpi / 1.6f);
@@ -276,18 +261,6 @@ public class PardusWebView extends WebViewGm {
 					}
 
 					@Override
-					public void onLongPress(MotionEvent e) {
-						if (BuildConfig.DEBUG) {
-							Log.v(PardusWebView.class.getSimpleName(),
-									"onLongPress: " + e.getX() + "/" + e.getY());
-						}
-						if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-							// v2.3.7- webviews need help going into sel. mode
-							fakeEmulateShiftHeld();
-						}
-					}
-
-					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
 							float velocityX, float velocityY) {
 						if (BuildConfig.DEBUG) {
@@ -339,12 +312,7 @@ public class PardusWebView extends WebViewGm {
 				}
 			}
 		}
-		boolean handled = super.onTouchEvent(ev);
-		// hide zoom controls if required (android versions <= 2.3 way)
-		if (!showZoomControls && zoomButtonsController != null) {
-			zoomButtonsController.setVisible(false);
-		}
-		return handled;
+        return super.onTouchEvent(ev);
 	}
 
 	/**
@@ -367,7 +335,8 @@ public class PardusWebView extends WebViewGm {
 	 */
     private void savePageProperties() {
 		if (pageProperties != null) {
-            pageProperties.save(getUrl(), Pardus.orientation, getScale(),
+            pageProperties.save(getUrl(), Pardus.orientation,
+                    ((PardusWebViewClient) getWebViewClient()).getScale(),
                     computeHorizontalScrollOffset(),
                     computeVerticalScrollOffset(),
                     computeHorizontalScrollRange(),
@@ -408,11 +377,9 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		stopLoading();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            addJavascriptInterface(new JavaScriptLogin(activity), JavaScriptLogin.DEFAULT_JS_NAME);
-        }
+		addJavascriptInterface(new JavaScriptLogin(activity), JavaScriptLogin.DEFAULT_JS_NAME);
         loadUrl(PardusConstants.loginScreen);
-		cookieManager.removeSessionCookie();
+		cookieManager.removeSessionCookies(null);
 		setUniverse(null);
 		clearHistory();
 	}
@@ -569,8 +536,7 @@ public class PardusWebView extends WebViewGm {
 				"sessionid=0; max-age=0" + cookieInfo);
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
 				"pardus_cookie=0; max-age=0" + cookieInfo);
-		cookieManager.removeExpiredCookie();
-		cookieManager.removeSessionCookie();
+		cookieManager.removeSessionCookies(null);
 		messageChecker.setUniverse(null, null);
 	}
 
@@ -638,93 +604,19 @@ public class PardusWebView extends WebViewGm {
 	}
 
 	/**
-	 * Resets the minimum zoom scale (= maximum the view can be zoomed out) via
-	 * reflection. Does not work consistently.
-	 */
-	private void resetMinZoom() {
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-			// the minimum zoom scale is fine in android versions <= 2.3.7
-			return;
-		}
-		settings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
-		Object webViewObj;
-		Method adjustDefaultZoomDensity;
-		try {
-			if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-				webViewObj = this;
-				adjustDefaultZoomDensity = Class.forName(
-						"android.webkit.WebView").getDeclaredMethod(
-						"updateDefaultZoomDensity", int.class);
-			} else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-				webViewObj = this;
-				adjustDefaultZoomDensity = Class.forName(
-						"android.webkit.WebView").getDeclaredMethod(
-						"adjustDefaultZoomDensity", int.class);
-			} else {
-				webViewObj = Class.forName("android.webkit.WebView")
-						.getMethod("getWebViewProvider", (Class[]) null)
-						.invoke(this, (Object[]) null);
-				adjustDefaultZoomDensity = Class.forName(
-						"android.webkit.WebViewClassic").getDeclaredMethod(
-						"adjustDefaultZoomDensity", int.class);
-			}
-			adjustDefaultZoomDensity.setAccessible(true);
-			adjustDefaultZoomDensity.invoke(webViewObj, 200);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Exception while attempting to set the minimum zoom scale via reflection (API level "
-							+ Build.VERSION.SDK_INT + "): " + e);
-		}
-	}
-
-	/**
-	 * Uses the setDisplayZoomControls method for android versions >= 3.0 to show
-	 * or hide the zoom control buttons. In other versions the
-	 * ZoomButtonsController is prepared for invocations of its setVisible
-	 * method in onTouchEvent.
-	 * 
 	 * @param showZoomControls
 	 *            decides whether to show the zoom control buttons in the
 	 *            browser component (always shown if the phone does not support
 	 *            multi touch)
 	 */
 	public void setShowZoomControls(boolean showZoomControls) {
-		this.showZoomControls = showZoomControls
-				|| !getContext().getPackageManager().hasSystemFeature(
-						PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)
-				&& !getContext().getPackageManager().hasSystemFeature(
-						PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT);
-		if (zoomButtonsController != null) {
-			return;
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			try {
-				Class.forName("android.webkit.WebSettings")
-						.getMethod("setDisplayZoomControls",
-								new Class[] { boolean.class })
-						.invoke(settings, this.showZoomControls);
-				return;
-			} catch (Exception e) {
-				Log.w(this.getClass().getSimpleName(),
-						"Exception while attempting to call setDisplayZoomControls via reflection (API level "
-								+ Build.VERSION.SDK_INT + "): " + e);
-			}
-		}
-		try {
-			// prior to honeycomb the zoom controls need to be hidden via the
-			// ZoomButtonsController object on each scrolling event
-			zoomButtonsController = (ZoomButtonsController) Class
-					.forName("android.webkit.WebView")
-					.getMethod("getZoomButtonsController", (Class[]) null)
-					.invoke(this, (Object[]) null);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Exception while attempting to get the ZoomButtonsController via reflection (API level "
-							+ Build.VERSION.SDK_INT + "): " + e);
-		}
-	}
+        settings.setDisplayZoomControls(showZoomControls || !getContext().getPackageManager()
+                .hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH) && !getContext()
+                .getPackageManager().hasSystemFeature(PackageManager
+                        .FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT));
+    }
 
-	/**
+    /**
 	 * Sets the menu sensitivity in px.
 	 * 
 	 * @param menuSensitivity
@@ -788,25 +680,7 @@ public class PardusWebView extends WebViewGm {
 			universe = newUniverse;
 			messageChecker.setUniverse(newUniverse, newUniverse == null ? null
 					: cookieManager.getCookie(url));
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-				activity.runOnUiThread(new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							Class.forName("android.app.Activity")
-									.getMethod("invalidateOptionsMenu",
-											(Class[]) null)
-									.invoke(activity, (Object[]) null);
-						} catch (Exception e) {
-							Log.w(this.getClass().getSimpleName(),
-									"Exception while attempting to call invalidateOptionsMenu via reflection (API level "
-											+ Build.VERSION.SDK_INT + "): " + e);
-						}
-					}
-
-				});
-			}
+            activity.runOnUiThread(() -> activity.invalidateOptionsMenu());
 		}
 	}
 
@@ -949,7 +823,7 @@ public class PardusWebView extends WebViewGm {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Scrolled from " + oldl
 					+ "/" + oldt + " to " + l + "/" + t + " (Scale "
-					+ (int) Math.ceil(getScale() * 100 - 0.5f) + ")");
+					+ (int) Math.ceil(((PardusWebViewClient) getWebViewClient()).getScale() * 100 - 0.5f) + ")");
 		}
 		super.onScrollChanged(l, t, oldl, oldt);
 		if (touchedAfterPageLoad || pageProperties == null

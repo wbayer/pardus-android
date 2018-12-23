@@ -25,7 +25,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -33,16 +32,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Locale;
@@ -78,8 +73,6 @@ public class Pardus extends ScriptManagerActivity {
 	public static int orientation;
 
 	public static boolean isTablet;
-
-	public static boolean hasMenuKey;
 
 	private final Handler handler = new Handler();
 
@@ -205,28 +198,6 @@ public class Pardus extends ScriptManagerActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		isTablet = getResources().getBoolean(R.bool.isTablet);
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-			hasMenuKey = true;
-		} else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2) {
-			hasMenuKey = false;
-		} else {
-			try {
-				Method hasPermanentMenuKey = Class.forName(
-						"android.view.ViewConfiguration").getMethod(
-						"hasPermanentMenuKey", (Class[]) null);
-				// hasPermanentMenuKey is unreliable, assume no hardware menu key present if > android 5
-                hasMenuKey = Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1 && (Boolean)
-                        hasPermanentMenuKey.invoke(ViewConfiguration.get(this), (Object[]) null);
-			} catch (Exception e) {
-				Log.w(this.getClass().getSimpleName(),
-						"Exception while attempting to call hasPermanentMenuKey via reflection (API level "
-								+ Build.VERSION.SDK_INT + "): " + e);
-				hasMenuKey = false;
-			}
-		}
-		if (!isTablet && hasMenuKey) {
-			requestWindowFeature(Window.FEATURE_NO_TITLE);
-		}
 		PardusPreferences.init(this, null);
 		PardusNotification.init(this);
 		if (PardusPreferences.isFullScreen()) {
@@ -243,12 +214,7 @@ public class Pardus extends ScriptManagerActivity {
 					+ displayHeightPx + ", Scale: " + displayDensityScale
 					+ ", Density (dpi): " + displayDpi);
 		}
-        File externalStorage;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            externalStorage = Environment.getExternalStorageDirectory();
-        } else {
-            externalStorage = getExternalFilesDir(null);
-        }
+        File externalStorage = getExternalFilesDir(null);
         imagePack = new PardusImagePack(externalStorage, getFilesDir());
 		if (imagePack.getPath() == null) {
 			Log.e(getClass().getSimpleName(),
@@ -268,20 +234,19 @@ public class Pardus extends ScriptManagerActivity {
 		// attach layout to screen
 		openPardusBrowser();
 		// initialize progress bar
-		progress = (ProgressBar) findViewById(R.id.progress);
+		progress = findViewById(R.id.progress);
 		progress.setMax(100);
 		progress.setIndeterminate(false);
 		// initialize message checker
-		messageChecker = new PardusMessageChecker(handler,
-				(TextView) findViewById(R.id.notify), 60000);
+		messageChecker = new PardusMessageChecker(handler, findViewById(R.id.notify), 60000);
 		// initialize browser and links
-		browser = (PardusWebView) findViewById(R.id.browser);
+		browser = findViewById(R.id.browser);
 		browser.setScriptStore(scriptStore);
 		browser.initClients(this, progress, messageChecker);
 		browser.initJavascriptBridges();
 		browser.initDownloadListener(imagePack.getPath(), getCacheDir()
 				.getAbsolutePath());
-		GridView linksGridView = (GridView) findViewById(R.id.links);
+		GridView linksGridView = findViewById(R.id.links);
 		links = new PardusLinks(this, handler, getLayoutInflater(), browser,
 				linksGridView);
 		browser.initLinks(links);
@@ -435,39 +400,27 @@ public class Pardus extends ScriptManagerActivity {
 			menu.add(R.id.option_group_scripts, R.id.option_pardus, 0,
 					R.string.option_pardus);
 		}
-		if (isTablet || !hasMenuKey) {
-			// declare action bar items on tablets and devices without menu key
-			try {
-				Method showAsAction = Class
-						.forName("android.view.MenuItem")
-						.getMethod("setShowAsAction", int.class);
-				int[] actionItemIds = { R.id.option_showlinks,
-						R.id.option_orion, R.id.option_artemis,
-						R.id.option_pegasus, R.id.option_logout };
-				for (int itemId : actionItemIds) {
-					MenuItem item = menu.findItem(itemId);
-					if (item != null) {
-						int showProperty = -1;
-						if (itemId == R.id.option_showlinks
-								|| itemId == R.id.option_logout) {
-							showProperty = 2;
-						} else {
-							if (Pardus.displayWidthDp > 400
-									&& Pardus.displayHeightDp > 400) {
-								showProperty = 1;
-							}
-						}
-						if (showProperty != -1) {
-							showAsAction.invoke(item, showProperty);
-						}
-					}
-				}
-			} catch (Exception e) {
-				Log.i(this.getClass().getSimpleName(),
-						"Running a tablet or device without menu button without action bar support. "
-								+ e);
-			}
-		}
+		if (isTablet) {
+			// declare action bar items on tablets
+            int[] actionItemIds = {R.id.option_showlinks, R.id.option_orion, R.id.option_artemis, R.id
+                    .option_pegasus, R.id.option_logout};
+            for (int itemId : actionItemIds) {
+                MenuItem item = menu.findItem(itemId);
+                if (item != null) {
+                    int showProperty = -1;
+                    if (itemId == R.id.option_showlinks || itemId == R.id.option_logout) {
+                        showProperty = 2;
+                    } else {
+                        if (Pardus.displayWidthDp > 400 && Pardus.displayHeightDp > 400) {
+                            showProperty = 1;
+                        }
+                    }
+                    if (showProperty != -1) {
+                        item.setShowAsAction(showProperty);
+                    }
+                }
+            }
+        }
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -603,15 +556,7 @@ public class Pardus extends ScriptManagerActivity {
 			scriptStore.open();
 		}
 		// wake up the browser
-		try {
-			Class.forName("android.webkit.WebView")
-					.getMethod("onResume", (Class[]) null)
-					.invoke(browser, (Object[]) null);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Cannot wake up browser threads: "
-							+ Log.getStackTraceString(e));
-		}
+        browser.onResume();
 		browser.resumeTimers();
 		if (!browser.isLoggedIn()) {
 			// open the login page if not logged in
@@ -639,15 +584,7 @@ public class Pardus extends ScriptManagerActivity {
 		progress.setVisibility(View.GONE);
 		// keep the browser from working in the background
 		browser.pauseTimers();
-		try {
-			Class.forName("android.webkit.WebView")
-					.getMethod("onPause", (Class[]) null)
-					.invoke(browser, (Object[]) null);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Cannot pause browser threads: "
-							+ Log.getStackTraceString(e));
-		}
+		browser.onPause();
 		messageChecker.pause();
 		if (scriptEditor != null
 				&& placeHistory.peek() != R.id.place_scripteditor) {

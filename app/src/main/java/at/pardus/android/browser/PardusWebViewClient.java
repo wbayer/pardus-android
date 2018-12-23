@@ -20,7 +20,6 @@ package at.pardus.android.browser;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -62,6 +61,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 
 	private ProgressBar progress;
 
+	private volatile float scale;
+
     /**
      * Executes javascript code on the current web page.
      *
@@ -69,11 +70,7 @@ public class PardusWebViewClient extends WebViewClientGm {
      * @param script the piece of javascript code to run
      */
     private static void evaluateJavascript(WebView webView, String script) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript(script, null);
-        } else {
-            webView.loadUrl("javascript:" + script);
-        }
+        webView.evaluateJavascript(script, null);
     }
 
 	/**
@@ -230,16 +227,14 @@ public class PardusWebViewClient extends WebViewClientGm {
 		boolean lookForNewMsg = true;
 		if (url.equals(PardusConstants.loginScreen)) {
 			// local login page: prefill any stored account data and apply query parameters via javascript
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (PardusPreferences.getStoreCredentials() == PardusPreferences.StoreCredentials.YES) {
-                    String account = PardusPreferences.getAccount();
-                    String password = PardusPreferences.getPassword();
-                    evaluateJavascript(view, "document.getElementById('acc').value = '" + account + "'; " +
-                            "document.getElementById('pw').value = '" + password + "';");
-                }
-                // remove login javascript bridge (takes effect after the next page load)
-                view.removeJavascriptInterface(JavaScriptLogin.DEFAULT_JS_NAME);
+            if (PardusPreferences.getStoreCredentials() == PardusPreferences.StoreCredentials.YES) {
+                String account = PardusPreferences.getAccount();
+                String password = PardusPreferences.getPassword();
+                evaluateJavascript(view, "document.getElementById('acc').value = '" + account + "'; " +
+                        "document.getElementById('pw').value = '" + password + "';");
             }
+            // remove login javascript bridge (takes effect after the next page load)
+            view.removeJavascriptInterface(JavaScriptLogin.DEFAULT_JS_NAME);
 			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "Applying query parameters for login screen");
 			}
@@ -326,7 +321,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 		PardusNotification.show(description);
 	}
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 * 
 	 * @see android.webkit.WebViewClient#onScaleChanged(android.webkit.WebView,
@@ -339,8 +334,16 @@ public class PardusWebViewClient extends WebViewClientGm {
 					"Scale changed from " + Math.ceil(oldScale * 100 - 0.5f)
 							+ " to " + Math.ceil(newScale * 100 - 0.5f));
 		}
+		scale = newScale;
 		super.onScaleChanged(view, oldScale, newScale);
 	}
+
+    /**
+     * @return current scale/zoom level of the webview
+     */
+	public float getScale() {
+	    return scale;
+    }
 
 	/**
 	 * Redirects the browser from a specified (universe) page back to the
