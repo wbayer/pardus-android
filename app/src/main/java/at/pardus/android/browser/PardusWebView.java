@@ -130,7 +130,7 @@ public class PardusWebView extends WebViewGm {
 		settings.setBuiltInZoomControls(true);
 		setShowZoomControls(PardusPreferences.isShowZoomControls());
 		settings.setLoadsImagesAutomatically(true);
-		settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+		settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 		settings.setDatabaseEnabled(true);
         settings.setUserAgentString(settings.getUserAgentString() + " Pardus/" +
                 PardusPreferences.getVersionCode());
