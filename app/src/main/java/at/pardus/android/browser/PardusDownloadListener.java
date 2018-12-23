@@ -30,9 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -238,85 +236,55 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            old files first
 	 * @return true if successful, false else
 	 */
-	private boolean unzipFile(boolean update) {
-		setDialogMessage("Unzipping ...");
-		ZipFile zipFile = null;
-		try {
-			String targetDir;
-			if (update) {
-				targetDir = updateStorageDir;
-			} else {
-				targetDir = storageDir;
-				// delete old image pack files
-				deleteDir(new File(targetDir));
-				new File(targetDir).mkdir();
-			}
-			zipFile = new ZipFile(cacheFile);
-			setDialogMax(zipFile.size());
-			int filesExtracted = 0;
-			Enumeration<? extends ZipEntry> zipFiles = zipFile.entries();
-			// extract new image pack archive
-			while (zipFiles.hasMoreElements()) {
-				ZipEntry zipEntry = zipFiles.nextElement();
-				if (zipEntry.isDirectory()) {
-					// directories will be created as needed below
-					continue;
-				}
-				File file = new File(targetDir, zipEntry.getName());
-				// create directory path if needed
-				if (!file.getParentFile().exists()
-						&& !file.getParentFile().mkdirs()) {
-					Log.e(this.getClass().getSimpleName(),
-							"Unable to create directory");
-					return false;
-				}
-				// extract file
-				FileOutputStream fos = null;
-				BufferedInputStream bis = null;
-				try {
-					fos = new FileOutputStream(file);
-					bis = new BufferedInputStream(
-							zipFile.getInputStream(zipEntry), 10240);
-					byte[] buffer = new byte[10240];
-					int bytesRead;
-					while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
-						fos.write(buffer, 0, bytesRead);
-					}
-				} finally {
-					try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (Exception ignored) {
-					}
-					try {
-                        if (bis != null) {
-                            bis.close();
-                        }
-                    } catch (Exception ignored) {
-					}
-				}
-				filesExtracted++;
-				if (filesExtracted % 50 == 0) {
-					setDialogProgress(filesExtracted);
-				}
-			}
-		} catch (IOException e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} finally {
-			if (zipFile != null) {
-				try {
-					zipFile.close();
-				} catch (IOException ignored) {
-				}
-			}
-			new File(cacheFile).delete();
-		}
-		return true;
+    private boolean unzipFile(boolean update) {
+        setDialogMessage("Unzipping ...");
+        String targetDir;
+        if (update) {
+            targetDir = updateStorageDir;
+        } else {
+            targetDir = storageDir;
+            // delete old image pack files
+            deleteDir(new File(targetDir));
+            new File(targetDir).mkdir();
+        }
+        try (ZipFile zipFile = new ZipFile(cacheFile)) {
+            setDialogMax(zipFile.size());
+            int filesExtracted = 0;
+            Enumeration<? extends ZipEntry> zipFiles = zipFile.entries();
+            // extract new image pack archive
+            while (zipFiles.hasMoreElements()) {
+                ZipEntry zipEntry = zipFiles.nextElement();
+                if (zipEntry.isDirectory()) {
+                    // directories will be created as needed below
+                    continue;
+                }
+                File file = new File(targetDir, zipEntry.getName());
+                // create directory path if needed
+                if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                    Log.e(this.getClass().getSimpleName(), "Unable to create directory");
+                    return false;
+                }
+                // extract file
+                try (FileOutputStream fos = new FileOutputStream(file); BufferedInputStream bis = new
+                        BufferedInputStream(zipFile.getInputStream(zipEntry), 10240)) {
+                    byte[] buffer = new byte[10240];
+                    int bytesRead;
+                    while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+                    }
+                }
+                filesExtracted++;
+                if (filesExtracted % 50 == 0) {
+                    setDialogProgress(filesExtracted);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+            return false;
+        } finally {
+            new File(cacheFile).delete();
+        }
+        return true;
 	}
 
 	/**
@@ -328,64 +296,42 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            size of the download
 	 * @return true if successful, false else
 	 */
-	private boolean downloadFile(String url, long contentLength) {
-		setDialogMessage("Downloading ...");
-		setDialogMax((int) (contentLength / 1024));
-		BufferedInputStream bis = null;
-		FileOutputStream fos = null;
-		HttpURLConnection con = null;
-		try {
-			File f = new File(cacheFile);
-			if (f.exists()) {
-				f.delete();
-			}
-			fos = new FileOutputStream(f);
-			URL u = new URL(url);
-			con = (HttpURLConnection) u.openConnection();
-			con.setReadTimeout(5000);
-			con.setRequestMethod("GET");
-			con.connect();
-			InputStream is = con.getInputStream();
-			bis = new BufferedInputStream(is, 10240);
-			byte[] buffer = new byte[10240];
-			int bytesRead;
-			int totalRead = 0;
-			int numReads = 0;
-			while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
-				fos.write(buffer, 0, bytesRead);
-				totalRead += bytesRead;
-				numReads++;
-				if (numReads % 10 == 0) {
-					setDialogProgress(totalRead / 1024);
-				}
-			}
-		} catch (MalformedURLException e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} catch (IOException e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} finally {
-			try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (Exception ignored) {
-			}
-			try {
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (Exception ignored) {
-			}
-            if (con != null) {
-                con.disconnect();
-            }
+    private boolean downloadFile(String url, long contentLength) {
+        setDialogMessage("Downloading ...");
+        setDialogMax((int) (contentLength / 1024));
+        File f = new File(cacheFile);
+        if (f.exists()) {
+            f.delete();
         }
-		return true;
+        HttpURLConnection con;
+        try {
+            URL u = new URL(url);
+            con = (HttpURLConnection) u.openConnection();
+            con.setRequestMethod("GET");
+            con.setReadTimeout(5000);
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+            return false;
+        }
+        try (BufferedInputStream bis = new BufferedInputStream(con.getInputStream(), 10240);
+             FileOutputStream fos = new FileOutputStream(f)) {
+            byte[] buffer = new byte[10240];
+            int bytesRead;
+            int totalRead = 0;
+            int numReads = 0;
+            while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+                totalRead += bytesRead;
+                numReads++;
+                if (numReads % 10 == 0) {
+                    setDialogProgress(totalRead / 1024);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+            return false;
+        }
+        return true;
 	}
 
 	/**

@@ -96,7 +96,7 @@ public class Pardus extends ScriptManagerActivity {
 
 	private PardusMessageChecker messageChecker;
 
-	private Stack<Integer> placeHistory = new Stack<Integer>();
+	private Stack<Integer> placeHistory = new Stack<>();
 
 	/**
 	 * Sets the Pardus browser layout as the app's content.
