@@ -28,7 +28,6 @@ import at.pardus.android.browser.PardusWebView;
 /**
  * Contains methods to be called by JavaScript from the Settings screen.
  */
-@SuppressWarnings("JavaDoc")
 public class JavaScriptSettings {
 
 	public static final String DEFAULT_JS_NAME = "JavaSettings";
@@ -83,8 +82,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the logoutOnHide setting.
-	 * 
-	 * @param logoutOnHide
 	 */
     @JavascriptInterface
 	public void setLogoutOnHide(boolean logoutOnHide) {
@@ -100,8 +97,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the navSizeHor setting.
-	 * 
-	 * @param navSizeHor
 	 */
     @JavascriptInterface
 	public void setNavSizeHor(String navSizeHor) {
@@ -114,8 +109,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the navSizeVer setting.
-	 * 
-	 * @param navSizeVer
 	 */
     @JavascriptInterface
 	public void setNavSizeVer(String navSizeVer) {
@@ -128,8 +121,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the partialRefresh setting.
-	 * 
-	 * @param partialRefresh
 	 */
     @JavascriptInterface
 	public void setPartialRefresh(boolean partialRefresh) {
@@ -150,8 +141,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the shipAnimation setting.
-	 * 
-	 * @param shipAnimation
 	 */
     @JavascriptInterface
 	public void setShipAnimation(boolean shipAnimation) {
@@ -172,8 +161,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the shipRotation setting.
-	 * 
-	 * @param shipRotation
 	 */
     @JavascriptInterface
 	public void setShipRotation(boolean shipRotation) {
@@ -192,8 +179,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the mobileChat setting.
-	 * 
-	 * @param mobileChat
 	 */
     @JavascriptInterface
 	public void setMobileChat(boolean mobileChat) {
@@ -212,8 +197,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the fullscreen setting.
-	 * 
-	 * @param fullScreen
 	 */
     @JavascriptInterface
 	public void setFullScreen(boolean fullScreen) {
@@ -236,8 +219,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the showZoomControls setting.
-	 * 
-	 * @param showZoomControls
 	 */
     @JavascriptInterface
 	public void setShowZoomControls(boolean showZoomControls) {
@@ -252,8 +233,6 @@ public class JavaScriptSettings {
 
 	/**
 	 * Changes the rememberPageProperties setting.
-	 *
-	 * @param rememberPageProperties
 	 */
     @JavascriptInterface
 	public void setRememberPageProperties(boolean rememberPageProperties) {

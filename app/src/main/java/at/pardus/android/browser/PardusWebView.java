@@ -521,20 +521,21 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Deletes website cache, cookies, page properties and any stored form data.
 	 */
-	@SuppressWarnings("deprecation")
     public void removeTraces() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Clearing cache");
 		}
 		if (database != null) {
+            //noinspection deprecation
             database.clearUsernamePassword();
+            //noinspection deprecation
 			database.clearFormData();
 		}
         PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
 		clearFormData();
 		clearCache(true);
-		cookieManager.removeSessionCookie();
-		cookieManager.removeAllCookie();
+		cookieManager.removeSessionCookies(null);
+		cookieManager.removeAllCookies(null);
 		if (pageProperties != null) {
 			pageProperties.forget();
 		}
