@@ -42,14 +42,6 @@ public abstract class PardusNotification {
         }
     }
 
-    public static void show(int messageId) {
-        try {
-            show(context.get().getResources().getString(messageId));
-        } catch (Exception e) {
-            Log.i(PardusNotification.class.getSimpleName(), "Error displaying message ID " + messageId);
-        }
-    }
-
     static void showLong(String message) {
         try {
             Toast.makeText(context.get(), message, Toast.LENGTH_LONG).show();

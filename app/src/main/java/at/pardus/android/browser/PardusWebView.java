@@ -110,7 +110,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Initializes the Pardus browser's behavior.
 	 */
-	@SuppressLint({"SetJavaScriptEnabled", "InlinedApi"})
+	@SuppressLint("SetJavaScriptEnabled")
 	private void init() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -167,7 +167,6 @@ public class PardusWebView extends WebViewGm {
 	 * @param messageChecker
 	 *            the message checker to share cookies with
 	 */
-    @SuppressLint("NewApi")
 	public void initClients(Activity activity, ProgressBar progress,
 			PardusMessageChecker messageChecker) {
 		this.activity = activity;
@@ -189,7 +188,6 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Sets up the bridges between Java and Javascript.
 	 */
-	@SuppressLint("AddJavascriptInterface")
     public void initJavascriptBridges() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -226,7 +224,6 @@ public class PardusWebView extends WebViewGm {
 	 * @param l
 	 *            PardusLinks object to show
 	 */
-	@SuppressLint("AddJavascriptInterface")
     public void initLinks(PardusLinks l) {
 		links = l;
 		addJavascriptInterface(new JavaScriptLinks(this, l),
@@ -290,7 +287,8 @@ public class PardusWebView extends WebViewGm {
 	 * 
 	 * @see android.webkit.WebView#onTouchEvent(android.view.MotionEvent)
 	 */
-	@Override
+	@SuppressLint("ClickableViewAccessibility")
+    @Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		gestureDetector.onTouchEvent(ev);
 		if (ev.getAction() == MotionEvent.ACTION_UP) {
@@ -332,7 +330,6 @@ public class PardusWebView extends WebViewGm {
 	 * @param autoLogin
 	 *            whether to automatically log in if the account info is stored
 	 */
-	@SuppressLint("AddJavascriptInterface")
     public void login(boolean autoLogin) {
         if (BuildConfig.DEBUG) {
             Log.v(this.getClass().getSimpleName(), "Showing login screen");

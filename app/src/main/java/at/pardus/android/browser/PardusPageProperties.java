@@ -367,7 +367,8 @@ public class PardusPageProperties {
 
 		public final int posX, posY, totalX, totalY;
 
-		public final long timestamp = System.currentTimeMillis();
+		@SuppressWarnings("unused")
+        public final long timestamp = System.currentTimeMillis();
 
 		/**
 		 * Constructor.
