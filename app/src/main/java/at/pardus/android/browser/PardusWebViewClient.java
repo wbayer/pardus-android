@@ -302,7 +302,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see android.webkit.WebViewClient#onReceivedError(android.webkit.WebView,
 	 * int, java.lang.String, java.lang.String)
 	 */
@@ -311,7 +311,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 			WebResourceError error) {
 		Log.w(this.getClass().getSimpleName(), "Error at " + request.getUrl() + "\n"
 				+ error.getErrorCode() + " " + error.getDescription());
-		PardusNotification.show(error.getDescription().toString());
+		if (request.getUrl().getHost() == null || !request.getUrl().getHost().equals("localhost")) {
+            PardusNotification.show(error.getDescription().toString());
+        }
 	}
 
     /*
