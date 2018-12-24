@@ -388,24 +388,21 @@ public class Pardus extends ScriptManagerActivity {
 			menu.add(R.id.option_group_scripts, R.id.option_pardus, 0,
 					R.string.option_pardus);
 		}
-		if (isTablet) {
-			// declare action bar items on tablets
-            int[] actionItemIds = {R.id.option_showlinks, R.id.option_orion, R.id.option_artemis, R.id
-                    .option_pegasus, R.id.option_logout};
-            for (int itemId : actionItemIds) {
-                MenuItem item = menu.findItem(itemId);
-                if (item != null) {
-                    int showProperty = -1;
-                    if (itemId == R.id.option_showlinks || itemId == R.id.option_logout) {
-                        showProperty = 2;
-                    } else {
-                        if (Pardus.displayWidthDp > 400 && Pardus.displayHeightDp > 400) {
-                            showProperty = 1;
-                        }
+        int[] actionItemIds = {R.id.option_showlinks, R.id.option_orion, R.id.option_artemis, R.id
+                .option_pegasus, R.id.option_logout};
+        for (int itemId : actionItemIds) {
+            MenuItem item = menu.findItem(itemId);
+            if (item != null) {
+                int showProperty = -1;
+                if (itemId == R.id.option_showlinks || itemId == R.id.option_logout) {
+                    showProperty = 2;
+                } else {
+                    if (Pardus.displayWidthDp > 400 && Pardus.displayHeightDp > 400) {
+                        showProperty = 1;
                     }
-                    if (showProperty != -1) {
-                        item.setShowAsAction(showProperty);
-                    }
+                }
+                if (showProperty != -1) {
+                    item.setShowAsAction(showProperty);
                 }
             }
         }
