@@ -40,7 +40,7 @@ public class PardusLinks {
 
 	public static final int HIDE_AFTER_SHOW_MILLIS = 5000;
 
-	public static final int HIDE_AFTER_CLICK_MILLIS = 500;
+	private static final int HIDE_AFTER_CLICK_MILLIS = 500;
 
 	private static final int HIDE_ANIMATION_MILLIS = 2000;
 
@@ -200,7 +200,7 @@ public class PardusLinks {
 	 * @param links
 	 *            new array of Pardus links
 	 */
-	public void updateLinks(PardusLink[] links) {
+    private void updateLinks(PardusLink[] links) {
 		linkStore.updateLinks(links);
 		calcAndApplyDimensions();
 		buttonAdapter.updateLinks(links);
@@ -311,7 +311,7 @@ public class PardusLinks {
 		 *            string of serialized objects
 		 * @return array of deserialized PardusLink objects
 		 */
-		public static PardusLink[] deserializeLinks(String serialized) {
+		protected static PardusLink[] deserializeLinks(String serialized) {
 			if (serialized.length() == 0) {
 				return new PardusLink[0];
 			}
@@ -335,7 +335,7 @@ public class PardusLinks {
 		 * 
 		 * @return array of deserialized Pardus link objects
 		 */
-		public PardusLink[] getLinks() {
+        protected PardusLink[] getLinks() {
 			if (linkCache != null) {
 				return linkCache;
 			}
@@ -356,7 +356,7 @@ public class PardusLinks {
 		 * @param links
 		 *            array of Pardus link objects to serialize and persist
 		 */
-		public void updateLinks(PardusLink[] links) {
+        protected void updateLinks(PardusLink[] links) {
 			String serialized = serializeLinks(links);
 			PardusPreferences.setLinks(serialized);
 			linkCache = links;
@@ -408,14 +408,14 @@ public class PardusLinks {
 		/**
 		 * @return the title
 		 */
-		public String getTitle() {
+        protected String getTitle() {
 			return title;
 		}
 
 		/**
 		 * @return the URL
 		 */
-		public String getUrl() {
+        protected String getUrl() {
 			return url;
 		}
 
@@ -456,8 +456,7 @@ public class PardusLinks {
 		 * @param links
 		 *            array of Pardus links to use
 		 */
-		public PardusButtonAdapter(LayoutInflater layoutInflater, int layout,
-				PardusLink[] links) {
+        protected PardusButtonAdapter(LayoutInflater layoutInflater, int layout, PardusLink[] links) {
 			this.layoutInflater = layoutInflater;
 			this.layout = layout;
 			this.links = links;
@@ -470,7 +469,7 @@ public class PardusLinks {
 		 * @param links
 		 *            new array of Pardus links
 		 */
-		public void updateLinks(PardusLink[] links) {
+        protected void updateLinks(PardusLink[] links) {
 			this.links = links;
 			addConfigLink();
 			notifyDataSetChanged();

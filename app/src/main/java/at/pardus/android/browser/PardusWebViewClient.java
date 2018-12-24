@@ -394,7 +394,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *            URL to check
 	 * @return true for any Pardus universe URL, false else
 	 */
-	public static boolean isPardusUniUrl(String url) {
+	private static boolean isPardusUniUrl(String url) {
 		return url.startsWith("https://artemis.pardus.at/")
 				|| url.startsWith("https://orion.pardus.at/")
 				|| url.startsWith("https://pegasus.pardus.at/");
@@ -405,7 +405,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *            URL to check
 	 * @return true for any local content or javascript, false else
 	 */
-	public static boolean isLocalUrl(String url) {
+	private static boolean isLocalUrl(String url) {
 		return url.startsWith("file:///android_asset/") || url.startsWith("javascript:");
 	}
 
@@ -417,7 +417,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any Pardus URL but the online login and for any local
 	 *         content, false for anything else
 	 */
-	public static boolean isAllowedUrl(String url) {
+	private static boolean isAllowedUrl(String url) {
 		if (url.equals(PardusConstants.loginUrlHttpsOrig)) {
 			return false;
 		}
@@ -430,7 +430,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any local content or javascript, about:blank, Pardus
 	 *         URLs except account pages; false else
 	 */
-	public static boolean isAllowedUrlLoggedOut(String url) {
+	private static boolean isAllowedUrlLoggedOut(String url) {
         return isLocalUrl(url) || url.equals("about:blank") || url.startsWith("https://static.pardus.at/")
                 || url.startsWith(PardusConstants.loggedInUrlHttps)
                 || url.startsWith(PardusConstants.newCharUrlHttps)

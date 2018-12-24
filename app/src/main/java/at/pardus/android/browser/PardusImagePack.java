@@ -146,7 +146,7 @@ public class PardusImagePack {
 	 * @return the URL this image pack is originally hosted at or null if that
 	 *         information is not available
 	 */
-	public String getSrcUrl() {
+    private String getSrcUrl() {
         try (Scanner in = new Scanner(new FileReader(path + "/nfo_src")).useDelimiter("[\\r\\n]+")) {
             return in.next();
         } catch (Exception e) {
@@ -158,7 +158,7 @@ public class PardusImagePack {
 	 * @return the date of the last update of the installed image pack
 	 *         (yyyymmdd[0-9][0-9]) or -1 if that information is not available
 	 */
-	public long getLastUpdate() {
+    private long getLastUpdate() {
         try (Scanner in = new Scanner(new FileReader(path + "/nfo_upd")).useDelimiter("[\\r\\n]+")) {
             return in.nextLong();
         } catch (Exception e) {

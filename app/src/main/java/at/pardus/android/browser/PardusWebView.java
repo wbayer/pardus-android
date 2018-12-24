@@ -395,7 +395,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Displays the local image pack selection screen.
 	 */
-	public void selectImagePack() {
+    private void selectImagePack() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Loading image pack selection screen");
@@ -506,7 +506,7 @@ public class PardusWebView extends WebViewGm {
 	 * This means deleting all cookies used for authorization in the browser and
 	 * message checker.
 	 */
-	public void destroySession() {
+    private void destroySession() {
 		String cookieInfo = "; path=/; domain=.pardus.at;";
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
 				"accountid=0; max-age=0" + cookieInfo);

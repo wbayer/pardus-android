@@ -57,9 +57,9 @@ import at.pardus.android.webview.gm.store.ui.ScriptManagerActivity;
  */
 public class Pardus extends ScriptManagerActivity {
 
-	public static int displayWidthDp;
+	private static int displayWidthDp;
 
-	public static int displayHeightDp;
+	private static int displayHeightDp;
 
 	public static int displayWidthPx;
 
@@ -93,7 +93,7 @@ public class Pardus extends ScriptManagerActivity {
 	 * Sets the Pardus browser layout as the app's content.
 	 */
 	@SuppressLint("InflateParams")
-    public void openPardusBrowser() {
+    private void openPardusBrowser() {
 		if (browserContainer == null) {
 			browserContainer = getLayoutInflater().inflate(R.layout.browser, null);
 		}

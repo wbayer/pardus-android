@@ -101,7 +101,7 @@ public class PardusMessageChecker {
 	 * 
 	 * Does not need to and should not be run on the UI thread.
 	 */
-	public void check() {
+    private void check() {
 		if (universe == null) {
 			return;
 		}
@@ -284,7 +284,7 @@ public class PardusMessageChecker {
 		 * @param text
 		 *            new text to set
 		 */
-		public NotifyRunnable(String text) {
+        protected NotifyRunnable(String text) {
 			this.text = text;
 		}
 

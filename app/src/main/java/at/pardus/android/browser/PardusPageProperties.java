@@ -147,7 +147,7 @@ public class PardusPageProperties {
 	 * Loads all entries from the disk.
 	 */
 	@SuppressWarnings("unchecked")
-	public void loadFromDisk() {
+    private void loadFromDisk() {
 		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
 					"Loading page properties from disk ...");
@@ -219,13 +219,13 @@ public class PardusPageProperties {
 	 * Immutable object serving as identifier of a page (URL and screen
 	 * orientation).
 	 */
-	public static class PardusPageIdentifier implements Serializable {
+	protected static class PardusPageIdentifier implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
-		public final String url;
+		protected final String url;
 
-		public final int orientation;
+		protected final int orientation;
 
 		/**
 		 * Constructor. URL will be trimmed and set to null if invalid.
@@ -365,7 +365,10 @@ public class PardusPageProperties {
 
 		public final float scale;
 
-		public final int posX, posY, totalX, totalY;
+		public final int posX;
+        public final int posY;
+        protected final int totalX;
+        protected final int totalY;
 
 		@SuppressWarnings("unused")
         public final long timestamp = System.currentTimeMillis();

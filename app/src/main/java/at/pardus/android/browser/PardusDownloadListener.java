@@ -136,7 +136,7 @@ public class PardusDownloadListener implements DownloadListener {
 		 * @param contentLength
 		 *            size of the download
 		 */
-		public GetImagePackThread(String url, long contentLength) {
+        protected GetImagePackThread(String url, long contentLength) {
 			super();
 			this.url = url;
 			this.contentLength = contentLength;
