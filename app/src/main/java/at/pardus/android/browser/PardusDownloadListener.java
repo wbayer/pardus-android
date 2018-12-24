@@ -17,9 +17,7 @@
 
 package at.pardus.android.browser;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,9 +28,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -41,13 +38,7 @@ import java.util.zip.ZipFile;
 /**
  * Class handling image pack downloads.
  */
-@SuppressWarnings("ResultOfMethodCallIgnored")
-@SuppressLint("HandlerLeak")
 public class PardusDownloadListener implements DownloadListener {
-
-	private PardusWebView browser;
-
-	private Context context;
 
 	private String storageDir;
 
@@ -57,50 +48,75 @@ public class PardusDownloadListener implements DownloadListener {
 
 	private boolean working = false;
 
-	private ProgressDialog dialog = null;
+    private final ProgressDialogHandler handler;
 
-	private final Handler handler = new Handler() {
+    /**
+     * Handler to display and update a progress dialog.
+     */
+	private static class ProgressDialogHandler extends Handler {
+	    private WeakReference<PardusWebView> browser;
+	    private WeakReference<ProgressDialog> dialog = new WeakReference<>(null);
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.Handler#handleMessage(android.os.Message)
-		 */
-		@Override
-		public void handleMessage(Message msg) {
-			String message = msg.getData().getString("message");
-			if (message != null) {
-				if (dialog != null) {
-					// remove old dialog
-					dialog.dismiss();
-				}
-				if (message.equals("")) {
-					// move to login page
-					browser.login(true);
-				} else if (message.equals("error")) {
-					// display error
-					PardusNotification
-							.showLong("Error while getting image pack");
-				} else {
-					// create new progress dialog
-					dialog = new ProgressDialog(context);
-					dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-					dialog.setCancelable(false);
-					dialog.setMessage(message);
-					dialog.show();
-				}
-			} else {
-				// set new progress and max values
-				int progress = msg.arg1;
-				int max = msg.arg2;
-				dialog.setProgress(progress);
-				if (max != 0) {
-					dialog.setMax(max);
-				}
-			}
-		}
+        /**
+         * @param browser browser component
+         */
+	    private ProgressDialogHandler(PardusWebView browser) {
+	        this.browser = new WeakReference<>(browser);
+        }
 
-	};
+        /**
+         * Dismisses the progress dialog. May be called from any thread.
+         */
+        private void dismissDialog() {
+            ProgressDialog dialog = this.dialog.get();
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            ProgressDialog dialog = this.dialog.get();
+            PardusWebView browser = this.browser.get();
+            if (browser == null) {
+                return;
+            }
+            String message = msg.getData().getString("message");
+            if (message != null) {
+                if (dialog != null) {
+                    // remove old dialog
+                    dialog.dismiss();
+                }
+                switch (message) {
+                    case "":
+                        // move to login page
+                        browser.login(true);
+                        break;
+                    case "error":
+                        // display error
+                        PardusNotification.showLong("Error while getting image pack");
+                        break;
+                    default:
+                        // create new progress dialog
+                        dialog = new ProgressDialog(browser.getContext());
+                        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        dialog.setCancelable(false);
+                        dialog.setMessage(message);
+                        dialog.show();
+                        this.dialog = new WeakReference<>(dialog);
+                        break;
+                }
+            } else {
+                // set new progress and max values
+                int progress = msg.arg1;
+                int max = msg.arg2;
+                dialog.setProgress(progress);
+                if (max != 0) {
+                    dialog.setMax(max);
+                }
+            }
+        }
+    }
 
 	/**
 	 * Thread to download and unzip an image pack. Threaded so the UI (progress
@@ -120,7 +136,7 @@ public class PardusDownloadListener implements DownloadListener {
 		 * @param contentLength
 		 *            size of the download
 		 */
-		public GetImagePackThread(String url, long contentLength) {
+        protected GetImagePackThread(String url, long contentLength) {
 			super();
 			this.url = url;
 			this.contentLength = contentLength;
@@ -161,12 +177,12 @@ public class PardusDownloadListener implements DownloadListener {
 					setDialogMessage("");
 				} else {
 					// unzipping failed
-					dialog.dismiss();
+					handler.dismissDialog();
 					setDialogMessage("error");
 				}
 			} else {
 				// downloading failed
-				dialog.dismiss();
+				handler.dismissDialog();
 				setDialogMessage("error");
 			}
 			stopWorking();
@@ -183,7 +199,7 @@ public class PardusDownloadListener implements DownloadListener {
 	@Override
 	public void onDownloadStart(String url, String userAgent,
 			String contentDisposition, String mimetype, long contentLength) {
-		if (url.startsWith("http://static.pardus.at/downloads/")
+		if (url.startsWith("https://static.pardus.at/downloads/")
 				&& url.endsWith(".zip") && startWorking()) {
 			new GetImagePackThread(url, contentLength).start();
 		}
@@ -238,85 +254,56 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            old files first
 	 * @return true if successful, false else
 	 */
-	private boolean unzipFile(boolean update) {
-		setDialogMessage("Unzipping ...");
-		ZipFile zipFile = null;
-		try {
-			String targetDir;
-			if (update) {
-				targetDir = updateStorageDir;
-			} else {
-				targetDir = storageDir;
-				// delete old image pack files
-				deleteDir(new File(targetDir));
-				new File(targetDir).mkdir();
-			}
-			zipFile = new ZipFile(cacheFile);
-			setDialogMax(zipFile.size());
-			int filesExtracted = 0;
-			Enumeration<? extends ZipEntry> zipFiles = zipFile.entries();
-			// extract new image pack archive
-			while (zipFiles.hasMoreElements()) {
-				ZipEntry zipEntry = zipFiles.nextElement();
-				if (zipEntry.isDirectory()) {
-					// directories will be created as needed below
-					continue;
-				}
-				File file = new File(targetDir, zipEntry.getName());
-				// create directory path if needed
-				if (!file.getParentFile().exists()
-						&& !file.getParentFile().mkdirs()) {
-					Log.e(this.getClass().getSimpleName(),
-							"Unable to create directory");
-					return false;
-				}
-				// extract file
-				FileOutputStream fos = null;
-				BufferedInputStream bis = null;
-				try {
-					fos = new FileOutputStream(file);
-					bis = new BufferedInputStream(
-							zipFile.getInputStream(zipEntry), 10240);
-					byte[] buffer = new byte[10240];
-					int bytesRead;
-					while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
-						fos.write(buffer, 0, bytesRead);
-					}
-				} finally {
-					try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (Exception ignored) {
-					}
-					try {
-                        if (bis != null) {
-                            bis.close();
-                        }
-                    } catch (Exception ignored) {
-					}
-				}
-				filesExtracted++;
-				if (filesExtracted % 50 == 0) {
-					setDialogProgress(filesExtracted);
-				}
-			}
-		} catch (IOException e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} finally {
-			if (zipFile != null) {
-				try {
-					zipFile.close();
-				} catch (IOException ignored) {
-				}
-			}
-			new File(cacheFile).delete();
-		}
-		return true;
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private boolean unzipFile(boolean update) {
+        setDialogMessage("Unzipping ...");
+        String targetDir;
+        if (update) {
+            targetDir = updateStorageDir;
+        } else {
+            targetDir = storageDir;
+            // delete old image pack files
+            deleteDir(new File(targetDir));
+            new File(targetDir).mkdir();
+        }
+        try (ZipFile zipFile = new ZipFile(cacheFile)) {
+            setDialogMax(zipFile.size());
+            int filesExtracted = 0;
+            Enumeration<? extends ZipEntry> zipFiles = zipFile.entries();
+            // extract new image pack archive
+            while (zipFiles.hasMoreElements()) {
+                ZipEntry zipEntry = zipFiles.nextElement();
+                if (zipEntry.isDirectory()) {
+                    // directories will be created as needed below
+                    continue;
+                }
+                File file = new File(targetDir, zipEntry.getName());
+                // create directory path if needed
+                if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+                    Log.e(this.getClass().getSimpleName(), "Unable to create directory");
+                    return false;
+                }
+                // extract file
+                try (FileOutputStream fos = new FileOutputStream(file); BufferedInputStream bis = new
+                        BufferedInputStream(zipFile.getInputStream(zipEntry), 10240)) {
+                    byte[] buffer = new byte[10240];
+                    int bytesRead;
+                    while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+                    }
+                }
+                filesExtracted++;
+                if (filesExtracted % 50 == 0) {
+                    setDialogProgress(filesExtracted);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+            return false;
+        } finally {
+            new File(cacheFile).delete();
+        }
+        return true;
 	}
 
 	/**
@@ -328,87 +315,62 @@ public class PardusDownloadListener implements DownloadListener {
 	 *            size of the download
 	 * @return true if successful, false else
 	 */
-	private boolean downloadFile(String url, long contentLength) {
-		setDialogMessage("Downloading ...");
-		setDialogMax((int) (contentLength / 1024));
-		BufferedInputStream bis = null;
-		FileOutputStream fos = null;
-		HttpURLConnection con = null;
-		try {
-			File f = new File(cacheFile);
-			if (f.exists()) {
-				f.delete();
-			}
-			fos = new FileOutputStream(f);
-			URL u = new URL(url);
-			con = (HttpURLConnection) u.openConnection();
-			con.setReadTimeout(5000);
-			con.setRequestMethod("GET");
-			con.connect();
-			InputStream is = con.getInputStream();
-			bis = new BufferedInputStream(is, 10240);
-			byte[] buffer = new byte[10240];
-			int bytesRead;
-			int totalRead = 0;
-			int numReads = 0;
-			while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
-				fos.write(buffer, 0, bytesRead);
-				totalRead += bytesRead;
-				numReads++;
-				if (numReads % 10 == 0) {
-					setDialogProgress(totalRead / 1024);
-				}
-			}
-		} catch (MalformedURLException e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} catch (IOException e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
-			return false;
-		} finally {
-			try {
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (Exception ignored) {
-			}
-			try {
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (Exception ignored) {
-			}
-            if (con != null) {
-                con.disconnect();
-            }
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private boolean downloadFile(String url, long contentLength) {
+        setDialogMessage("Downloading ...");
+        setDialogMax((int) (contentLength / 1024));
+        File f = new File(cacheFile);
+        if (f.exists()) {
+            f.delete();
         }
-		return true;
+        HttpURLConnection con;
+        try {
+            URL u = new URL(url);
+            con = (HttpURLConnection) u.openConnection();
+            con.setRequestMethod("GET");
+            con.setReadTimeout(5000);
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+            return false;
+        }
+        try (BufferedInputStream bis = new BufferedInputStream(con.getInputStream(), 10240);
+             FileOutputStream fos = new FileOutputStream(f)) {
+            byte[] buffer = new byte[10240];
+            int bytesRead;
+            int totalRead = 0;
+            int numReads = 0;
+            while ((bytesRead = bis.read(buffer, 0, 10240)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+                totalRead += bytesRead;
+                numReads++;
+                if (numReads % 10 == 0) {
+                    setDialogProgress(totalRead / 1024);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+            return false;
+        }
+        return true;
 	}
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param browser
-	 *            webview object
-	 * @param context
-	 *            context the webview is running in
-	 * @param storageDir
-	 *            final storage directory
-	 * @param updateStorageDir
-	 *            final storage directory for updates
-	 * @param cacheDir
-	 *            temporary download directory
-	 */
-	public PardusDownloadListener(PardusWebView browser, Context context,
-			String storageDir, String updateStorageDir, String cacheDir) {
-		this.browser = browser;
-		this.context = context;
+    /**
+     * Constructor.
+     *
+     * @param browser
+     *         webview object
+     * @param storageDir
+     *         final storage directory
+     * @param updateStorageDir
+     *         final storage directory for updates
+     * @param cacheDir
+     *         temporary download directory
+     */
+	public PardusDownloadListener(PardusWebView browser, String storageDir, String updateStorageDir, String cacheDir) {
 		this.storageDir = storageDir;
 		this.updateStorageDir = updateStorageDir;
 		this.cacheFile = cacheDir + "/img.zip";
+		handler = new ProgressDialogHandler(browser);
 	}
 
 	/**
@@ -442,14 +404,15 @@ public class PardusDownloadListener implements DownloadListener {
 
 	/**
 	 * Recursively deletes a directory.
-	 * 
-	 * @param dir
-	 *            directory to delete
-	 */
-	private static boolean deleteDir(File dir) {
+	 *
+     * @param dir
+     *            directory to delete
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+	private static void deleteDir(File dir) {
 		File[] files = dir.listFiles();
 		if (files == null) {
-			return false;
+			return;
 		}
         for (File file : files) {
             if (file.isDirectory()) {
@@ -458,7 +421,7 @@ public class PardusDownloadListener implements DownloadListener {
                 file.delete();
             }
         }
-		return (dir.delete());
-	}
+        dir.delete();
+    }
 
 }

@@ -110,7 +110,7 @@ public class JavaScriptLinks {
 			Log.d(this.getClass().getSimpleName(),
 					"Receiving updated links from javascript: " + links);
 		}
-		SortedMap<Integer, PardusLink> sortedMap = new TreeMap<Integer, PardusLink>();
+		SortedMap<Integer, PardusLink> sortedMap = new TreeMap<>();
 		StringTokenizer tokenizer = new StringTokenizer(links, PardusLink.GLUE);
 		while (tokenizer.hasMoreTokens()) {
 			int order;
@@ -128,7 +128,7 @@ public class JavaScriptLinks {
 			sortedMap.put(order, link);
 		}
         Collection<PardusLink> values = sortedMap.values();
-        PardusLink[] linkArray = values.toArray(new PardusLink[values.size()]);
+        PardusLink[] linkArray = values.toArray(new PardusLink[0]);
 		this.links.updateLinksViaHandler(linkArray);
 	}
 }

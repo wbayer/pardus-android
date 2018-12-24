@@ -18,33 +18,36 @@
 package at.pardus.android.browser;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Includes static helper functions to display small messages to the user.
  */
 public abstract class PardusNotification {
 
-	private static Context context = null;
+    private static WeakReference<Context> context = null;
 
-	public static void init(Context context) {
-		PardusNotification.context = context;
-	}
+    static void init(Context context) {
+        PardusNotification.context = new WeakReference<>(context);
+    }
 
-	public static void show(String message) {
-		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-	}
+    public static void show(String message) {
+        try {
+            Toast.makeText(context.get(), message, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.i(PardusNotification.class.getSimpleName(), "Error displaying message " + message);
+        }
+    }
 
-	public static void show(int messageId) {
-		show(context.getResources().getString(messageId));
-	}
-
-	public static void showLong(String message) {
-		Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-	}
-
-	public static void showLong(int messageId) {
-		showLong(context.getResources().getString(messageId));
-	}
+    static void showLong(String message) {
+        try {
+            Toast.makeText(context.get(), message, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.i(PardusNotification.class.getSimpleName(), "Error displaying message " + message);
+        }
+    }
 
 }

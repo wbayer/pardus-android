@@ -17,7 +17,6 @@
 
 package at.pardus.android.content;
 
-import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
@@ -27,8 +26,7 @@ import at.pardus.android.browser.BuildConfig;
 import fi.iki.elonen.SimpleWebServer;
 
 /**
- * Provides a URI to local files through either a web server running on localhost (Android 4.4+) or
- * a content provider (Android 4.3-).
+ * Provides a URI to files served by a local webserver.
  */
 public class LocalContentProxy {
 
@@ -55,17 +53,11 @@ public class LocalContentProxy {
     }
 
     /**
-     * Decides whether to have local files served directly by a content provider (Android 4.3-) or
-     * through a web server (Android 4.4+).
+     * Starts a local web server to serve files.
      *
      * @param path the path to the files to serve
      */
     public synchronized void start(String path) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            // android versions before kitkat make use of the local content provider directly
-            uri = LocalContentProvider.URI;
-            return;
-        }
         // start the local image pack webserver
         if (BuildConfig.DEBUG) {
             Log.v(getClass().getSimpleName(),
@@ -90,13 +82,9 @@ public class LocalContentProxy {
     }
 
     /**
-     * Stops the web server if it was at all used.
+     * Stops the web server.
      */
     public void stop() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            // android versions before kitkat make use of the local content provider directly
-            return;
-        }
         if (simpleWebServer != null) {
             if (BuildConfig.DEBUG) {
                 Log.v(getClass().getSimpleName(), "Stopping web server");

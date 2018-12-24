@@ -22,8 +22,6 @@ import android.content.SharedPreferences;
 
 import java.util.Date;
 
-import at.pardus.android.content.LocalContentProvider;
-
 /**
  * Offers static functions to retrieve and persistently store user preferences.
  */
@@ -71,7 +69,6 @@ public abstract class PardusPreferences {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("imagePath", imagePath);
         editor.apply();
-        LocalContentProvider.FILEPATH = imagePath;
     }
 
     /**

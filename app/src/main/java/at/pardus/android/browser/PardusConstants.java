@@ -42,21 +42,11 @@ public abstract class PardusConstants {
 
 	public static final String newCharUrlHttps = "https://www.pardus.at/index.php?section=account_newchar";
 
-	public static final String logoutUrl = "http://www.pardus.at/index.php?section=account_logout";
-
 	public static final String logoutUrlHttps = "https://www.pardus.at/index.php?section=account_logout";
-
-	public static final String loggedOutUrl = "http://www.pardus.at/index.php";
 
 	public static final String loggedOutUrlHttps = "https://www.pardus.at/index.php";
 
-	public static final String downloadUrl = "http://static.pardus.at/downloads/";
-
-	public static final String downloadPageUrl = "http://www.pardus.at/index.php?section=downloads";
-
 	public static final String downloadPageUrlHttps = "https://www.pardus.at/index.php?section=downloads";
-
-	public static final String scriptsUrl = "http://www.pardus.at/index.php?section=downloads#scripts";
 
 	public static final String scriptsUrlHttps = "https://www.pardus.at/index.php?section=downloads#scripts";
 
@@ -109,5 +99,16 @@ public abstract class PardusConstants {
 	public static final String paymentLogPage = "overview_payment_log.php";
 
 	public static final String bulletinBoardPage = "bulletin_board.php";
+
+    /**
+     * @param universe
+     *         host: artemis, orion, pegasus
+     * @param page
+     *         relative URL
+     * @return absolute URL to universe page
+     */
+    public static String getUniverseUrl(String universe, String page) {
+        return "https://" + universe + ".pardus.at/" + page;
+    }
 
 }

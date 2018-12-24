@@ -20,13 +20,11 @@ package at.pardus.android.browser;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,16 +32,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
-import java.io.File;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Locale;
@@ -64,9 +57,9 @@ import at.pardus.android.webview.gm.store.ui.ScriptManagerActivity;
  */
 public class Pardus extends ScriptManagerActivity {
 
-	public static int displayWidthDp;
+	private static int displayWidthDp;
 
-	public static int displayHeightDp;
+	private static int displayHeightDp;
 
 	public static int displayWidthPx;
 
@@ -79,8 +72,6 @@ public class Pardus extends ScriptManagerActivity {
 	public static int orientation;
 
 	public static boolean isTablet;
-
-	public static boolean hasMenuKey;
 
 	private final Handler handler = new Handler();
 
@@ -96,13 +87,13 @@ public class Pardus extends ScriptManagerActivity {
 
 	private PardusMessageChecker messageChecker;
 
-	private Stack<Integer> placeHistory = new Stack<Integer>();
+	private Stack<Integer> placeHistory = new Stack<>();
 
 	/**
 	 * Sets the Pardus browser layout as the app's content.
 	 */
 	@SuppressLint("InflateParams")
-    public void openPardusBrowser() {
+    private void openPardusBrowser() {
 		if (browserContainer == null) {
 			browserContainer = getLayoutInflater().inflate(R.layout.browser, null);
 		}
@@ -141,7 +132,6 @@ public class Pardus extends ScriptManagerActivity {
 	 * Sets the Script browser layout as the app's content.
 	 */
 	@Override
-    @SuppressLint("NewApi")
 	public void openScriptBrowser() {
 		if (scriptBrowser == null) {
 			scriptBrowser = new ScriptBrowser(
@@ -161,12 +151,7 @@ public class Pardus extends ScriptManagerActivity {
 								final String url) {
 							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrl)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrlHttps)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadUrl)) {
+									&& !urlLower.startsWith(PardusConstants.downloadPageUrlHttps)) {
 								openPardusBrowser();
 								return true;
 							}
@@ -179,11 +164,7 @@ public class Pardus extends ScriptManagerActivity {
 							String urlLower = url.toLowerCase(Locale.ENGLISH);
 							if (PardusWebViewClient.isPardusUrl(urlLower)
 									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrl)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadPageUrlHttps)
-									&& !urlLower
-											.startsWith(PardusConstants.downloadUrl)) {
+											.startsWith(PardusConstants.downloadPageUrlHttps)) {
 								view.stopLoading();
 								openPardusBrowser();
 								return;
@@ -206,28 +187,6 @@ public class Pardus extends ScriptManagerActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		isTablet = getResources().getBoolean(R.bool.isTablet);
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-			hasMenuKey = true;
-		} else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2) {
-			hasMenuKey = false;
-		} else {
-			try {
-				Method hasPermanentMenuKey = Class.forName(
-						"android.view.ViewConfiguration").getMethod(
-						"hasPermanentMenuKey", (Class[]) null);
-				// hasPermanentMenuKey is unreliable, assume no hardware menu key present if > android 5
-                hasMenuKey = Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1 && (Boolean)
-                        hasPermanentMenuKey.invoke(ViewConfiguration.get(this), (Object[]) null);
-			} catch (Exception e) {
-				Log.w(this.getClass().getSimpleName(),
-						"Exception while attempting to call hasPermanentMenuKey via reflection (API level "
-								+ Build.VERSION.SDK_INT + "): " + e);
-				hasMenuKey = false;
-			}
-		}
-		if (!isTablet && hasMenuKey) {
-			requestWindowFeature(Window.FEATURE_NO_TITLE);
-		}
 		PardusPreferences.init(this, null);
 		PardusNotification.init(this);
 		if (PardusPreferences.isFullScreen()) {
@@ -244,13 +203,7 @@ public class Pardus extends ScriptManagerActivity {
 					+ displayHeightPx + ", Scale: " + displayDensityScale
 					+ ", Density (dpi): " + displayDpi);
 		}
-        File externalStorage;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            externalStorage = Environment.getExternalStorageDirectory();
-        } else {
-            externalStorage = getExternalFilesDir(null);
-        }
-        imagePack = new PardusImagePack(externalStorage, getFilesDir());
+        imagePack = new PardusImagePack(getExternalFilesDir(null), getFilesDir());
 		if (imagePack.getPath() == null) {
 			Log.e(getClass().getSimpleName(),
 					"Unable to determine storage directory");
@@ -269,20 +222,19 @@ public class Pardus extends ScriptManagerActivity {
 		// attach layout to screen
 		openPardusBrowser();
 		// initialize progress bar
-		progress = (ProgressBar) findViewById(R.id.progress);
+		progress = findViewById(R.id.progress);
 		progress.setMax(100);
 		progress.setIndeterminate(false);
 		// initialize message checker
-		messageChecker = new PardusMessageChecker(handler,
-				(TextView) findViewById(R.id.notify), 60000);
+		messageChecker = new PardusMessageChecker(handler, findViewById(R.id.notify), 60000);
 		// initialize browser and links
-		browser = (PardusWebView) findViewById(R.id.browser);
+		browser = findViewById(R.id.browser);
 		browser.setScriptStore(scriptStore);
 		browser.initClients(this, progress, messageChecker);
 		browser.initJavascriptBridges();
 		browser.initDownloadListener(imagePack.getPath(), getCacheDir()
 				.getAbsolutePath());
-		GridView linksGridView = (GridView) findViewById(R.id.links);
+		GridView linksGridView = findViewById(R.id.links);
 		links = new PardusLinks(this, handler, getLayoutInflater(), browser,
 				linksGridView);
 		browser.initLinks(links);
@@ -436,39 +388,27 @@ public class Pardus extends ScriptManagerActivity {
 			menu.add(R.id.option_group_scripts, R.id.option_pardus, 0,
 					R.string.option_pardus);
 		}
-		if (isTablet || !hasMenuKey) {
-			// declare action bar items on tablets and devices without menu key
-			try {
-				Method showAsAction = Class
-						.forName("android.view.MenuItem")
-						.getMethod("setShowAsAction", int.class);
-				int[] actionItemIds = { R.id.option_showlinks,
-						R.id.option_orion, R.id.option_artemis,
-						R.id.option_pegasus, R.id.option_logout };
-				for (int itemId : actionItemIds) {
-					MenuItem item = menu.findItem(itemId);
-					if (item != null) {
-						int showProperty = -1;
-						if (itemId == R.id.option_showlinks
-								|| itemId == R.id.option_logout) {
-							showProperty = 2;
-						} else {
-							if (Pardus.displayWidthDp > 400
-									&& Pardus.displayHeightDp > 400) {
-								showProperty = 1;
-							}
-						}
-						if (showProperty != -1) {
-							showAsAction.invoke(item, showProperty);
-						}
-					}
-				}
-			} catch (Exception e) {
-				Log.i(this.getClass().getSimpleName(),
-						"Running a tablet or device without menu button without action bar support. "
-								+ e);
-			}
-		}
+		if (isTablet) {
+			// declare action bar items on tablets
+            int[] actionItemIds = {R.id.option_showlinks, R.id.option_orion, R.id.option_artemis, R.id
+                    .option_pegasus, R.id.option_logout};
+            for (int itemId : actionItemIds) {
+                MenuItem item = menu.findItem(itemId);
+                if (item != null) {
+                    int showProperty = -1;
+                    if (itemId == R.id.option_showlinks || itemId == R.id.option_logout) {
+                        showProperty = 2;
+                    } else {
+                        if (Pardus.displayWidthDp > 400 && Pardus.displayHeightDp > 400) {
+                            showProperty = 1;
+                        }
+                    }
+                    if (showProperty != -1) {
+                        item.setShowAsAction(showProperty);
+                    }
+                }
+            }
+        }
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -486,71 +426,38 @@ public class Pardus extends ScriptManagerActivity {
 					.setMessage(
 							(id == R.id.dialog_app_update) ? R.string.app_update_msg
 									: R.string.app_update_msg_minor)
-					.setNeutralButton(R.string.app_update_button,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									dialog.dismiss();
-								}
-
-							}).setCancelable(true);
+					.setNeutralButton(R.string.app_update_button, (dialog1, which) -> dialog1.dismiss()).setCancelable(true);
 			dialog = builder.create();
 		} else if (id == R.id.dialog_ip_update) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.ip_update_title)
 					.setMessage(R.string.ip_update_msg)
-					.setNegativeButton(R.string.ip_update_button_neg,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									PardusPreferences
-											.setNextImagePackUpdateCheck(new Date(
-													new Date().getTime() + 86400000 * 7));
-									dialog.dismiss();
-								}
-
-							})
-					.setPositiveButton(R.string.ip_update_button_pos,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									dialog.dismiss();
-									browser.loadUrl(args.getString("updateUrl"));
-								}
-
-							}).setCancelable(true);
+					.setNegativeButton(R.string.ip_update_button_neg, (dialog12, which) -> {
+                        PardusPreferences
+                                .setNextImagePackUpdateCheck(new Date(
+                                        new Date().getTime() + 86400000 * 7));
+                        dialog12.dismiss();
+                    })
+					.setPositiveButton(R.string.ip_update_button_pos, (dialog13, which) -> {
+                        dialog13.dismiss();
+                        browser.loadUrl(args.getString("updateUrl"));
+                    }).setCancelable(true);
             dialog = builder.create();
         } else if (id == R.id.dialog_save_password) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.save_password_title).setMessage(R.string.save_password_msg)
-                    .setNeutralButton(R.string.save_password_button_never, new DialogInterface
-                            .OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NEVER);
-                            dialog.dismiss();
-                        }
-                    }).setNegativeButton(R.string.save_password_button_no, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
-                    dialog.dismiss();
-                }
-            }).setPositiveButton(R.string.save_password_button_yes, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.YES);
-                    PardusPreferences.setAccount(args.getString("account"));
-                    PardusPreferences.setPassword(args.getString("password"));
-                    dialog.dismiss();
-                }
-            });
+                    .setNeutralButton(R.string.save_password_button_never, (dialog14, which) -> {
+                        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NEVER);
+                        dialog14.dismiss();
+                    }).setNegativeButton(R.string.save_password_button_no, (dialog15, which) -> {
+                        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
+                        dialog15.dismiss();
+                    }).setPositiveButton(R.string.save_password_button_yes, (dialog16, which) -> {
+                        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.YES);
+                        PardusPreferences.setAccount(args.getString("account"));
+                        PardusPreferences.setPassword(args.getString("password"));
+                        dialog16.dismiss();
+                    });
             dialog = builder.create();
         }
         return dialog;
@@ -637,15 +544,7 @@ public class Pardus extends ScriptManagerActivity {
 			scriptStore.open();
 		}
 		// wake up the browser
-		try {
-			Class.forName("android.webkit.WebView")
-					.getMethod("onResume", (Class[]) null)
-					.invoke(browser, (Object[]) null);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Cannot wake up browser threads: "
-							+ Log.getStackTraceString(e));
-		}
+        browser.onResume();
 		browser.resumeTimers();
 		if (!browser.isLoggedIn()) {
 			// open the login page if not logged in
@@ -673,15 +572,7 @@ public class Pardus extends ScriptManagerActivity {
 		progress.setVisibility(View.GONE);
 		// keep the browser from working in the background
 		browser.pauseTimers();
-		try {
-			Class.forName("android.webkit.WebView")
-					.getMethod("onPause", (Class[]) null)
-					.invoke(browser, (Object[]) null);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Cannot pause browser threads: "
-							+ Log.getStackTraceString(e));
-		}
+		browser.onPause();
 		messageChecker.pause();
 		if (scriptEditor != null
 				&& placeHistory.peek() != R.id.place_scripteditor) {

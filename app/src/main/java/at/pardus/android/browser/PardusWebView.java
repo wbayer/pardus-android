@@ -22,12 +22,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.CookieManager;
@@ -35,9 +33,7 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebSettings;
 import android.webkit.WebViewDatabase;
 import android.widget.ProgressBar;
-import android.widget.ZoomButtonsController;
 
-import java.lang.reflect.Method;
 import java.util.Date;
 
 import at.pardus.android.browser.PardusPageProperties.PardusPageProperty;
@@ -45,7 +41,6 @@ import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
-import at.pardus.android.content.LocalContentProvider;
 import at.pardus.android.content.LocalContentProxy;
 import at.pardus.android.webview.gm.run.WebViewGm;
 
@@ -76,11 +71,7 @@ public class PardusWebView extends WebViewGm {
 
 	private GestureDetector gestureDetector;
 
-	private ZoomButtonsController zoomButtonsController;
-
-	private boolean showZoomControls;
-
-	private int defaultInitialScale;
+    private int defaultInitialScale;
 
 	private RenderStatus renderStatus = RenderStatus.LOAD_FINISH;
 
@@ -119,7 +110,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Initializes the Pardus browser's behavior.
 	 */
-	@SuppressLint({"SetJavaScriptEnabled", "InlinedApi"})
+	@SuppressLint("SetJavaScriptEnabled")
 	private void init() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -137,14 +128,7 @@ public class PardusWebView extends WebViewGm {
 		settings.setBuiltInZoomControls(true);
 		setShowZoomControls(PardusPreferences.isShowZoomControls());
 		settings.setLoadsImagesAutomatically(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        }
-        settings.setSaveFormData(true);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            //noinspection deprecation
-            settings.setSavePassword(true);
-        }
+		settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 		settings.setDatabaseEnabled(true);
         settings.setUserAgentString(settings.getUserAgentString() + " Pardus/" +
                 PardusPreferences.getVersionCode());
@@ -160,7 +144,6 @@ public class PardusWebView extends WebViewGm {
 		setRememberPageProperties(PardusPreferences.isRememberPageProperties());
 		setMenuSensitivity(PardusPreferences.getMenuSensitivity());
 		clearCache(true);
-		resetMinZoom();
 		// default scales: 240dpi -> 150, 160dpi -> 100, 120dpi -> 75
 		if (Pardus.displayDpi <= 160 || Pardus.isTablet) {
 			defaultInitialScale = Math.round(Pardus.displayDpi / 1.6f);
@@ -184,7 +167,6 @@ public class PardusWebView extends WebViewGm {
 	 * @param messageChecker
 	 *            the message checker to share cookies with
 	 */
-    @SuppressLint("NewApi")
 	public void initClients(Activity activity, ProgressBar progress,
 			PardusMessageChecker messageChecker) {
 		this.activity = activity;
@@ -206,7 +188,6 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Sets up the bridges between Java and Javascript.
 	 */
-	@SuppressLint("AddJavascriptInterface")
     public void initJavascriptBridges() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
@@ -231,8 +212,7 @@ public class PardusWebView extends WebViewGm {
 			Log.v(this.getClass().getSimpleName(),
 					"Setting up download listener");
 		}
-		downloadListener = new PardusDownloadListener(this, getContext(),
-				storageDir, storageDir, cacheDir);
+		downloadListener = new PardusDownloadListener(this, storageDir, storageDir, cacheDir);
         setDownloadListener(downloadListener);
 	}
 
@@ -244,7 +224,6 @@ public class PardusWebView extends WebViewGm {
 	 * @param l
 	 *            PardusLinks object to show
 	 */
-	@SuppressLint("AddJavascriptInterface")
     public void initLinks(PardusLinks l) {
 		links = l;
 		addJavascriptInterface(new JavaScriptLinks(this, l),
@@ -273,18 +252,6 @@ public class PardusWebView extends WebViewGm {
 							links.show();
 						}
 						return false;
-					}
-
-					@Override
-					public void onLongPress(MotionEvent e) {
-						if (BuildConfig.DEBUG) {
-							Log.v(PardusWebView.class.getSimpleName(),
-									"onLongPress: " + e.getX() + "/" + e.getY());
-						}
-						if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-							// v2.3.7- webviews need help going into sel. mode
-							fakeEmulateShiftHeld();
-						}
 					}
 
 					@Override
@@ -320,7 +287,8 @@ public class PardusWebView extends WebViewGm {
 	 * 
 	 * @see android.webkit.WebView#onTouchEvent(android.view.MotionEvent)
 	 */
-	@Override
+	@SuppressLint("ClickableViewAccessibility")
+    @Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		gestureDetector.onTouchEvent(ev);
 		if (ev.getAction() == MotionEvent.ACTION_UP) {
@@ -339,27 +307,7 @@ public class PardusWebView extends WebViewGm {
 				}
 			}
 		}
-		boolean handled = super.onTouchEvent(ev);
-		// hide zoom controls if required (android versions <= 2.3 way)
-		if (!showZoomControls && zoomButtonsController != null) {
-			zoomButtonsController.setVisible(false);
-		}
-		return handled;
-	}
-
-	/**
-	 * Switches into text selection mode.
-	 */
-    private void fakeEmulateShiftHeld() {
-		try {
-			KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
-					KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
-			shiftPressEvent
-					.dispatch(this, new KeyEvent.DispatcherState(), null);
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(),
-					"Exception faking emulateShiftHeld() method", e);
-		}
+        return super.onTouchEvent(ev);
 	}
 
 	/**
@@ -367,7 +315,8 @@ public class PardusWebView extends WebViewGm {
 	 */
     private void savePageProperties() {
 		if (pageProperties != null) {
-            pageProperties.save(getUrl(), Pardus.orientation, getScale(),
+            pageProperties.save(getUrl(), Pardus.orientation,
+                    ((PardusWebViewClient) getWebViewClient()).getScale(),
                     computeHorizontalScrollOffset(),
                     computeVerticalScrollOffset(),
                     computeHorizontalScrollRange(),
@@ -381,7 +330,6 @@ public class PardusWebView extends WebViewGm {
 	 * @param autoLogin
 	 *            whether to automatically log in if the account info is stored
 	 */
-	@SuppressLint("AddJavascriptInterface")
     public void login(boolean autoLogin) {
         if (BuildConfig.DEBUG) {
             Log.v(this.getClass().getSimpleName(), "Showing login screen");
@@ -390,7 +338,6 @@ public class PardusWebView extends WebViewGm {
 		String imagePath = PardusPreferences.getImagePath();
 		PardusImagePack imagePack = new PardusImagePack(imagePath);
 		if (imagePack.isInstalled()) {
-			LocalContentProvider.FILEPATH = imagePath;
 			downloadListener.setUpdateStorageDir(imagePath);
 			Date now = new Date();
 			Date nextCheck = PardusPreferences.getNextImagePackUpdateCheck();
@@ -408,11 +355,9 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		stopLoading();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            addJavascriptInterface(new JavaScriptLogin(activity), JavaScriptLogin.DEFAULT_JS_NAME);
-        }
+		addJavascriptInterface(new JavaScriptLogin(activity), JavaScriptLogin.DEFAULT_JS_NAME);
         loadUrl(PardusConstants.loginScreen);
-		cookieManager.removeSessionCookie();
+		cookieManager.removeSessionCookies(null);
 		setUniverse(null);
 		clearHistory();
 	}
@@ -450,7 +395,7 @@ public class PardusWebView extends WebViewGm {
 	/**
 	 * Displays the local image pack selection screen.
 	 */
-	public void selectImagePack() {
+    private void selectImagePack() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(),
 					"Loading image pack selection screen");
@@ -474,7 +419,7 @@ public class PardusWebView extends WebViewGm {
 			return;
 		}
 		stopLoading();
-		loadUrl("https://" + universe + ".pardus.at/" + page);
+		loadUrl(PardusConstants.getUniverseUrl(universe, page));
 	}
 
 	/**
@@ -561,7 +506,7 @@ public class PardusWebView extends WebViewGm {
 	 * This means deleting all cookies used for authorization in the browser and
 	 * message checker.
 	 */
-	public void destroySession() {
+    private void destroySession() {
 		String cookieInfo = "; path=/; domain=.pardus.at;";
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
 				"accountid=0; max-age=0" + cookieInfo);
@@ -569,28 +514,28 @@ public class PardusWebView extends WebViewGm {
 				"sessionid=0; max-age=0" + cookieInfo);
 		cookieManager.setCookie(PardusConstants.loggedInUrlHttps,
 				"pardus_cookie=0; max-age=0" + cookieInfo);
-		cookieManager.removeExpiredCookie();
-		cookieManager.removeSessionCookie();
+		cookieManager.removeSessionCookies(null);
 		messageChecker.setUniverse(null, null);
 	}
 
 	/**
 	 * Deletes website cache, cookies, page properties and any stored form data.
 	 */
-	@SuppressWarnings("deprecation")
     public void removeTraces() {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Clearing cache");
 		}
 		if (database != null) {
+            //noinspection deprecation
             database.clearUsernamePassword();
+            //noinspection deprecation
 			database.clearFormData();
 		}
         PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
 		clearFormData();
 		clearCache(true);
-		cookieManager.removeSessionCookie();
-		cookieManager.removeAllCookie();
+		cookieManager.removeSessionCookies(null);
+		cookieManager.removeAllCookies(null);
 		if (pageProperties != null) {
 			pageProperties.forget();
 		}
@@ -638,93 +583,19 @@ public class PardusWebView extends WebViewGm {
 	}
 
 	/**
-	 * Resets the minimum zoom scale (= maximum the view can be zoomed out) via
-	 * reflection. Does not work consistently.
-	 */
-	private void resetMinZoom() {
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-			// the minimum zoom scale is fine in android versions <= 2.3.7
-			return;
-		}
-		settings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
-		Object webViewObj;
-		Method adjustDefaultZoomDensity;
-		try {
-			if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-				webViewObj = this;
-				adjustDefaultZoomDensity = Class.forName(
-						"android.webkit.WebView").getDeclaredMethod(
-						"updateDefaultZoomDensity", int.class);
-			} else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-				webViewObj = this;
-				adjustDefaultZoomDensity = Class.forName(
-						"android.webkit.WebView").getDeclaredMethod(
-						"adjustDefaultZoomDensity", int.class);
-			} else {
-				webViewObj = Class.forName("android.webkit.WebView")
-						.getMethod("getWebViewProvider", (Class[]) null)
-						.invoke(this, (Object[]) null);
-				adjustDefaultZoomDensity = Class.forName(
-						"android.webkit.WebViewClassic").getDeclaredMethod(
-						"adjustDefaultZoomDensity", int.class);
-			}
-			adjustDefaultZoomDensity.setAccessible(true);
-			adjustDefaultZoomDensity.invoke(webViewObj, 200);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Exception while attempting to set the minimum zoom scale via reflection (API level "
-							+ Build.VERSION.SDK_INT + "): " + e);
-		}
-	}
-
-	/**
-	 * Uses the setDisplayZoomControls method for android versions >= 3.0 to show
-	 * or hide the zoom control buttons. In other versions the
-	 * ZoomButtonsController is prepared for invocations of its setVisible
-	 * method in onTouchEvent.
-	 * 
 	 * @param showZoomControls
 	 *            decides whether to show the zoom control buttons in the
 	 *            browser component (always shown if the phone does not support
 	 *            multi touch)
 	 */
 	public void setShowZoomControls(boolean showZoomControls) {
-		this.showZoomControls = showZoomControls
-				|| !getContext().getPackageManager().hasSystemFeature(
-						PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)
-				&& !getContext().getPackageManager().hasSystemFeature(
-						PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT);
-		if (zoomButtonsController != null) {
-			return;
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			try {
-				Class.forName("android.webkit.WebSettings")
-						.getMethod("setDisplayZoomControls",
-								new Class[] { boolean.class })
-						.invoke(settings, this.showZoomControls);
-				return;
-			} catch (Exception e) {
-				Log.w(this.getClass().getSimpleName(),
-						"Exception while attempting to call setDisplayZoomControls via reflection (API level "
-								+ Build.VERSION.SDK_INT + "): " + e);
-			}
-		}
-		try {
-			// prior to honeycomb the zoom controls need to be hidden via the
-			// ZoomButtonsController object on each scrolling event
-			zoomButtonsController = (ZoomButtonsController) Class
-					.forName("android.webkit.WebView")
-					.getMethod("getZoomButtonsController", (Class[]) null)
-					.invoke(this, (Object[]) null);
-		} catch (Exception e) {
-			Log.w(this.getClass().getSimpleName(),
-					"Exception while attempting to get the ZoomButtonsController via reflection (API level "
-							+ Build.VERSION.SDK_INT + "): " + e);
-		}
-	}
+        settings.setDisplayZoomControls(showZoomControls || !getContext().getPackageManager()
+                .hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH) && !getContext()
+                .getPackageManager().hasSystemFeature(PackageManager
+                        .FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT));
+    }
 
-	/**
+    /**
 	 * Sets the menu sensitivity in px.
 	 * 
 	 * @param menuSensitivity
@@ -788,25 +659,7 @@ public class PardusWebView extends WebViewGm {
 			universe = newUniverse;
 			messageChecker.setUniverse(newUniverse, newUniverse == null ? null
 					: cookieManager.getCookie(url));
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-				activity.runOnUiThread(new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							Class.forName("android.app.Activity")
-									.getMethod("invalidateOptionsMenu",
-											(Class[]) null)
-									.invoke(activity, (Object[]) null);
-						} catch (Exception e) {
-							Log.w(this.getClass().getSimpleName(),
-									"Exception while attempting to call invalidateOptionsMenu via reflection (API level "
-											+ Build.VERSION.SDK_INT + "): " + e);
-						}
-					}
-
-				});
-			}
+            activity.runOnUiThread(() -> activity.invalidateOptionsMenu());
 		}
 	}
 
@@ -949,7 +802,7 @@ public class PardusWebView extends WebViewGm {
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Scrolled from " + oldl
 					+ "/" + oldt + " to " + l + "/" + t + " (Scale "
-					+ (int) Math.ceil(getScale() * 100 - 0.5f) + ")");
+					+ (int) Math.ceil(((PardusWebViewClient) getWebViewClient()).getScale() * 100 - 0.5f) + ")");
 		}
 		super.onScrollChanged(l, t, oldl, oldt);
 		if (touchedAfterPageLoad || pageProperties == null

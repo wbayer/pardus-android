@@ -26,7 +26,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -37,7 +36,7 @@ public class PardusPageProperties {
 
 	private static final String FILENAME = "pageproperties.ser";
 
-	private Map<PardusPageIdentifier, PardusPageProperty> properties = new HashMap<PardusPageIdentifier, PardusPageProperty>();
+	private Map<PardusPageIdentifier, PardusPageProperty> properties = new HashMap<>();
 
 	private String lastUrl;
 
@@ -148,7 +147,7 @@ public class PardusPageProperties {
 	 * Loads all entries from the disk.
 	 */
 	@SuppressWarnings("unchecked")
-	public void loadFromDisk() {
+    private void loadFromDisk() {
 		if (BuildConfig.DEBUG) {
 			Log.d(this.getClass().getSimpleName(),
 					"Loading page properties from disk ...");
@@ -188,7 +187,7 @@ public class PardusPageProperties {
 	 * Wipe all saved properties persistently.
 	 */
 	public void forget() {
-		properties = new HashMap<PardusPageIdentifier, PardusPageProperty>();
+		properties = new HashMap<>();
 		persist();
 		resetLastUrl();
 	}
@@ -220,13 +219,13 @@ public class PardusPageProperties {
 	 * Immutable object serving as identifier of a page (URL and screen
 	 * orientation).
 	 */
-	public static class PardusPageIdentifier implements Serializable {
+	protected static class PardusPageIdentifier implements Serializable {
 
 		private static final long serialVersionUID = 1L;
 
-		public final String url;
+		protected final String url;
 
-		public final int orientation;
+		protected final int orientation;
 
 		/**
 		 * Constructor. URL will be trimmed and set to null if invalid.
@@ -350,12 +349,10 @@ public class PardusPageProperties {
 			if (orientation != other.orientation)
 				return false;
 			if (url == null) {
-				if (other.url != null)
-					return false;
-			} else if (!url.equals(other.url))
-				return false;
-			return true;
-		}
+                return other.url == null;
+			} else
+                return url.equals(other.url);
+        }
 
 	}
 
@@ -368,9 +365,13 @@ public class PardusPageProperties {
 
 		public final float scale;
 
-		public final int posX, posY, totalX, totalY;
+		public final int posX;
+        public final int posY;
+        protected final int totalX;
+        protected final int totalY;
 
-		public final long timestamp = System.currentTimeMillis();
+		@SuppressWarnings("unused")
+        public final long timestamp = System.currentTimeMillis();
 
 		/**
 		 * Constructor.
@@ -395,23 +396,6 @@ public class PardusPageProperties {
 			this.posY = posY;
 			this.totalX = totalX;
 			this.totalY = totalY;
-		}
-
-		/**
-		 * Previously used to scroll via Javascript, currently replaced by Java
-		 * View#scrollTo.
-		 * 
-		 * @return Javascript scrollTo method to scroll to the saved values
-		 */
-		public String getScrollJs() {
-			float scrollXRel = posX / (float) totalX;
-			float scrollYRel = posY / (float) totalY;
-			return String
-					.format(Locale.ENGLISH,
-							"window.scrollTo("
-									+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollWidth),"
-									+ "Math.round(%f * document.getElementsByTagName('html')[0].scrollHeight));",
-							scrollXRel, scrollYRel);
 		}
 
 		/*

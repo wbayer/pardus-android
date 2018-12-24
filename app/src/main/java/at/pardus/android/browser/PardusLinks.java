@@ -26,8 +26,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
@@ -42,7 +40,7 @@ public class PardusLinks {
 
 	public static final int HIDE_AFTER_SHOW_MILLIS = 5000;
 
-	public static final int HIDE_AFTER_CLICK_MILLIS = 500;
+	private static final int HIDE_AFTER_CLICK_MILLIS = 500;
 
 	private static final int HIDE_ANIMATION_MILLIS = 2000;
 
@@ -69,14 +67,7 @@ public class PardusLinks {
 
 	private final Handler handler;
 
-	private final Runnable hideRunnable = new Runnable() {
-
-		@Override
-		public void run() {
-			hide();
-		}
-
-	};
+	private final Runnable hideRunnable = this::hide;
 
 	private boolean hidingScheduled = false;
 
@@ -209,7 +200,7 @@ public class PardusLinks {
 	 * @param links
 	 *            new array of Pardus links
 	 */
-	public void updateLinks(PardusLink[] links) {
+    private void updateLinks(PardusLink[] links) {
 		linkStore.updateLinks(links);
 		calcAndApplyDimensions();
 		buttonAdapter.updateLinks(links);
@@ -224,15 +215,7 @@ public class PardusLinks {
 	 *            new array of Pardus links
 	 */
 	public void updateLinksViaHandler(final PardusLink[] links) {
-		Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-				updateLinks(links);
-			}
-
-		};
-		handler.post(r);
+		handler.post(() -> updateLinks(links));
 	}
 
 	/**
@@ -257,49 +240,43 @@ public class PardusLinks {
 	 * Adds a listener for onClick events.
 	 */
 	private void initClickListener() {
-		linksGridView.setOnItemClickListener(new OnItemClickListener() {
+        /*
+         * (non-Javadoc)
+         *
+         * @see
+         * android.widget.AdapterView.OnItemClickListener#onItemClick(android
+         * .widget.AdapterView, android.view.View, int, long)
+         */
+        linksGridView.setOnItemClickListener((parent, v, position, id) -> {
+            String link = (String) (parent.getItemAtPosition(position));
+            boolean linkLoaded = false;
+            if (!link.startsWith("http://") && !link.startsWith("https://")
+                    && !link.startsWith("file://")) {
+                // relative url (game universe page)
+                if (browser.isLoggedIn() && browser.getUniverse() != null) {
+                    browser.loadUniversePage(link);
+                    linkLoaded = true;
+                } else {
+                    PardusNotification.show("Please enter a universe!");
+                }
+            } else {
+                // absolute url
+                if ((link.startsWith(PardusConstants.chatUrlHttps) || link
+                        .startsWith(PardusConstants.forumUrlHttps))
+                        && browser.getUniverse() == null) {
+                    PardusNotification.show("Please enter a universe!");
+                } else {
+                    browser.loadUrl(link);
+                    linkLoaded = true;
+                }
+            }
+            if (linkLoaded) {
+                show();
+                startHideTimer(PardusLinks.HIDE_AFTER_CLICK_MILLIS);
+            }
+        }
 
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * android.widget.AdapterView.OnItemClickListener#onItemClick(android
-			 * .widget.AdapterView, android.view.View, int, long)
-			 */
-			@Override
-			public void onItemClick(AdapterView<?> parent, View v,
-					int position, long id) {
-				String link = (String) (parent.getItemAtPosition(position));
-				boolean linkLoaded = false;
-				if (!link.startsWith("http://") && !link.startsWith("https://")
-						&& !link.startsWith("file://")) {
-					// relative url (game universe page)
-					if (browser.isLoggedIn() && browser.getUniverse() != null) {
-						browser.loadUniversePage(link);
-						linkLoaded = true;
-					} else {
-						PardusNotification.show("Please enter a universe!");
-					}
-				} else {
-					// absolute url
-					if ((link.startsWith(PardusConstants.chatUrlHttps) || link
-							.startsWith(PardusConstants.forumUrlHttps))
-							&& browser.getUniverse() == null) {
-						PardusNotification.show("Please enter a universe!");
-					} else {
-						browser.loadUrl(link);
-						linkLoaded = true;
-					}
-				}
-				if (linkLoaded) {
-					show();
-					startHideTimer(PardusLinks.HIDE_AFTER_CLICK_MILLIS);
-				}
-			}
-
-		}
-
-		);
+        );
 	}
 
 	/**
@@ -334,7 +311,7 @@ public class PardusLinks {
 		 *            string of serialized objects
 		 * @return array of deserialized PardusLink objects
 		 */
-		public static PardusLink[] deserializeLinks(String serialized) {
+		protected static PardusLink[] deserializeLinks(String serialized) {
 			if (serialized.length() == 0) {
 				return new PardusLink[0];
 			}
@@ -358,7 +335,7 @@ public class PardusLinks {
 		 * 
 		 * @return array of deserialized Pardus link objects
 		 */
-		public PardusLink[] getLinks() {
+        protected PardusLink[] getLinks() {
 			if (linkCache != null) {
 				return linkCache;
 			}
@@ -379,7 +356,7 @@ public class PardusLinks {
 		 * @param links
 		 *            array of Pardus link objects to serialize and persist
 		 */
-		public void updateLinks(PardusLink[] links) {
+        protected void updateLinks(PardusLink[] links) {
 			String serialized = serializeLinks(links);
 			PardusPreferences.setLinks(serialized);
 			linkCache = links;
@@ -431,14 +408,14 @@ public class PardusLinks {
 		/**
 		 * @return the title
 		 */
-		public String getTitle() {
+        protected String getTitle() {
 			return title;
 		}
 
 		/**
 		 * @return the URL
 		 */
-		public String getUrl() {
+        protected String getUrl() {
 			return url;
 		}
 
@@ -479,8 +456,7 @@ public class PardusLinks {
 		 * @param links
 		 *            array of Pardus links to use
 		 */
-		public PardusButtonAdapter(LayoutInflater layoutInflater, int layout,
-				PardusLink[] links) {
+        protected PardusButtonAdapter(LayoutInflater layoutInflater, int layout, PardusLink[] links) {
 			this.layoutInflater = layoutInflater;
 			this.layout = layout;
 			this.links = links;
@@ -493,7 +469,7 @@ public class PardusLinks {
 		 * @param links
 		 *            new array of Pardus links
 		 */
-		public void updateLinks(PardusLink[] links) {
+        protected void updateLinks(PardusLink[] links) {
 			this.links = links;
 			addConfigLink();
 			notifyDataSetChanged();

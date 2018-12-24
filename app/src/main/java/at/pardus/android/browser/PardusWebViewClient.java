@@ -20,9 +20,10 @@ package at.pardus.android.browser;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
@@ -31,7 +32,6 @@ import at.pardus.android.browser.js.JavaScriptLinks;
 import at.pardus.android.browser.js.JavaScriptLogin;
 import at.pardus.android.browser.js.JavaScriptSettings;
 import at.pardus.android.browser.js.JavaScriptUtils;
-import at.pardus.android.content.LocalContentProvider;
 import at.pardus.android.webview.gm.run.WebViewClientGm;
 import at.pardus.android.webview.gm.store.ScriptStore;
 
@@ -62,6 +62,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 
 	private ProgressBar progress;
 
+	private volatile float scale;
+
     /**
      * Executes javascript code on the current web page.
      *
@@ -69,11 +71,7 @@ public class PardusWebViewClient extends WebViewClientGm {
      * @param script the piece of javascript code to run
      */
     private static void evaluateJavascript(WebView webView, String script) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript(script, null);
-        } else {
-            webView.loadUrl("javascript:" + script);
-        }
+        webView.evaluateJavascript(script, null);
     }
 
 	/**
@@ -96,16 +94,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 		this.progress = progress;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * android.webkit.WebViewClient#shouldOverrideUrlLoading(android.webkit.
-	 * WebView, java.lang.String)
-	 */
-	@Override
-	public boolean shouldOverrideUrlLoading(WebView view, String url) {
+    @Override
+	public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 		// non-frame target user actions and redirects might trigger this
+        String url = request.getUrl().toString();
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Attempting to load " + url);
 		}
@@ -176,12 +168,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 				|| url.startsWith(PardusConstants.newCharUrlHttps)) {
 			// account play or new char page: set loggedIn true and continue
 			pardusView.setLoggedIn(true);
-		} else if (url.equals(PardusConstants.logoutUrl)
-				|| url.equals(PardusConstants.logoutUrlHttps)) {
+		} else if (url.equals(PardusConstants.logoutUrlHttps)) {
 			// logout page: set loggedIn false and continue
 			pardusView.setLoggedIn(false);
-		} else if (url.equals(PardusConstants.loggedOutUrl)
-				|| url.equals(PardusConstants.loggedOutUrlHttps)) {
+		} else if (url.equals(PardusConstants.loggedOutUrlHttps)) {
 			// index page: stop loading if redirected from the logout page
 			if (pardusView.isLoggingOut()) {
 				pardusView.loadUrl("about:blank");
@@ -230,16 +220,14 @@ public class PardusWebViewClient extends WebViewClientGm {
 		boolean lookForNewMsg = true;
 		if (url.equals(PardusConstants.loginScreen)) {
 			// local login page: prefill any stored account data and apply query parameters via javascript
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (PardusPreferences.getStoreCredentials() == PardusPreferences.StoreCredentials.YES) {
-                    String account = PardusPreferences.getAccount();
-                    String password = PardusPreferences.getPassword();
-                    evaluateJavascript(view, "document.getElementById('acc').value = '" + account + "'; " +
-                            "document.getElementById('pw').value = '" + password + "';");
-                }
-                // remove login javascript bridge (takes effect after the next page load)
-                view.removeJavascriptInterface(JavaScriptLogin.DEFAULT_JS_NAME);
+            if (PardusPreferences.getStoreCredentials() == PardusPreferences.StoreCredentials.YES) {
+                String account = PardusPreferences.getAccount();
+                String password = PardusPreferences.getPassword();
+                evaluateJavascript(view, "document.getElementById('acc').value = '" + account + "'; " +
+                        "document.getElementById('pw').value = '" + password + "';");
             }
+            // remove login javascript bridge (takes effect after the next page load)
+            view.removeJavascriptInterface(JavaScriptLogin.DEFAULT_JS_NAME);
 			if (BuildConfig.DEBUG) {
 				Log.v(this.getClass().getSimpleName(), "Applying query parameters for login screen");
 			}
@@ -319,14 +307,14 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * int, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void onReceivedError(WebView view, int errorCode,
-			String description, String failingUrl) {
-		Log.w(this.getClass().getSimpleName(), "Error at " + failingUrl + "\n"
-				+ errorCode + " " + description);
-		PardusNotification.show(description);
+	public void onReceivedError(WebView view, WebResourceRequest request,
+			WebResourceError error) {
+		Log.w(this.getClass().getSimpleName(), "Error at " + request.getUrl() + "\n"
+				+ error.getErrorCode() + " " + error.getDescription());
+		PardusNotification.show(error.getDescription().toString());
 	}
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 * 
 	 * @see android.webkit.WebViewClient#onScaleChanged(android.webkit.WebView,
@@ -339,8 +327,16 @@ public class PardusWebViewClient extends WebViewClientGm {
 					"Scale changed from " + Math.ceil(oldScale * 100 - 0.5f)
 							+ " to " + Math.ceil(newScale * 100 - 0.5f));
 		}
+		scale = newScale;
 		super.onScaleChanged(view, oldScale, newScale);
 	}
+
+    /**
+     * @return current scale/zoom level of the webview
+     */
+	public float getScale() {
+	    return scale;
+    }
 
 	/**
 	 * Redirects the browser from a specified (universe) page back to the
@@ -386,16 +382,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any Pardus URL, false else
 	 */
 	public static boolean isPardusUrl(String url) {
-		return (isPardusUniUrl(url) || url.startsWith("http://www.pardus.at/")
+		return isPardusUniUrl(url)
 				|| url.startsWith("https://www.pardus.at/")
-				|| url.startsWith("http://pardus.at/")
-				|| url.startsWith("https://pardus.at/")
-				|| url.startsWith("http://chat.pardus.at/")
 				|| url.startsWith("https://chat.pardus.at/")
-				|| url.startsWith("http://forum.pardus.at/")
 				|| url.startsWith("https://forum.pardus.at/")
-				|| url.startsWith("http://static.pardus.at/") || url
-					.startsWith("https://static.pardus.at/"));
+                || url.startsWith("https://static.pardus.at/");
 	}
 
 	/**
@@ -403,13 +394,10 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *            URL to check
 	 * @return true for any Pardus universe URL, false else
 	 */
-	public static boolean isPardusUniUrl(String url) {
-		return (url.startsWith("http://artemis.pardus.at/")
-				|| url.startsWith("https://artemis.pardus.at/")
-				|| url.startsWith("http://orion.pardus.at/")
+	private static boolean isPardusUniUrl(String url) {
+		return url.startsWith("https://artemis.pardus.at/")
 				|| url.startsWith("https://orion.pardus.at/")
-				|| url.startsWith("http://pegasus.pardus.at/") || url
-					.startsWith("https://pegasus.pardus.at/"));
+				|| url.startsWith("https://pegasus.pardus.at/");
 	}
 
 	/**
@@ -417,10 +405,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *            URL to check
 	 * @return true for any local content or javascript, false else
 	 */
-	public static boolean isLocalUrl(String url) {
-		return (url.startsWith("file:///android_asset/")
-				|| url.startsWith(LocalContentProvider.URI) || url
-					.startsWith("javascript:"));
+	private static boolean isLocalUrl(String url) {
+		return url.startsWith("file:///android_asset/") || url.startsWith("javascript:");
 	}
 
 	/**
@@ -431,11 +417,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any Pardus URL but the online login and for any local
 	 *         content, false for anything else
 	 */
-	public static boolean isAllowedUrl(String url) {
+	private static boolean isAllowedUrl(String url) {
 		if (url.equals(PardusConstants.loginUrlHttpsOrig)) {
 			return false;
 		}
-		return (isPardusUrl(url) || isLocalUrl(url));
+		return isPardusUrl(url) || isLocalUrl(url);
 	}
 
 	/**
@@ -444,11 +430,11 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 * @return true for any local content or javascript, about:blank, Pardus
 	 *         URLs except account pages; false else
 	 */
-	public static boolean isAllowedUrlLoggedOut(String url) {
+	private static boolean isAllowedUrlLoggedOut(String url) {
         return isLocalUrl(url) || url.equals("about:blank") || url.startsWith("https://static.pardus.at/")
-                || url.startsWith("http://static.pardus.at/") || url.startsWith(PardusConstants
-                .loggedInUrlHttps) || url.startsWith(PardusConstants.newCharUrlHttps) || (!url.contains
-                ("/index.php?section=account_") && url.startsWith("https://www.pardus.at/"));
+                || url.startsWith(PardusConstants.loggedInUrlHttps)
+                || url.startsWith(PardusConstants.newCharUrlHttps)
+                || (!url.contains("/index.php?section=account_") && url.startsWith("https://www.pardus.at/"));
     }
 
 	/**
@@ -458,7 +444,6 @@ public class PardusWebViewClient extends WebViewClientGm {
 	 *         game.php)
 	 */
 	public static boolean isSkippedUrl(String url) {
-		return (url == null || url.endsWith(".pardus.at/"
-				+ PardusConstants.gameFrame));
+		return url == null || url.endsWith(".pardus.at/" + PardusConstants.gameFrame);
 	}
 }
