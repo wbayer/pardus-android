@@ -84,12 +84,11 @@ public class PardusImagePack {
 			public void run() {
 				final String srcUrl = getSrcUrl();
 				long lastUpdate = getLastUpdate();
-				if (srcUrl == null || !IMAGEPACKUPDATES.containsKey(srcUrl)
-						|| lastUpdate == -1) {
-					if (BuildConfig.DEBUG) {
-						Log.d("PardusImagePack",
-								"Could not retrieve image pack info - no update reminders");
-					}
+				if (srcUrl == null || !IMAGEPACKUPDATES.containsKey(srcUrl) || lastUpdate == -1) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d("PardusImagePack", "Could not retrieve image pack info - no update reminders;"
+                                + " Source URL: " + srcUrl + "; Last update: " + lastUpdate);
+                    }
 					return;
 				}
 				long lastSrcUpdate = -1;
@@ -266,21 +265,29 @@ public class PardusImagePack {
 	private static final Map<String, String> IMAGEPACKUPDATES;
 
 	static {
-		IMAGEPACKUPDATES = new HashMap<>();
-		IMAGEPACKUPDATES
-				.put("https://static.pardus.at/img/std",
-						"https://static.pardus.at/downloads/update_images_standard64.zip");
-		IMAGEPACKUPDATES
-				.put("https://static.pardus.at/img/stdhq",
-						"https://static.pardus.at/downloads/update_images_standardhq64.zip");
-		IMAGEPACKUPDATES
-				.put("https://static.pardus.at/img/xolarix",
-						"https://static.pardus.at/downloads/update_images_xolarix64.zip");
-		IMAGEPACKUPDATES.put("https://static.pardus.at/images",
-				"https://static.pardus.at/downloads/update_images.zip");
-		IMAGEPACKUPDATES.put("https://static.pardus.at/img/kora",
-				"https://static.pardus.at/downloads/update_images_kora.zip");
+        IMAGEPACKUPDATES = new HashMap<>();
+        IMAGEPACKUPDATES.put("http://static.pardus.at/img/std",
+                "https://static.pardus.at/downloads/update_images_standard64.zip");
+        IMAGEPACKUPDATES.put("http://static.pardus.at/img/stdhq",
+                "https://static.pardus.at/downloads/update_images_standardhq64.zip");
+        IMAGEPACKUPDATES.put("http://static.pardus.at/img/xolarix",
+                "https://static.pardus.at/downloads/update_images_xolarix64.zip");
+        IMAGEPACKUPDATES.put("http://static.pardus.at/images",
+                "https://static.pardus.at/downloads/update_images.zip");
+        IMAGEPACKUPDATES.put("http://static.pardus.at/img/kora",
+                "https://static.pardus.at/downloads/update_images_kora.zip");
 
-	}
+        IMAGEPACKUPDATES.put("https://static.pardus.at/img/std",
+                "https://static.pardus.at/downloads/update_images_standard64.zip");
+        IMAGEPACKUPDATES.put("https://static.pardus.at/img/stdhq",
+                "https://static.pardus.at/downloads/update_images_standardhq64.zip");
+        IMAGEPACKUPDATES.put("https://static.pardus.at/img/xolarix",
+                "https://static.pardus.at/downloads/update_images_xolarix64.zip");
+        IMAGEPACKUPDATES.put("https://static.pardus.at/images",
+                "https://static.pardus.at/downloads/update_images.zip");
+        IMAGEPACKUPDATES.put("https://static.pardus.at/img/kora",
+                "https://static.pardus.at/downloads/update_images_kora.zip");
+
+    }
 
 }
