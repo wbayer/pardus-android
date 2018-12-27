@@ -37,7 +37,7 @@ public class PardusPageProperties {
 
 	private static final String FILENAME = "pageproperties.ser";
 
-	private Map<PardusPageIdentifier, PardusPageProperty> properties = new HashMap<PardusPageIdentifier, PardusPageProperty>();
+	private Map<PardusPageIdentifier, PardusPageProperty> properties = new HashMap<>();
 
 	private String lastUrl;
 
@@ -188,7 +188,7 @@ public class PardusPageProperties {
 	 * Wipe all saved properties persistently.
 	 */
 	public void forget() {
-		properties = new HashMap<PardusPageIdentifier, PardusPageProperty>();
+		properties = new HashMap<>();
 		persist();
 		resetLastUrl();
 	}

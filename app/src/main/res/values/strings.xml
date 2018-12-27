@@ -3,7 +3,7 @@
 
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
-    <string name="app_update_msg">This release fixes the issues in Android 4.4–6.0 of not being able to save login data and the local image pack not working, and also contains performance optimizations as well as bugfixes.</string>
+    <string name="app_update_msg"></string>
     <string name="app_update_msg_minor"></string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>

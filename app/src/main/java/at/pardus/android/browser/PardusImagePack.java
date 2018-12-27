@@ -24,7 +24,6 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -94,42 +93,32 @@ public class PardusImagePack {
 					return;
 				}
 				long lastSrcUpdate = -1;
-				Reader in = null;
-				HttpURLConnection con = null;
-				try {
-					URL u = new URL(srcUrl + "/nfo_upd");
-					con = (HttpURLConnection) u.openConnection();
-					con.setReadTimeout(5000);
-					con.setRequestMethod("GET");
-					con.setUseCaches(false);
-					con.connect();
-					InputStream is = con.getInputStream();
-					in = new UnicodeReader(is, con.getContentEncoding());
-					StringBuilder sb = new StringBuilder();
-					char[] buffer = new char[1024];
-					int bytesRead;
-					while ((bytesRead = in.read(buffer, 0, 1024)) != -1) {
-						if (bytesRead > 0) {
-							sb.append(buffer, 0, bytesRead);
-						}
-					}
-					lastSrcUpdate = Long.valueOf(sb.toString());
-				} catch (Exception e) {
-					if (BuildConfig.DEBUG) {
-						Log.w(this.getClass().getSimpleName(),
-								Log.getStackTraceString(e));
-					}
-				} finally {
-					try {
-                        if (in != null) {
-                            in.close();
+                HttpURLConnection con;
+                try {
+                    URL u = new URL(srcUrl + "/nfo_upd");
+                    con = (HttpURLConnection) u.openConnection();
+                    con.setUseCaches(false);
+                    con.setRequestMethod("GET");
+                    con.setReadTimeout(5000);
+                } catch (IOException e) {
+                    Log.e(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+                    return;
+                }
+                try (Reader in = new UnicodeReader(con.getInputStream(), con.getContentEncoding())) {
+                    StringBuilder sb = new StringBuilder();
+                    char[] buffer = new char[1024];
+                    int bytesRead;
+                    while ((bytesRead = in.read(buffer, 0, 1024)) != -1) {
+                        if (bytesRead > 0) {
+                            sb.append(buffer, 0, bytesRead);
                         }
-                    } catch (Exception ignored) {
-					}
-					if (con != null) {
-						con.disconnect();
-					}
-				}
+                    }
+                    lastSrcUpdate = Long.valueOf(sb.toString());
+                } catch (Exception e) {
+                    if (BuildConfig.DEBUG) {
+                        Log.w(this.getClass().getSimpleName(), Log.getStackTraceString(e));
+                    }
+                }
 				if (lastSrcUpdate > lastUpdate) {
 					if (BuildConfig.DEBUG) {
 						Log.v("PardusImagePack",
@@ -137,17 +126,12 @@ public class PardusImagePack {
 										+ lastUpdate + ", remote v"
 										+ lastSrcUpdate + ")");
 					}
-					activity.runOnUiThread(new Runnable() {
-
-						@Override
-						public void run() {
-							Bundle bundle = new Bundle();
-							bundle.putString("updateUrl",
-									IMAGEPACKUPDATES.get(srcUrl));
-							activity.showDialog(R.id.dialog_ip_update, bundle);
-						}
-
-					});
+					activity.runOnUiThread(() -> {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("updateUrl",
+                                IMAGEPACKUPDATES.get(srcUrl));
+                        activity.showDialog(R.id.dialog_ip_update, bundle);
+                    });
 				} else {
 					if (BuildConfig.DEBUG) {
 						Log.v("PardusImagePack", "Image pack up to date (v"
@@ -163,18 +147,11 @@ public class PardusImagePack {
 	 *         information is not available
 	 */
 	public String getSrcUrl() {
-		Scanner in = null;
-		try {
-			in = new Scanner(new FileReader(path + "/nfo_src"))
-					.useDelimiter("[\\r\\n]+");
-			return in.next();
-		} catch (Exception e) {
-			return null;
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-		}
+        try (Scanner in = new Scanner(new FileReader(path + "/nfo_src")).useDelimiter("[\\r\\n]+")) {
+            return in.next();
+        } catch (Exception e) {
+            return null;
+        }
 	}
 
 	/**
@@ -182,18 +159,11 @@ public class PardusImagePack {
 	 *         (yyyymmdd[0-9][0-9]) or -1 if that information is not available
 	 */
 	public long getLastUpdate() {
-		Scanner in = null;
-		try {
-			in = new Scanner(new FileReader(path + "/nfo_upd"))
-					.useDelimiter("[\\r\\n]+");
-			return in.nextLong();
-		} catch (Exception e) {
-			return -1;
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-		}
+        try (Scanner in = new Scanner(new FileReader(path + "/nfo_upd")).useDelimiter("[\\r\\n]+")) {
+            return in.nextLong();
+        } catch (Exception e) {
+            return -1;
+        }
 	}
 
 	/**
@@ -296,7 +266,7 @@ public class PardusImagePack {
 	private static final Map<String, String> IMAGEPACKUPDATES;
 
 	static {
-		IMAGEPACKUPDATES = new HashMap<String, String>();
+		IMAGEPACKUPDATES = new HashMap<>();
 		IMAGEPACKUPDATES
 				.put("http://static.pardus.at/img/std",
 						"http://static.pardus.at/downloads/update_images_standard64.zip");

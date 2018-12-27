@@ -53,14 +53,11 @@ public class JavaScriptLogin {
         }
         if (storeCredentials == PardusPreferences.StoreCredentials.NO) {
             // ask whether to save the user's password
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("account", account);
-                    bundle.putString("password", password);
-                    activity.showDialog(R.id.dialog_save_password, bundle);
-                }
+            activity.runOnUiThread(() -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("account", account);
+                bundle.putString("password", password);
+                activity.showDialog(R.id.dialog_save_password, bundle);
             });
         } else if (storeCredentials == PardusPreferences.StoreCredentials.YES) {
             // update password

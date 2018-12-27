@@ -26,8 +26,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
@@ -69,14 +67,7 @@ public class PardusLinks {
 
 	private final Handler handler;
 
-	private final Runnable hideRunnable = new Runnable() {
-
-		@Override
-		public void run() {
-			hide();
-		}
-
-	};
+	private final Runnable hideRunnable = this::hide;
 
 	private boolean hidingScheduled = false;
 
@@ -224,15 +215,7 @@ public class PardusLinks {
 	 *            new array of Pardus links
 	 */
 	public void updateLinksViaHandler(final PardusLink[] links) {
-		Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-				updateLinks(links);
-			}
-
-		};
-		handler.post(r);
+		handler.post(() -> updateLinks(links));
 	}
 
 	/**
@@ -257,49 +240,43 @@ public class PardusLinks {
 	 * Adds a listener for onClick events.
 	 */
 	private void initClickListener() {
-		linksGridView.setOnItemClickListener(new OnItemClickListener() {
+        /*
+         * (non-Javadoc)
+         *
+         * @see
+         * android.widget.AdapterView.OnItemClickListener#onItemClick(android
+         * .widget.AdapterView, android.view.View, int, long)
+         */
+        linksGridView.setOnItemClickListener((parent, v, position, id) -> {
+            String link = (String) (parent.getItemAtPosition(position));
+            boolean linkLoaded = false;
+            if (!link.startsWith("http://") && !link.startsWith("https://")
+                    && !link.startsWith("file://")) {
+                // relative url (game universe page)
+                if (browser.isLoggedIn() && browser.getUniverse() != null) {
+                    browser.loadUniversePage(link);
+                    linkLoaded = true;
+                } else {
+                    PardusNotification.show("Please enter a universe!");
+                }
+            } else {
+                // absolute url
+                if ((link.startsWith(PardusConstants.chatUrlHttps) || link
+                        .startsWith(PardusConstants.forumUrlHttps))
+                        && browser.getUniverse() == null) {
+                    PardusNotification.show("Please enter a universe!");
+                } else {
+                    browser.loadUrl(link);
+                    linkLoaded = true;
+                }
+            }
+            if (linkLoaded) {
+                show();
+                startHideTimer(PardusLinks.HIDE_AFTER_CLICK_MILLIS);
+            }
+        }
 
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * android.widget.AdapterView.OnItemClickListener#onItemClick(android
-			 * .widget.AdapterView, android.view.View, int, long)
-			 */
-			@Override
-			public void onItemClick(AdapterView<?> parent, View v,
-					int position, long id) {
-				String link = (String) (parent.getItemAtPosition(position));
-				boolean linkLoaded = false;
-				if (!link.startsWith("http://") && !link.startsWith("https://")
-						&& !link.startsWith("file://")) {
-					// relative url (game universe page)
-					if (browser.isLoggedIn() && browser.getUniverse() != null) {
-						browser.loadUniversePage(link);
-						linkLoaded = true;
-					} else {
-						PardusNotification.show("Please enter a universe!");
-					}
-				} else {
-					// absolute url
-					if ((link.startsWith(PardusConstants.chatUrlHttps) || link
-							.startsWith(PardusConstants.forumUrlHttps))
-							&& browser.getUniverse() == null) {
-						PardusNotification.show("Please enter a universe!");
-					} else {
-						browser.loadUrl(link);
-						linkLoaded = true;
-					}
-				}
-				if (linkLoaded) {
-					show();
-					startHideTimer(PardusLinks.HIDE_AFTER_CLICK_MILLIS);
-				}
-			}
-
-		}
-
-		);
+        );
 	}
 
 	/**

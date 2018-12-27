@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "at.pardus.android.browser"
         minSdkVersion 10
-        targetSdkVersion 22
-        versionCode 25
-        versionName "1.5.2"
+        targetSdkVersion 26
+        versionCode 10153
+        versionName "1.5.3"
     }
     buildTypes {
         release {
@@ -18,13 +18,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
-    compile 'at.pardus.android:webview-gm-lib:1.2.0'
-    compile 'at.pardus.android:webview-gm-ui:1.2.0'
-    compile 'org.nanohttpd:nanohttpd-webserver:2.2.1-SNAPSHOT'
+    implementation 'at.pardus.android:webview-gm-lib:1.2.0'
+    implementation 'at.pardus.android:webview-gm-ui:1.2.0'
+    implementation 'org.nanohttpd:nanohttpd-webserver:2.3.2-SNAPSHOT'
 }

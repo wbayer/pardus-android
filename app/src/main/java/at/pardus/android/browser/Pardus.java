@@ -20,7 +20,6 @@ package at.pardus.android.browser;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -96,7 +95,7 @@ public class Pardus extends ScriptManagerActivity {
 
 	private PardusMessageChecker messageChecker;
 
-	private Stack<Integer> placeHistory = new Stack<Integer>();
+	private Stack<Integer> placeHistory = new Stack<>();
 
 	/**
 	 * Sets the Pardus browser layout as the app's content.
@@ -486,71 +485,38 @@ public class Pardus extends ScriptManagerActivity {
 					.setMessage(
 							(id == R.id.dialog_app_update) ? R.string.app_update_msg
 									: R.string.app_update_msg_minor)
-					.setNeutralButton(R.string.app_update_button,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									dialog.dismiss();
-								}
-
-							}).setCancelable(true);
+					.setNeutralButton(R.string.app_update_button, (dialog1, which) -> dialog1.dismiss()).setCancelable(true);
 			dialog = builder.create();
 		} else if (id == R.id.dialog_ip_update) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.ip_update_title)
 					.setMessage(R.string.ip_update_msg)
-					.setNegativeButton(R.string.ip_update_button_neg,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									PardusPreferences
-											.setNextImagePackUpdateCheck(new Date(
-													new Date().getTime() + 86400000 * 7));
-									dialog.dismiss();
-								}
-
-							})
-					.setPositiveButton(R.string.ip_update_button_pos,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									dialog.dismiss();
-									browser.loadUrl(args.getString("updateUrl"));
-								}
-
-							}).setCancelable(true);
+					.setNegativeButton(R.string.ip_update_button_neg, (dialog12, which) -> {
+                        PardusPreferences
+                                .setNextImagePackUpdateCheck(new Date(
+                                        new Date().getTime() + 86400000 * 7));
+                        dialog12.dismiss();
+                    })
+					.setPositiveButton(R.string.ip_update_button_pos, (dialog13, which) -> {
+                        dialog13.dismiss();
+                        browser.loadUrl(args.getString("updateUrl"));
+                    }).setCancelable(true);
             dialog = builder.create();
         } else if (id == R.id.dialog_save_password) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.save_password_title).setMessage(R.string.save_password_msg)
-                    .setNeutralButton(R.string.save_password_button_never, new DialogInterface
-                            .OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NEVER);
-                            dialog.dismiss();
-                        }
-                    }).setNegativeButton(R.string.save_password_button_no, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
-                    dialog.dismiss();
-                }
-            }).setPositiveButton(R.string.save_password_button_yes, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.YES);
-                    PardusPreferences.setAccount(args.getString("account"));
-                    PardusPreferences.setPassword(args.getString("password"));
-                    dialog.dismiss();
-                }
-            });
+                    .setNeutralButton(R.string.save_password_button_never, (dialog14, which) -> {
+                        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NEVER);
+                        dialog14.dismiss();
+                    }).setNegativeButton(R.string.save_password_button_no, (dialog15, which) -> {
+                        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.NO);
+                        dialog15.dismiss();
+                    }).setPositiveButton(R.string.save_password_button_yes, (dialog16, which) -> {
+                        PardusPreferences.setStoreCredentials(PardusPreferences.StoreCredentials.YES);
+                        PardusPreferences.setAccount(args.getString("account"));
+                        PardusPreferences.setPassword(args.getString("password"));
+                        dialog16.dismiss();
+                    });
             dialog = builder.create();
         }
         return dialog;

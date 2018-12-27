@@ -110,4 +110,15 @@ public abstract class PardusConstants {
 
 	public static final String bulletinBoardPage = "bulletin_board.php";
 
+    /**
+     * @param universe
+     *         host: artemis, orion, pegasus
+     * @param page
+     *         relative URL
+     * @return absolute URL to universe page
+     */
+    public static String getUniverseUrl(String universe, String page) {
+        return "https://" + universe + ".pardus.at/" + page;
+    }
+
 }
