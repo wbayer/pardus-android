@@ -26,5 +26,5 @@ android {
 dependencies {
     implementation 'at.pardus.android:webview-gm-lib:1.2.0'
     implementation 'at.pardus.android:webview-gm-ui:1.2.0'
-    implementation 'org.nanohttpd:nanohttpd-webserver:2.2.1-SNAPSHOT'
+    implementation 'org.nanohttpd:nanohttpd-webserver:2.3.2-SNAPSHOT'
 }
