@@ -19,11 +19,12 @@ package at.pardus.android.content;
 
 import android.util.Log;
 
+import org.nanohttpd.webserver.SimpleWebServer;
+
 import java.io.File;
 import java.io.IOException;
 
 import at.pardus.android.browser.BuildConfig;
-import fi.iki.elonen.SimpleWebServer;
 
 /**
  * Provides a URI to files served by a local webserver.
