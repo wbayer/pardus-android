@@ -323,7 +323,9 @@ public class PardusWebViewClient extends WebViewClientGm {
 			String description, String failingUrl) {
 		Log.w(this.getClass().getSimpleName(), "Error at " + failingUrl + "\n"
 				+ errorCode + " " + description);
-		PardusNotification.show(description);
+		if (!failingUrl.contains("localhost")) {
+            PardusNotification.show(description);
+        }
 	}
 
 	/*
