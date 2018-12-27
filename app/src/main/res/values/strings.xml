@@ -4,7 +4,7 @@
     <string name="app_name">Pardus</string>
     <string name="app_description">A convenient web client for the massive multiplayer online game Pardus, offering fast and secure access to your account.</string>
     <string name="app_update_msg">Support for traffic through unencrypted HTTP has been dropped. Access to app settings that was missing on some devices has been restored. Optimization for Android 8 and 9.</string>
-    <string name="app_update_msg_minor"></string>
+    <string name="app_update_msg_minor">This release fixes login problems.</string>
     <string name="app_update_title">Pardus Android Update</string>
     <string name="app_update_button">Continue</string>
     <string name="ip_update_title">Image Pack Update</string>
