@@ -96,7 +96,7 @@ public class PardusWebViewClient extends WebViewClientGm {
 
     @Override
 	public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-		// non-frame target user actions and redirects might trigger this
+		// non-frame target non-post user actions and redirects might trigger this
         String url = request.getUrl().toString();
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Attempting to load " + url);
@@ -117,6 +117,13 @@ public class PardusWebViewClient extends WebViewClientGm {
 			// abort
 			return true;
 		}
+        if (url.startsWith(PardusConstants.loggedInUrlHttps)) {
+            // account play page (may not trigger onPageStarted if character autologin is set and sdk >= 26)
+            pardusView.setLoggedIn(true);
+        } else if (url.equals(PardusConstants.logoutUrlHttps)) {
+            // logout page (may not trigger onPageStarted if not called programmatically and sdk >= 26)
+            pardusView.setLoggedIn(false);
+        }
 		pardusView.propertiesBeforePageLoad(url);
 		// continue
 		return false;
@@ -131,6 +138,8 @@ public class PardusWebViewClient extends WebViewClientGm {
 	@Override
 	public void onPageStarted(WebView view, String url, Bitmap favicon) {
 		// triggered by anything changing the URL (non-frame target)
+        // if a page sends a redirect header only the next page triggers this, starting from sdk 26+
+        // (unless called programmatically using WebView::loadUrl)
 		if (BuildConfig.DEBUG) {
 			Log.v(this.getClass().getSimpleName(), "Started loading " + url);
 			Log.v(this.getClass().getSimpleName(),
