@@ -16,7 +16,8 @@
         android:padding="0dp"
         android:scrollbarAlwaysDrawHorizontalTrack="false"
         android:scrollbarAlwaysDrawVerticalTrack="false"
-        android:scrollbarStyle="insideOverlay"/>
+        android:scrollbarStyle="insideOverlay"
+        android:defaultFocusHighlightEnabled="false"/>
 
     <TextView
         android:id="@+id/notify"
